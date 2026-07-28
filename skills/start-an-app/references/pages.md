@@ -17,7 +17,11 @@ Do not reflexively build a marketing landing page. Pick from what the interview 
 
 A hiking journal for one person does not need a hero section and a pricing table. Building one is the single fastest way to make the result feel like a template. If the interview said "just me", skip straight to the app.
 
-## Styling: pick a direction, then be consistent
+## Styling: `DESIGN.md` decides, these pages obey
+
+`references/design.md` runs before this file and leaves a `DESIGN.md` at the project root. **Read it and follow it.** Where it and this section overlap, it wins — it has the actual palette, type and dials for this specific app, and it was written with the user in the room.
+
+Everything below is the fallback for a project without one, and the reasoning behind what `DESIGN.md` records.
 
 Choose **one** visual direction that fits what the app is, and say what you picked and why in one line. A developer tool, a children's reading tracker, and an invoicing app should not look alike.
 
@@ -34,6 +38,17 @@ Both the `:root` and `.dark` blocks exist. Whatever you change, check the app in
 Rules that hold regardless of direction:
 
 - Use shadcn components (`pnpm dlx shadcn@latest add ...`) rather than hand-rolling buttons and inputs. Add only what the pages actually use.
+- **`Button` has no `asChild`.** Current shadcn generates Base UI components, not Radix, so the reflex `<Button asChild><Link /></Button>` fails type-checking outright. Put the exported `buttonVariants` on the link instead — which is also one element fewer — but **wrap it in `cn()`**:
+
+  ```tsx
+  import { cn } from "@/lib/utils"; // shadcn init already wrote this
+
+  <Link className={cn(buttonVariants({ variant: "outline" }))}>Sign in</Link>
+  ```
+
+  Without the wrap the link renders with **no border at all**. `cva` concatenates the base class string with the variant's, so `border-transparent` from the base and `border-border` from the variant both survive into the class list, and the one that wins is whichever Tailwind emitted last — not the one you asked for. `cn()` runs tailwind-merge, which drops the loser. The `Button` component never shows this because it merges internally; the bug appears only on links, which is to say on the landing page, which is to say on the first thing a stranger sees.
+
+  It is also close to invisible: a missing 1px border on a dark surface reads as "that's just the style". Check it by measuring, not by looking — `getComputedStyle(el).borderTopColor` returning `rgba(0, 0, 0, 0)` is the tell.
 - Give the app real spacing. Cramped, full-width, edge-to-edge content is the clearest tell of a scaffold: constrain the content width and let it breathe.
 - Every list needs an **empty state** — the first thing the user sees is zero rows, and "nothing here yet, add your first hike" is the difference between working and broken-looking.
 - Responsive from the start. Check one narrow viewport before calling it done.
@@ -96,3 +111,5 @@ Scope every query by the session user. On a multi-user app, a query that forgets
 - One user's data is not visible to another (create a second account and confirm).
 - Empty states read as intentional, not broken.
 - The app looks right in both light and dark mode, and at a narrow viewport.
+- Any link styled with `buttonVariants` has a **visible border** where the variant says it should. Measure one: `getComputedStyle(link).borderTopColor` must not be `rgba(0, 0, 0, 0)`.
+- Nothing on these pages contradicts `DESIGN.md`, and no component sets a colour outside its tokens.
