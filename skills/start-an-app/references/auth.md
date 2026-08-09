@@ -68,6 +68,10 @@ export const { signIn, signUp, signOut, useSession } = authClient;
 
 Build simple `/sign-in` and `/sign-up` pages with shadcn form components using `signIn.email` / `signUp.email`, and show the signed-in user (with a sign-out button) in the app's header via `useSession`.
 
+**No email verification or password reset yet, and that's deliberate.** Better Auth can do both, but neither exists until there is somewhere to send the message from. If the user chose email, `references/email.md` wires them up; if they didn't, sign-in works exactly as configured above and reset can be added later without touching anything here.
+
+`references/settings.md` later adds a `role` field and a couple of session options to this file, and regenerates the schema. Nothing above needs to change for that.
+
 ## Google sign-in (optional add-on)
 
 Walk the user through it — plain language, one step at a time:

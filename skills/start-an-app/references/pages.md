@@ -82,6 +82,8 @@ export default async function DashboardLayout({
 
 **Check the session on the server, in the layout or page.** Middleware is fine as an optimistic redirect to keep signed-out users from seeing a flash of the dashboard, but it is not the security boundary — a client-side or middleware-only check can be bypassed. Anything that reads or writes user data re-checks the session where it runs.
 
+Leave room in the navigation for **Settings** — `references/settings.md` builds it next and hangs it off whatever nav you write here. It needs a place to live, not a placeholder page.
+
 The dashboard page itself shows **their real data**, scoped to the signed-in user — the nouns from the interview, filtered by `userId`, with the primary action ("Log a hike") in reach. A page that only says "Welcome back, user@example.com" proves auth works and nothing else; go one step further and render the actual thing the app is for.
 
 Scope every query by the session user. On a multi-user app, a query that forgets `where(eq(table.userId, session.user.id))` shows everyone each other's data — check each one.

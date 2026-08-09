@@ -26,7 +26,7 @@ npx skills add leonvanzyl/skills --skill <skill-name>
 
 | Skill | Description |
 | ----- | ----------- |
-| [start-an-app](skills/start-an-app) | Interview-driven app scaffolder: asks what you're building in plain language, recommends the right options (SQLite vs Postgres in Docker, sign-in, file uploads, payments, AI features), and builds a working Next.js app that's yours from the first commit — not a template. |
+| [start-an-app](skills/start-an-app) | Interview-driven app scaffolder: asks what you're building in plain language, recommends the right options (SQLite vs Postgres in Docker, sign-in, transactional email, file uploads, payments, AI features, background jobs), and builds a working Next.js app that's yours from the first commit — not a template. Every app ships with account settings and a system page for logs and debugging. |
 
 ## Adding a new skill
 
