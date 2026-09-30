@@ -3,8 +3,9 @@ for sp in site.getsitepackages():
     for d in glob.glob(os.path.join(sp,'nvidia','*','bin')): os.add_dll_directory(d); os.environ['PATH']=d+os.pathsep+os.environ['PATH']
 sys.path.insert(0,'scripts'); from align import align, spoken
 from faster_whisper import WhisperModel
+ASR_WORKERS = 4   # line windows are re-transcribed concurrently: one model, 4 CUDA workers (identical results, ~2x faster; 8 is no faster)
 def _wm():
-    try: return WhisperModel('large-v3', device='cuda', compute_type='float16')
+    try: return WhisperModel('large-v3', device='cuda', compute_type='float16', num_workers=ASR_WORKERS)
     except Exception as e:
         print('no CUDA for Whisper (' + str(e)[:60] + ') - using CPU int8 (slower)'); return WhisperModel('large-v3', device='cpu', compute_type='int8')
 S=json.load(open('shorts.json')); db=np.load('rms10ms.npy')
@@ -25,14 +26,23 @@ def sil_fwd(t):
 import config as _C
 FIX=_C.ASR_FIXES   # known mis-hearings for this speaker, from project.json -> asr_fixes
 def norm(w): return ' '.join(spoken(w))
+def _asr(job):
+    sk,L,t0,t1=job; seg=x[int(t0*sr):int(t1*sr)]
+    segs,_=wm.transcribe(seg,language='en',word_timestamps=True,beam_size=5,condition_on_previous_text=False,
+         initial_prompt=_C.ASR_PROMPT)
+    return [w.word for s in segs for w in s.words]     # the generator is consumed here, inside the worker thread
+import time as _time
+from concurrent.futures import ThreadPoolExecutor
+_t=_time.time()
+JOBS=[(sk,L,sil_back(L['a']-0.15),sil_fwd(L['b']+0.25)) for sk,sv in S.items() for L in sv['lines']]
+with ThreadPoolExecutor(ASR_WORKERS) as _ex: RAW=dict(zip([(j[0],j[1]['id']) for j in JOBS],_ex.map(_asr,JOBS)))
+print(f'ASR: {len(JOBS)} line windows in {_time.time()-_t:.1f}s ({ASR_WORKERS} workers)')
 out={}
 for sk,sv in S.items():
     for L in sv['lines']:
         t0=sil_back(L['a']-0.15); t1=sil_fwd(L['b']+0.25)
         seg=x[int(t0*sr):int(t1*sr)]
-        segs,_=wm.transcribe(seg,language='en',word_timestamps=True,beam_size=5,condition_on_previous_text=False,
-             initial_prompt=_C.ASR_PROMPT)
-        W=[{'w':FIX.get(w.word.strip().lower().strip('.,'),w.word.strip())} for s in segs for w in s.words]
+        W=[{'w':FIX.get(w.strip().lower().strip('.,'),w.strip())} for w in RAW[(sk,L['id'])]]
         al=align(seg,[w['w'] for w in W])
         for w,a in zip(W,al): w['s'],w['e'],w['sc']=round(a[0]+t0,3),round(a[1]+t0,3),round(a[2],3)
         # match line text tokens to window tokens

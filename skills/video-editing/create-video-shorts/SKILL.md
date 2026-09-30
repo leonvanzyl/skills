@@ -41,7 +41,7 @@ Detailed commands are in `references/pipeline.md`. `SKILL` is this skill's folde
    - **Graphics:** one subagent per composition, following `references/graphics.md` and `examples/gfx_s1.py`. Each builds its composition, renders a 10 fps draft, checks a contact sheet, fixes, then renders at 240 fps with motion blur.
    - **Main agent, meanwhile:**
      - `cam_prep.py` (frame-exact camera clips)
-     - the matte for split runs (`hyperframes remove-background`)
+     - the matte for split runs, all shorts in one GPU call (`scripts/matte_gpu.py s1:0,3 s2:0 --jobs 4`)
      - `compose.py --preview 0` (captions, cover and CTA events)
      - `audio.py` (SFX, riser, music, stems, mix)
 6. **Composite:** render one `compose.py --runs i --seg-out …` process per run, in parallel, then `--concat`. Verify with `verify_final.py` and look at the contact sheet and a full-resolution frame of every split.

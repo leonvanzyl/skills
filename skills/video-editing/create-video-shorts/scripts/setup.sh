@@ -16,8 +16,26 @@ PY=.venv/Scripts/python.exe; [ -f "$PY" ] || PY=.venv/bin/python
 if ! "$PY" -c "import faster_whisper, torchaudio, mediapipe, cv2, pyloudnorm, num2words" 2>/dev/null; then
   uv pip install --python "$PY" numpy scipy soundfile pyloudnorm faster-whisper opencv-python pillow mediapipe num2words \
     nvidia-cublas-cu12 "nvidia-cudnn-cu12==9.*" onnxruntime-gpu &
-  uv pip install --python "$PY" torch torchaudio --index-url https://download.pytorch.org/whl/cpu &
+  # CUDA PyTorch on NVIDIA machines: wav2vec2 forced alignment runs ~13x faster on the GPU (word edges identical to CPU).
+  # cu130 wheels need an NVIDIA driver >= 580; any failure falls back to the CPU build.
+  if command -v nvidia-smi >/dev/null 2>&1; then
+    ( uv pip install --python "$PY" torch torchaudio --index-url https://download.pytorch.org/whl/cu130       || uv pip install --python "$PY" torch torchaudio --index-url https://download.pytorch.org/whl/cpu ) &
+  else
+    uv pip install --python "$PY" torch torchaudio --index-url https://download.pytorch.org/whl/cpu &
+  fi
   wait
+fi
+# an existing venv with CPU-only torch on an NVIDIA machine: swap in the CUDA build (same API, identical results)
+if command -v nvidia-smi >/dev/null 2>&1 && ! "$PY" -c "import torch, sys; sys.exit(0 if torch.cuda.is_available() else 1)" 2>/dev/null; then
+  uv pip install --python "$PY" --reinstall-package torch --reinstall-package torchaudio torch torchaudio     --index-url https://download.pytorch.org/whl/cu130 >/dev/null 2>&1 || true
+  "$PY" -c "import torch; print('torch', torch.__version__, 'cuda:', torch.cuda.is_available())"
+fi
+# a CPU-only `onnxruntime` pulled in by another package shadows onnxruntime-gpu (same import name), so the CUDA provider
+# never shows up. Remove it and reinstall the GPU build; matte_gpu.py then runs the matting model on CUDA (~12x faster).
+if ! "$PY" -c "import onnxruntime as o, sys; sys.exit(0 if 'CUDAExecutionProvider' in o.get_available_providers() else 1)" 2>/dev/null; then
+  uv pip uninstall --python "$PY" onnxruntime >/dev/null 2>&1 || true
+  uv pip install --python "$PY" --reinstall onnxruntime-gpu >/dev/null 2>&1 || true
+  "$PY" -c "import onnxruntime as o; print('onnxruntime providers:', o.get_available_providers())"
 fi
 shopt -s nullglob nocaseglob
 n=0

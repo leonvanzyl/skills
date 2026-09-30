@@ -35,7 +35,7 @@ If a clean-audio file exists, ingest cross-correlates it against the camera trac
 
 The following steps start as soon as their input exists. Don't wait for the whole ingest.
 ```bash
-$PY scripts/transcribe.py clean16.wav transcript_full.json &   # GPU Whisper large-v3, word timestamps (as soon as clean16.wav exists)
+$PY scripts/transcribe.py clean16.wav transcript_full.json &   # GPU Whisper large-v3, batched, word timestamps (~8 s for 15 min; as soon as clean16.wav exists)
 $PY scripts/detect_camera.py                                    # as soon as the proxy exists -> LOOK at detect_camera.png
 $PY scripts/gaze.py &  $PY scripts/zoomscan.py &                # both read the proxy + camera window
 ```
@@ -75,7 +75,7 @@ Rules for choosing layouts are in `editing-spec.md` sections 3–4. The hook is 
 
 ## 3. Cut
 ```bash
-$PY scripts/align_lines.py           # silence-bounded re-transcription + wav2vec2 forced alignment -> line_align.json
+$PY scripts/align_lines.py           # silence-bounded re-transcription (4 parallel CUDA workers) + wav2vec2 forced alignment on the GPU -> line_align.json
 $PY scripts/cut2.py                  # onsets / true ends / pause compression / J-cuts / loud-to-loud joins -> <sk>/voice.wav, cut.json (runs + words)
 $PY scripts/verify_voice.py s1 &     # re-transcribe voice.wav (must read word-perfect) + list quiet stretches (joins must be <= 150 ms)
 $PY scripts/eyesheet.py s1 &         # 8 eye crops per line -> s1_eyes.png (LOOK at it)
@@ -102,9 +102,10 @@ $PY scripts/eyesheet.py s1 &         # 8 eye crops per line -> s1_eyes.png (LOOK
 **At the same time, in the main agent:**
 ```bash
 $PY scripts/cam_prep.py s1                   # frame-exact camera clips per camera run -> s1/cam/r<i>.mkv + plan.json
-# matte, split runs only (same frames as the card => frame-locked):
-ffmpeg -v error -y -i s1/cam/r0.mkv -c:v libx264 -crf 8 -pix_fmt yuv444p s1/cam/r0.mp4
-npx --yes hyperframes remove-background s1/cam/r0.mp4 -o s1/cam/r0_matte.mov --device cuda   # falls back: omit --device (CPU, ~7 fps)
+# matte, split runs only (same frames as the card => frame-locked), ALL shorts in one GPU call:
+$PY scripts/matte_gpu.py s1:0,3,5 s2:0,3 s3:0,2 --jobs 4   # u2net_human_seg on onnxruntime-gpu CUDA + speaker-only cleanup
+# (10 split runs / ~3,000 frames: ~70-100 s, vs ~15 min for `hyperframes remove-background`, whose onnxruntime-node build
+#  has no CUDA and silently runs on CPU. matte_gpu.py falls back to that CLI itself if the model isn't cached or CUDA is missing.)
 ```
 
 ## 5. Audio and composite
