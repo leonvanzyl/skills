@@ -1,0 +1,239 @@
+{
+ "source_timeline": "YTHD60 - Clean Cut v1",
+ "new_timeline": "YTHD60 - Pro Edit TEST",
+ "hook_end": 41.0,
+ "music": {
+  "style": "chillhop",
+  "mood": "warm",
+  "fade_out": 2.5
+ },
+ "beats": [
+  {
+   "id": "z01",
+   "kind": "zoom",
+   "t0": 5.2833,
+   "t1": 13.55,
+   "note": "benchmarks slide: settle on the chart, then push onto Terminal-Bench as he says agentic coding",
+   "cam": [
+    {
+     "t": 0.47,
+     "dur": 0.9,
+     "fx": 1100,
+     "fy": 1150,
+     "k": 1.22
+    },
+    {
+     "t": 5.73,
+     "dur": 0.8,
+     "fx": 1150,
+     "fy": 700,
+     "k": 1.75
+    }
+   ],
+   "marks": [
+    {
+     "t": 6.66,
+     "type": "band",
+     "rect": [
+      1900,
+      735,
+      200,
+      170
+     ]
+    }
+   ]
+  },
+  {
+   "id": "z02",
+   "kind": "zoom",
+   "t0": 13.55,
+   "t1": 20.3,
+   "note": "pricing slide: $2 vs $4, then step to Fable's $10",
+   "cam": [
+    {
+     "t": 1.57,
+     "dur": 0.8,
+     "fx": 1550,
+     "fy": 900,
+     "k": 1.6
+    },
+    {
+     "t": 4.45,
+     "dur": 0.7,
+     "fx": 2250,
+     "fy": 900,
+     "k": 1.6
+    }
+   ],
+   "marks": [
+    {
+     "t": 1.82,
+     "t_out": 4.4,
+     "type": "box",
+     "rect": [
+      1130,
+      745,
+      170,
+      120
+     ]
+    },
+    {
+     "t": 2.98,
+     "t_out": 4.4,
+     "type": "box",
+     "rect": [
+      1800,
+      745,
+      160,
+      120
+     ]
+    },
+    {
+     "t": 5.52,
+     "type": "box",
+     "rect": [
+      2470,
+      745,
+      210,
+      120
+     ]
+    }
+   ]
+  },
+  {
+   "id": "p01",
+   "kind": "punch",
+   "items": [
+    3
+   ],
+   "zoom": 1.15,
+   "note": "direct-to-camera opinion: punch in, face on the upper third"
+  },
+  {
+   "id": "w01",
+   "kind": "words",
+   "t0": 23.58,
+   "t1": 24.7,
+   "text": "real-world",
+   "hl": true,
+   "xy": [
+    960,
+    905
+   ]
+  },
+  {
+   "id": "g01",
+   "kind": "gfx",
+   "layout": "fvp",
+   "t0": 26.0333,
+   "t1": 35.6333,
+   "note": "the three models step in as named, then the exact prompt"
+  },
+  {
+   "id": "g02",
+   "kind": "gfx",
+   "layout": "split",
+   "t0": 35.6333,
+   "t1": 40.6333,
+   "note": "quality (the real game), speed and cost (the real usage panel)"
+  },
+  {
+   "id": "z03",
+   "kind": "zoom",
+   "t0": 45.5,
+   "t1": 52.1833,
+   "note": "model picker -> Fable 5.1, then the effort slider to Extra; pull back for the next line",
+   "cam": [
+    {
+     "t": 1.45,
+     "dur": 0.8,
+     "fx": 2700,
+     "fy": 1560,
+     "k": 1.8
+    },
+    {
+     "t": 6.0,
+     "dur": 0.6,
+     "fx": 1920,
+     "fy": 1080,
+     "k": 1.0
+    }
+   ],
+   "marks": [
+    {
+     "t": 1.94,
+     "t_out": 2.45,
+     "type": "box",
+     "rect": [
+      2500,
+      1690,
+      400,
+      85
+     ]
+    },
+    {
+     "t": 5.72,
+     "t_out": 6.0,
+     "type": "box",
+     "rect": [
+      2920,
+      2060,
+      140,
+      76
+     ]
+    }
+   ]
+  },
+  {
+   "id": "r01",
+   "kind": "gfx",
+   "layout": "fvp",
+   "t0": 53.9833,
+   "t1": 58.5,
+   "note": "resource: the real Anthropic Sonnet page (npx hyperframes capture), the capture frame scrolls to the pricing sentence and a marker band sweeps across it (rendered as a mechanics test; not placed in the test timeline)"
+  },
+  {
+   "id": "c01",
+   "kind": "cta",
+   "t0": 124.9,
+   "t1": 129.9,
+   "url": "skool.com/leonvanzyl",
+   "label": "Free AI builder community",
+   "button": "Join",
+   "type_at": 1.07
+  }
+ ],
+ "chapters": [
+  {
+   "t": 0.0,
+   "title": "Sonnet 5.5 vs Opus 5.5 vs Fable 5.1"
+  },
+  {
+   "t": 41.0,
+   "title": "Running the same prompt on all three"
+  },
+  {
+   "t": 256.09,
+   "title": "Fable 5.1 results"
+  },
+  {
+   "t": 376.9,
+   "title": "Opus 5.5 results"
+  },
+  {
+   "t": 495.45,
+   "title": "Sonnet 5.5 results"
+  }
+ ],
+ "caption_fixes": {
+  "five one five": "5.5",
+  "agent-decoding": "agentic coding",
+  "Gentic Labs": "Agentic Labs",
+  "Genticoding": "Agentic Coding",
+  "Claude code": "Claude Code"
+ },
+ "publish": {
+  "title": "Sonnet 5.5 vs Opus 5.5 vs Fable 5.1: Same Prompt, Real Costs",
+  "description": "I gave Sonnet 5.5, Opus 5.5 and Fable 5.1 the exact same prompt in Claude Code: build a polished 3D mini golf game. Here is how the three games compare on quality, speed and real session cost."
+ }
+}
