@@ -1,7 +1,8 @@
 # DaVinci Resolve MCP: calls used and gotchas
 
-Server: community `samuelgursky/davinci-resolve-mcp` (not built into Resolve), talking to Resolve Studio 21.x
-through its scripting API. Tools are named `mcp__davinci-resolve__<tool>`; each takes `action` + `params`.
+Server: community [samuelgursky/davinci-resolve-mcp](https://github.com/samuelgursky/davinci-resolve-mcp) (not
+built into Resolve - install it with the steps in its README), talking to Resolve through its scripting API.
+Tested with Resolve Studio 21.x. Tools are named `mcp__davinci-resolve__<tool>`; each takes `action` + `params`.
 Load them with ToolSearch query `davinci resolve` (the server may still be connecting at session start -
 ToolSearch waits for it).
 
@@ -9,7 +10,7 @@ ToolSearch waits for it).
 
 | Purpose | Call |
 |---|---|
-| Is Resolve running / which project | `Get-Process Resolve` (PowerShell) - window title shows the project. `resolve_control runtime_mode` often returns "undeterminable". |
+| Is Resolve running / which project | Windows: `Get-Process Resolve` (PowerShell) - window title shows the project. macOS/Linux: `pgrep -l Resolve`. `resolve_control runtime_mode` often returns "undeterminable". |
 | Versions | `resolve_control get_version` (mentions MCP updates - tell the user once, don't apply) |
 | Current project / timeline | `project_manager get_current`, `timeline get_current`, `timeline list` |
 | Timeline settings | `timeline get_setting` (no name = all). `useCustomSettings`, `timelineResolutionWidth/Height`, `timelineFrameRate` |
@@ -47,7 +48,8 @@ ToolSearch waits for it).
 - **Don't use `timeline_frame capture`** (quality "frame"/"preview") for routine checks: it renders through the
   Deliver page and changes project render settings (TargetDir, CustomName, mark range aren't restorable).
 - **Large results**: `probe_timeline_structure` on 500+ items is ~500 KB - always parse from the saved file.
-- **Free vs Studio**: this machine has Studio. On the free edition Studio-only calls raise a modal that blocks
-  later calls until a human dismisses it.
-- MCP server version on 2026-09-26 was 2.103.2 (update available: 4.8.20, which fixed boolean params sent as
-  the string "false" being treated as true). Pass real JSON booleans, never strings.
+- **Free vs Studio**: external scripting is Studio-only. On the free edition the server goes through Resolve's
+  in-app bridge (Workspace > Scripts > resolve_bridge), and Studio-only calls raise a modal that blocks later
+  calls until a human dismisses it.
+- **Booleans**: server versions before 4.8.20 treated boolean params sent as the string "false" as true. Pass
+  real JSON booleans, never strings.

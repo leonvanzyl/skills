@@ -1,32 +1,38 @@
 ---
-name: video-edit
+name: davinci-resolve-video-edit
 description: Cut a DaVinci Resolve talking-head / screencast / tutorial timeline into a clean, well-paced foundation edit - removing bad takes, retakes, false starts, stumbles, "um"/"uh" fillers, lip smacks and noises - using word-level CrisperWhisper 2.0 transcription on the local GPU and the davinci-resolve MCP. Use this whenever the user wants to edit, clean up, tighten or rough-cut a Resolve timeline, remove bad takes/ums/retakes/filler words, "cut this video like a professional editor", or prepare a YouTube recording for B-roll - even if they don't say "skill" or name the tools. Also use it when they ask how their previous clean-cut edits were made. Not for adding B-roll, captions, music, transitions or motion graphics.
 ---
 
-# Video Edit: clean foundation cut in DaVinci Resolve
+# DaVinci Resolve Video Edit: clean foundation cut
 
 Turn a raw timeline (usually already silence-cut by the user) into a clean foundation edit: every thought said
 once, in its best take, without fillers, stumbles or noises. The user adds B-roll, SFX, transitions and lower
 thirds afterwards, so don't do any of that. The original timeline is never modified; the result is a new
 timeline named `<original> - Clean Cut v1`.
 
-First real project (Jev / TypeSafe AI video, 2026-09-26): 509 clips, 31:04 -> 214 clips, 17:10. The user
+First real project (Jev / TypeSafe AI video, 2026-09-26): 509 clips, 31:04 -> 214 clips, 17:10. The creator
 called it "phenomenal". The process below is what produced that result, including the fixes for everything that went
 wrong along the way.
 
-## What's already set up on this machine
+## Requirements
 
-| Thing | Where |
+| What | Notes |
 |---|---|
-| Helper script | `C:\Users\leon\.claude\skills\video-edit\scripts\vedit.py` |
-| Python to run it (CrisperWhisper env: torch cu128, transformers, crisperwhisper) | `C:\Users\leon\.venvs\crisperwhisper\Scripts\python.exe` |
-| Model `nyralabs/CrisperWhisper2.0_large` (2.9 GB) | `C:\Users\leon\.cache\huggingface\hub\models--nyralabs--CrisperWhisper2.0_large` |
-| GPU | RTX 5090 (32 GB) |
-| ffmpeg / ffprobe | on PATH (Chocolatey) |
-| Resolve control | `davinci-resolve` MCP server - load its tools with ToolSearch query `davinci resolve` |
+| DaVinci Resolve + the `davinci-resolve` MCP server | Community server [samuelgursky/davinci-resolve-mcp](https://github.com/samuelgursky/davinci-resolve-mcp). In Claude Code, load its tools with ToolSearch query `davinci resolve`. Studio or free edition - see `references/resolve-mcp.md`. |
+| Python env with CrisperWhisper (torch, transformers, crisperwhisper) | Default `~/.venvs/crisperwhisper`; set `VEDIT_VENV` to use another location. |
+| Model `nyralabs/CrisperWhisper2.0_large` (~2.9 GB) | The standard Hugging Face cache (`~/.cache/huggingface/hub`, or `$HF_HOME/hub`). |
+| NVIDIA GPU with CUDA | Strongly recommended (~1.2 s per clip on an RTX 5090). Without one it runs on the CPU - including on Apple Silicon Macs - which works but is much slower. |
+| ffmpeg / ffprobe | On PATH. |
 
-Never download or install another copy of the model or the environment - `vedit.py` runs offline against the
-cache. If something is missing, see `references/setup-and-troubleshooting.md` (rebuild steps are there).
+Check before the first edit (set the variables from Conventions first):
+
+```bash
+"$PY" -c "import torch, crisperwhisper; from huggingface_hub import try_to_load_from_cache as c; print('cuda:', torch.cuda.is_available(), '| model cached:', isinstance(c('nyralabs/CrisperWhisper2.0_large', 'config.json'), str))" && ffmpeg -version | head -1
+```
+
+If the Python env, the model or ffmpeg is missing, follow `references/setup-and-troubleshooting.md` to install
+it - ask the user first, it is a ~7 GB download. If the check passes, never install another copy: `vedit.py` runs
+offline against the cache.
 
 Use the CrisperWhisper model, not Whisper and not Resolve's own transcription: Whisper cleans speech up (drops
 ums, merges retakes, hallucinates "Thank you for watching" on short clips) and Resolve's transcript can't be read
@@ -36,23 +42,28 @@ detail is what makes a clean edit possible.
 
 ## Conventions
 
-Shell variables don't persist between Bash tool calls, so start each command with these assignments:
+Shell variables don't persist between Bash tool calls, so start each command with these assignments. They work
+in bash on Windows (Git Bash), macOS and Linux:
 
 ```bash
-PY=/c/Users/leon/.venvs/crisperwhisper/Scripts/python.exe
-VE=/c/Users/leon/.claude/skills/video-edit/scripts/vedit.py
-WORK=/c/Users/leon/AppData/Local/video-edit/<project>__<timeline>   # e.g. jev-ai__YTHD60 (no spaces)
+SKILL="<this skill's folder>"    # the folder this SKILL.md was loaded from (Claude Code: "Base directory for this skill")
+VE="$SKILL/scripts/vedit.py"
+VENV="${VEDIT_VENV:-$HOME/.venvs/crisperwhisper}"
+PY="$VENV/Scripts/python.exe"; [ -e "$PY" ] || PY="$VENV/bin/python"    # Windows : macOS/Linux layout
+WORK="${VEDIT_WORK_ROOT:-${LOCALAPPDATA:-$HOME/.cache}/video-edit}/<project>__<timeline>"   # e.g. jev-ai__YTHD60 (no spaces)
 ```
 
 The work dir is persistent on purpose: transcripts are cached there (`segments.json`, keyed by each clip's media
-and source range), so re-running or revising an edit later only transcribes clips that changed. Keep the path
-short - deep paths broke `uv` on Windows.
+and source range), so re-running or revising an edit later only transcribes clips that changed. It defaults to
+`%LOCALAPPDATA%\video-edit` on Windows and `~/.cache/video-edit` elsewhere; set `VEDIT_WORK_ROOT` to move it. Keep
+the path short - deep paths broke `uv` on Windows.
 
 ## Workflow
 
 ### 1. Connect and pick the timeline
 - Load the Resolve tools (ToolSearch `davinci resolve`). `resolve_control runtime_mode` may be undeterminable;
-  `Get-Process Resolve` tells you if it's running and which project is open (window title).
+  `Get-Process Resolve` (Windows PowerShell - the window title shows the open project) or `pgrep -l Resolve`
+  (macOS/Linux) tells you if it's running.
 - `project_manager get_current`, `timeline get_current`, `timeline list`. Default target = the current timeline;
   ask only if it's ambiguous.
 - If `resolve_control get_version` reports an MCP update, mention it once; don't apply it.

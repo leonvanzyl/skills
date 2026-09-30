@@ -1,7 +1,7 @@
 """video-edit helper: transcript-driven clean cuts for DaVinci Resolve timelines.
 
-Run with the CrisperWhisper environment (it has torch+CUDA, transformers, crisperwhisper, numpy):
-    C:\\Users\\leon\\.venvs\\crisperwhisper\\Scripts\\python.exe vedit.py <command> --work <dir> [...]
+Run with the CrisperWhisper environment's Python (it has torch, transformers, crisperwhisper, numpy):
+    <venv>/Scripts/python.exe vedit.py <command> --work <dir> [...]   (Windows; <venv>/bin/python on macOS/Linux)
 
 Commands
     prepare      --structure FILE [--track 1]   parse a probe_timeline_structure dump, extract 16 kHz audio

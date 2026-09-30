@@ -1,24 +1,36 @@
 # Setup, model quirks and troubleshooting
 
-## The environment (already installed - reuse it)
-- Python env: `C:\Users\leon\.venvs\crisperwhisper` (uv, Python 3.13, ~4.4 GB - mostly CUDA PyTorch).
-  torch 2.11.0+cu128, transformers 5.17, crisperwhisper 2.0.3. Run scripts with
-  `C:\Users\leon\.venvs\crisperwhisper\Scripts\python.exe`.
-- Model: `nyralabs/CrisperWhisper2.0_large` (~2.9 GB) in the standard Hugging Face cache
-  `C:\Users\leon\.cache\huggingface\hub\models--nyralabs--CrisperWhisper2.0_large`. Any tool asking for this model
-  ID reuses the cache. `vedit.py` sets `HF_HUB_OFFLINE=1` so it can never silently re-download.
-- Older faster-whisper models in the same cache (medium.en, small.en, distil-large-v3) are superseded - don't use them.
-- GPU: RTX 5090 (Blackwell) needs PyTorch built for CUDA 12.8+ (`cu128` wheels).
+## The environment
+- Python env: a uv virtualenv, Python 3.13, ~4.4 GB with CUDA PyTorch. Default location `~/.venvs/crisperwhisper`
+  (override with `VEDIT_VENV`); the interpreter is `Scripts/python.exe` inside it on Windows and `bin/python` on
+  macOS/Linux. Known-good versions: torch 2.11.0+cu128, transformers 5.17, crisperwhisper 2.0.3.
+- Model: `nyralabs/CrisperWhisper2.0_large` (~2.9 GB, not gated - no Hugging Face login needed) in the standard
+  Hugging Face cache (`~/.cache/huggingface/hub`, or `$HF_HOME/hub`). Any tool asking for this model ID reuses the
+  cache. `vedit.py` sets `HF_HUB_OFFLINE=1` so it can never silently re-download.
+- GPU: `vedit.py` uses the first NVIDIA GPU if PyTorch can see one, otherwise the CPU. CrisperWhisper has no Apple
+  Silicon (MPS) support, so Macs run on the CPU. RTX 50-series (Blackwell) cards need PyTorch built for CUDA 12.8+
+  (`cu128` wheels).
+- Tested on Windows 11 with an RTX 5090. macOS and Linux should work with the same steps but haven't been run end
+  to end yet.
 
-### Rebuild (only if the env is gone or broken)
+### Install (first time, or if the env is broken)
+Needs [uv](https://docs.astral.sh/uv/) and ffmpeg (Windows `winget install Gyan.FFmpeg`, macOS
+`brew install ffmpeg`, Debian/Ubuntu `sudo apt install ffmpeg`). Tell the user about the model license (below)
+before downloading it.
 ```bash
-cd /c/Users/leon/.venvs
-uv venv crisperwhisper --python 3.13
-uv pip install -p crisperwhisper/Scripts/python.exe torch torchaudio --index-url https://download.pytorch.org/whl/cu128
-uv pip install -p crisperwhisper/Scripts/python.exe "crisperwhisper[transformers]"
-crisperwhisper/Scripts/python.exe -c "import torch, crisperwhisper; print(torch.cuda.is_available())"
+VENV="${VEDIT_VENV:-$HOME/.venvs/crisperwhisper}"
+mkdir -p "$(dirname "$VENV")"
+uv venv "$VENV" --python 3.13
+PY="$VENV/Scripts/python.exe"; [ -e "$PY" ] || PY="$VENV/bin/python"
+# NVIDIA GPU (Windows or Linux):
+uv pip install -p "$PY" torch torchaudio --index-url https://download.pytorch.org/whl/cu128
+# No NVIDIA GPU (macOS, or CPU only) - use this line instead of the one above:
+#   uv pip install -p "$PY" torch torchaudio
+uv pip install -p "$PY" "crisperwhisper[transformers]"
+"$PY" -c "import torch, crisperwhisper; print('cuda:', torch.cuda.is_available())"
+# Download the model once (~2.9 GB):
+HF_HUB_OFFLINE=0 "$PY" -c "from huggingface_hub import snapshot_download; snapshot_download('nyralabs/CrisperWhisper2.0_large')"
 ```
-If the model cache is gone too, run any `vedit` command once with `HF_HUB_OFFLINE=0` to download it.
 
 ### Windows pitfalls hit during setup
 - `crisperwhisper[ct2]` (fast CTranslate2 backend with speculative decoding) is **Linux-only** - its custom
@@ -30,7 +42,9 @@ If the model cache is gone too, run any `vedit` command once with `HF_HUB_OFFLIN
 
 ### License note
 The CrisperWhisper 2.0 weights and outputs are under the nyra health Non-Commercial Research License (the
-inference code is MIT). The user was told this and chose to use it; don't raise it again unless asked.
+inference code is MIT). Tell the user once, before the model is downloaded, and let them decide - a monetised
+video may count as commercial use. If the model is already in the cache, that decision has been made; don't raise
+it again unless asked.
 
 ## Why CrisperWhisper (if the user asks)
 - **Resolve's own transcription**: the API can trigger `TranscribeAudio` but only returns a truncated text
@@ -46,7 +60,8 @@ inference code is MIT). The user was told this and chose to use it; don't raise 
   decoding. On the Jev video it found ~20 things Whisper missed and no hallucinations.
 
 ## Model behaviour to know
-- Throughput on the 5090 (transformers backend): model load ~20 s, ~1.2 s per short clip (509 clips ~10 min).
+- Throughput on an RTX 5090 (transformers backend): model load ~20 s, ~1.2 s per short clip (509 clips ~10 min).
+  Smaller GPUs are slower and a CPU much slower - on a CPU, run `transcribe` in the background and tell the user.
 - Transcribe each timeline clip on its own, not the whole timeline in one go - the user's silence cut already
   separates attempts, and per-clip decoding keeps retakes from merging.
 - **Filler timestamps can be compressed**: `[UH]` stamped as 20 ms right before the next word while the real
@@ -85,7 +100,7 @@ checked for repeats and never required to be word-perfect.
 | Symptom | Fix |
 |---|---|
 | `Could not load nyralabs/...` | Cache missing: run once with `HF_HUB_OFFLINE=0`. |
-| `torch.cuda.is_available()` False | Wrong torch wheel - reinstall with the cu128 index. Check `nvidia-smi`. |
+| `torch.cuda.is_available()` False on a machine with an NVIDIA GPU | Wrong torch wheel - reinstall with the cu128 index. Check `nvidia-smi`. |
 | Very slow transcription | Running on CPU; see above. |
 | `items.json missing` | Run `prepare` first with the saved structure file. |
 | prepare warns "separate audio" | Audio track uses another media item; the linked build would use camera audio - see resolve-mcp.md. |
