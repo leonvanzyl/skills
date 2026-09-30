@@ -1,0 +1,293 @@
+{
+ "s1": {
+  "title": "Half the price of Opus?",
+  "cta_keyword": "PROMPT",
+  "lines": [
+   {
+    "id": "L1",
+    "a": 5.2,
+    "b": 12.64,
+    "layout": "split",
+    "cam": "pip",
+    "text": "According to the benchmarks, Sonnet 5.5 gets very similar scores to Opus 5.5, especially on agentic coding tasks."
+   },
+   {
+    "id": "L2",
+    "a": 13.4,
+    "b": 19.52,
+    "layout": "fv",
+    "cam": "pip",
+    "text": "And Sonnet 5.5 is about half the cost of Opus 5.5, and about five times cheaper than Fable."
+   },
+   {
+    "id": "L3",
+    "a": 20.18,
+    "b": 25.12,
+    "layout": "fc",
+    "cam": "fullframe",
+    "pic_min": 20.42,
+    "text": "Now, in my experience, benchmarks can say one thing, but the real-world use case is where it matters."
+   },
+   {
+    "id": "L4",
+    "a": 26.74,
+    "b": 34.88,
+    "layout": "fv",
+    "cam": "none",
+    "text": "I'm going to compare the outputs from both Sonnet 5.5, Opus 5.5 and Fable 5.1 by giving them the exact same prompt."
+   },
+   {
+    "id": "L5",
+    "a": 175.26,
+    "b": 180.62,
+    "layout": "fc",
+    "cam": "pip",
+    "text": "and then we'll have a look at the quality of the games, we'll compare costs and how long it took for each game to complete."
+   },
+   {
+    "id": "L6",
+    "a": 489.96,
+    "b": 492.36,
+    "layout": "fv",
+    "cam": "pip",
+    "text": "So Sonnet 5.5 took about one hour and 20 minutes."
+   },
+   {
+    "id": "L7",
+    "a": 495.46,
+    "b": 500.52,
+    "layout": "fv",
+    "cam": "pip",
+    "switches": [
+     {
+      "t": 498.63,
+      "layout": "split"
+     },
+     {
+      "t": 500.52,
+      "layout": "fv"
+     }
+    ],
+    "text": "The session also costs about 26, which is only like one dollar away from Opus 5.5."
+   },
+   {
+    "id": "L8",
+    "a": 623.06,
+    "b": 628.9,
+    "layout": "fv",
+    "cam": "pip",
+    "text": "I was expecting Sonnet to be a lot cheaper and a lot faster, but it ended up costing the same as Opus 5.5."
+   },
+   {
+    "id": "L9",
+    "a": 122.42,
+    "b": 126.08,
+    "layout": "fc",
+    "cam": "pip",
+    "cta": true,
+    "text": "If you want to try out this prompt yourself, you can download it from the free community."
+   }
+  ],
+  "cover": [
+   "Half the price",
+   "of Opus?"
+  ],
+  "highlights": [
+   "benchmarks",
+   "Sonnet 5.5",
+   "Opus 5.5",
+   "Fable 5.1",
+   "agentic coding",
+   "half",
+   "five times",
+   "real world",
+   "same prompt",
+   "quality",
+   "costs",
+   "20 minutes",
+   "$26",
+   "$1",
+   "cheaper",
+   "faster",
+   "same",
+   "prompt",
+   "free community"
+  ],
+  "music": {
+   "style": "lofi",
+   "mood": "moody"
+  }
+ },
+ "s2": {
+  "title": "Which AI built the best game?",
+  "cta_keyword": "GAMES",
+  "lines": [
+   {
+    "id": "L1",
+    "a": 0.0,
+    "b": 4.2,
+    "layout": "split",
+    "cam": "pip",
+    "text": "I've spent hours playing with Sonnet 5.5 today, and it's a really impressive model."
+   },
+   {
+    "id": "L2",
+    "a": 70.94,
+    "b": 76.48,
+    "layout": "fv",
+    "cam": "pip",
+    "text": "Then let's throw in a prompt like: build a complete, polished 3D adventure mini golf game that runs in the browser."
+   },
+   {
+    "id": "L3",
+    "a": 242.62,
+    "b": 247.04,
+    "layout": "fc",
+    "cam": "pip",
+    "text": "Through the power of editing, you're going to see all three results in three, two, one.",
+    "switches": [
+     {
+      "t": 247.66,
+      "layout": "fv"
+     }
+    ]
+   },
+   {
+    "id": "L4",
+    "a": 256.26,
+    "b": 259.24,
+    "layout": "fv",
+    "cam": "pip",
+    "text": "Fable took about one hour and 40 minutes and this cost about $51."
+   },
+   {
+    "id": "L5",
+    "a": 260.58,
+    "b": 262.38,
+    "layout": "fv",
+    "cam": "pip",
+    "text": "And this is what Fable came up with.",
+    "switches": [
+     {
+      "t": 261.3,
+      "layout": "split"
+     },
+     {
+      "t": 262.5,
+      "layout": "fv"
+     }
+    ]
+   },
+   {
+    "id": "L6",
+    "a": 370.92,
+    "b": 377.98,
+    "layout": "fv",
+    "cam": "pip",
+    "text": "Opus 5.5 took about one hour and 26 minutes and cost about 27 dollars. It's nearly half of what Fable cost."
+   },
+   {
+    "id": "L7",
+    "a": 637.18,
+    "b": 643.46,
+    "layout": "fc",
+    "cam": "pip",
+    "text": "Although Opus also had mistakes in its game, I think it's kind of easy to get it to Fable's level with one or two additional prompts.",
+    "switches": [
+     {
+      "t": 642.24,
+      "layout": "fv"
+     }
+    ]
+   },
+   {
+    "id": "L8",
+    "a": 644.34,
+    "b": 648.14,
+    "layout": "fv",
+    "cam": "pip",
+    "text": "But I do think that Sonnet needs a lot more work to get to the same level as Opus."
+   },
+   {
+    "id": "L9",
+    "a": 360.42,
+    "b": 365.46,
+    "layout": "fc",
+    "cam": "pip",
+    "cta": true,
+    "text": "By the way, if you want to play these games, I'll link to them in the free community along with their source code."
+   }
+  ],
+  "music": {
+   "style": "chillhop",
+   "mood": "warm"
+  }
+ },
+ "s3": {
+  "title": "Get more out of Sonnet 5.5",
+  "cta_keyword": "LABS",
+  "lines": [
+   {
+    "id": "L1",
+    "a": 160.7,
+    "b": 163.36,
+    "layout": "split",
+    "cam": "pip",
+    "text": "Sonnet is really good if you give it very precise instructions."
+   },
+   {
+    "id": "L2",
+    "a": 164.54,
+    "b": 167.72,
+    "layout": "fv",
+    "cam": "pip",
+    "text": "An open-ended prompt like this can be tricky for the model to implement,"
+   },
+   {
+    "id": "L3",
+    "a": 168.04,
+    "b": 173.06,
+    "layout": "fc",
+    "cam": "pip",
+    "text": "but that is perfectly fine. We're trying to push the limits of what is possible with this model.",
+    "switches": [
+     {
+      "t": 172.62,
+      "layout": "fv"
+     }
+    ]
+   },
+   {
+    "id": "L4",
+    "a": 146.99,
+    "b": 154.02,
+    "layout": "fv",
+    "cam": "pip",
+    "text": "And if you don't see Sonnet, all you have to do is update your Claude Code instance, so whether that's a CLI tool or desktop app, and you should see it immediately.",
+    "switches": [
+     {
+      "t": 150.48,
+      "layout": "split"
+     },
+     {
+      "t": 151.96,
+      "layout": "fv"
+     }
+    ]
+   },
+   {
+    "id": "L5",
+    "a": 181.28,
+    "b": 186.32,
+    "layout": "fc",
+    "cam": "pip",
+    "cta": true,
+    "text": "If you would like to take your agentic coding skills to the next level, then consider joining my community Agentic Labs."
+   }
+  ],
+  "music": {
+   "style": "lofi",
+   "mood": "warm"
+  }
+ }
+}
