@@ -25,20 +25,22 @@ Check `project.json`:
 ## 1. Ingest and analysis (all in parallel)
 ```bash
 cd "$W"
-$PY scripts/ingest.py            &   # the ONE decode of the master
+bash scripts/analyze.sh              # ingest -> transcribe / detect_camera / gaze / zoomscan, each started the moment its input exists
+```
+One call, run it in the background while you brief the research subagent. It prints a summary (sync, camera window, pose clusters, framing events, transcript size) and keeps every log in `logs/`. A 15 min 4K master takes about 1.7 min on the reference machine (ingest 60 s, then camera detection, then gaze + zoom scans ~30 s). With several videos, start one `analyze.sh` per work folder at once.
+
+What it runs (the same scripts, which you can still run by hand):
+```bash
+$PY scripts/ingest.py                 # the ONE decode of the master; writes ingest_audio.done, then ingest.done
+$PY scripts/transcribe.py clean16.wav transcript_full.json   # GPU Whisper large-v3, batched, word timestamps (~8 s for 15 min; as soon as ingest_audio.done exists)
+$PY scripts/detect_camera.py          # as soon as ingest.done exists -> LOOK at detect_camera.png
+$PY scripts/gaze.py &  $PY scripts/zoomscan.py &              # both read the proxy + camera window, 8 parallel slices each
 ```
 `ingest.py` writes:
-- `clean48.wav`, `clean16.wav` and `rms10ms.npy`.
-- `proxy1080_10.mp4` and `thumbs/`.
+- `clean48.wav`, `clean16.wav` and `rms10ms.npy`, then the marker `ingest_audio.done`.
+- `proxy1080_10.mp4` and `thumbs/`, then the marker `ingest.done`.
 
 If a clean-audio file exists, ingest cross-correlates it against the camera track (16 kHz mono) and saves `sync` to `project.json`: the offset and the peak. It then writes the clean track already shifted onto video time. If not, it records that the embedded channels line up at zero lag.
-
-The following steps start as soon as their input exists. Don't wait for the whole ingest.
-```bash
-$PY scripts/transcribe.py clean16.wav transcript_full.json &   # GPU Whisper large-v3, batched, word timestamps (~8 s for 15 min; as soon as clean16.wav exists)
-$PY scripts/detect_camera.py                                    # as soon as the proxy exists -> LOOK at detect_camera.png
-$PY scripts/gaze.py &  $PY scripts/zoomscan.py &                # both read the proxy + camera window
-```
 - **`detect_camera.py`:**
   - Sets `camera.mode`: `full` means the frame is the camera; `pip` means a webcam window inside a screen recording.
   - Sets `camera.window` and `camera.safe`, which is the window inset past its border and rounded corners.
@@ -46,7 +48,8 @@ $PY scripts/gaze.py &  $PY scripts/zoomscan.py &                # both read the 
 - **`gaze.py`:**
   - Prints two head-pose clusters: on-lens vs reading.
   - In `pip` mode, it also lists stretches where a finished edit cuts to a full-frame camera shot. Mark lines taken from those with `"cam": "fullframe"`.
-- **`zoomscan.py`:** lists punch-ins and framing jumps baked into the source. Keep every camera run clear of them.
+  - It runs `GAZE_WORKERS` (8) slices of the proxy in parallel, each with its own landmarker warmed up on the second before its slice. If `detect_camera.py` got the window wrong, fix `project.json` and re-run `gaze.py` (under a minute).
+- **`zoomscan.py`:** lists punch-ins and framing jumps baked into the source. Keep every camera run clear of them. Also sliced (`ZOOM_WORKERS`, 8), with identical rows to a sequential pass.
 
 Meanwhile, spawn a research subagent. It fact-checks every figure the speaker says against 2+ sources. It also captures source pages, logos and pricing tables as 2x PNGs into `W/captures/` using a local Playwright, and writes `captures/facts.json`.
 
@@ -75,10 +78,14 @@ Rules for choosing layouts are in `editing-spec.md` sections 3–4. The hook is 
 
 ## 3. Cut
 ```bash
+bash scripts/cut.sh s1               # align_lines -> cut2 -> verify_voice + eyesheet (in parallel); prints the runs, the proof and the sheet name
+```
+What it runs:
+```bash
 $PY scripts/align_lines.py           # silence-bounded re-transcription (4 parallel CUDA workers) + wav2vec2 forced alignment on the GPU -> line_align.json
 $PY scripts/cut2.py                  # onsets / true ends / pause compression / J-cuts / loud-to-loud joins -> <sk>/voice.wav, cut.json (runs + words)
 $PY scripts/verify_voice.py s1 &     # re-transcribe voice.wav (must read word-perfect) + list quiet stretches (joins must be <= 150 ms)
-$PY scripts/eyesheet.py s1 &         # 8 eye crops per line -> s1_eyes.png (LOOK at it)
+$PY scripts/eyesheet.py s1 &         # 8 eye crops per line -> s1_eyes.png (LOOK at it); the stills are grabbed by 12 parallel ffmpeg seeks and cached in eyes/
 ```
 - **Switch points:** a switch snaps to the nearest aligned word start. To place one precisely, check `cut.json` → `lines[].words` and the RMS dips.
 - **Missing word:** if Whisper drops a word, add it by hand at the end of `align_lines.py`. There's a commented example there.
@@ -94,42 +101,55 @@ $PY scripts/eyesheet.py s1 &         # 8 eye crops per line -> s1_eyes.png (LOOK
 3. Each subagent writes its part of `scripts/gfx_<sk>.py`, builds it, renders a 10 fps draft, checks a contact sheet, fixes, then renders at full quality:
    ```bash
    $PY scripts/build_gfx.py s1
-   (cd gfx && npx --yes hyperframes render -c s1_r0.html --fps 10 --quality draft --video-frame-format png --output draft/s1_r0.mp4)
-   $PY scripts/draftsheet.py s1_r0 8          # -> chk/s1_r0_sheet.png
-   bash scripts/render_full.sh s1_r0          # 240 fps + motion blur -> tmix -> gfx/out60/s1_r0.mp4 (run several in parallel)
+   bash scripts/render_draft.sh s1_r0 s1_r3    # 10 fps draft + contact sheet in one call -> gfx/draft/<r>.mp4, chk/<r>_sheet.png (LOOK)
+   bash scripts/render_full.sh s1_r0 s1_r3     # 240 fps + motion blur (lossless PNG frames) -> tmix -> gfx/out60/<r>.mp4
    ```
+   `render_full.sh` takes any number of compositions and throttles itself machine-wide: at most `RENDER_SLOTS` (3) renders at once, `HF_WORKERS` (8) Chrome browsers each, so every subagent can call it freely. An 8 s composition (1,949 frames at 240 fps) takes about 45 s alone (it was 168 s). It prints `done <r> <duration> (<frames> frames ...)` per composition; a `FAILED` line names the log.
+   The old form still works for one-offs: `(cd gfx && npx --yes hyperframes render -c s1_r0.html --fps 10 --quality draft --video-frame-format png --workers 4 --output draft/s1_r0.mp4)` then `$PY scripts/draftsheet.py s1_r0 8`.
 
 **At the same time, in the main agent:**
 ```bash
-$PY scripts/cam_prep.py s1                   # frame-exact camera clips per camera run -> s1/cam/r<i>.mkv + plan.json
-# matte, split runs only (same frames as the card => frame-locked), ALL shorts in one GPU call:
-$PY scripts/matte_gpu.py s1:0,3,5 s2:0,3 s3:0,2 --jobs 4   # u2net_human_seg on onnxruntime-gpu CUDA + speaker-only cleanup
-# (10 split runs / ~3,000 frames: ~70-100 s, vs ~15 min for `hyperframes remove-background`, whose onnxruntime-node build
-#  has no CUDA and silently runs on CPU. matte_gpu.py falls back to that CLI itself if the model isn't cached or CUDA is missing.)
+bash scripts/prep.sh s1 s2                   # cam clips (all runs at once, NVDEC) -> mattes (one GPU call, all shorts) -> captions/CTA events -> split frame checks
 ```
+What it runs:
+```bash
+$PY scripts/cam_prep.py s1 s2                # frame-exact camera clips per camera run, 4 runs at a time -> <sk>/cam/r<i>.mkv + plan.json
+# matte, split runs only (same frames as the card => frame-locked), ALL shorts in one GPU call:
+$PY scripts/matte_gpu.py s1:0,3,5 s2:0,3 --jobs 4   # u2net_human_seg on onnxruntime-gpu CUDA + speaker-only cleanup, 3 frames in flight per run, FFV1 output
+# (matte_gpu.py falls back to `hyperframes remove-background` itself if the model isn't cached or CUDA is missing: ~0.8 s/frame on CPU.)
+$PY scripts/compose.py s1 --events-only      # captions.json + events_extra.json (CTA pop/keys/click), nothing else: audio.py can run now
+$PY scripts/compose.py s1 --runs 0,6 --preview 4.0,40.4     # one full-resolution frame per split run (+ frame 0) -> s1/preview/, chk/s1_splits.png (LOOK)
+```
+The split check needs the split runs' graphics in `gfx/out60/`; `prep.sh` skips it and says so when they aren't rendered yet, so run `prep.sh` again (or the preview line above) once they are.
 
 ## 5. Audio and composite
 ```bash
-$PY scripts/compose.py s1 --preview 0        # writes captions.json + events_extra.json (CTA pop/keys/click); measures split geometry
+bash scripts/finish.sh s1 [NN slug]          # audio.py + every segment in parallel (cached) -> concat -> verify_final -> ../edit/short-NN_<slug>/
+```
+What it runs:
+```bash
 $PY scripts/audio.py s1                      # SFX (graphics events + CTA), riser onto the hook join, music bed, mix -> s1/stems/, s1/mix.wav
-$PY scripts/compose.py s1 --runs 0,6 --preview 3.0,40.0     # spot-check frames of chosen runs only -> s1/preview/
-mkdir -p s1/seg; for i in $(seq 0 <last run>); do $PY scripts/compose.py s1 --runs $i --seg-out s1/seg/run$(printf %02d $i).mp4 & done; wait
+$PY scripts/compose.py s1 --segments --no-concat   # one process per run, all at once; skips runs whose inputs are unchanged; checks every segment's frame count
 $PY scripts/compose.py s1 --concat           # -> s1/final_video.mp4 (stream-copied segments + AAC 48 kHz)
 ```
+Run it only after every `render_full.sh` for the short has printed `done`. The old per-run form still works: `$PY scripts/compose.py s1 --runs 3 --seg-out s1/seg/run03.mp4`.
+
 **Split geometry** (`s1/cam/split_geom.json`) comes from measurements. Delete the file to re-measure.
 - **Webcam window:** one scale for the whole short, so the whole face (hair to chin) fits in the visible card, with the hair about 95 px above the edge. Blurred side strips fill in where needed.
 - **16:9 camera:** exactly the spec's geometry, 1890×1063 at x −405, y 1008.
 
 ## 6. Verify and deliver
+`finish.sh` already ran this and copied the deliverables when given `NN slug`:
 ```bash
-$PY scripts/verify_final.py s1/final_video.mp4 chk/s1_final.png   # streams, loudness, 2 s contact sheet -> LOOK
+$PY scripts/verify_final.py s1/final_video.mp4 chk/s1_final.png   # streams, loudness, 2 s contact sheet (parallel grabs) -> LOOK
 ```
-Copy `final_video.mp4` to `../edit/short-NN_<slug>/final.mp4`, and `s1/stems/` to `stems/`. Write `report.md` (`editing-spec.md` section 8) and update `../edit/PUBLISH.md` (section 8b).
+Otherwise copy `final_video.mp4` to `../edit/short-NN_<slug>/final.mp4`, and `s1/stems/` to `stems/`. Write `report.md` (`editing-spec.md` section 8) and update `../edit/PUBLISH.md` (section 8b).
 
 ## 7. Edits
-Change the smallest thing and re-run only what it touches:
-- **Captions, cover, CTA or camera framing:** re-run step 5 for the affected runs (segments), then `--concat`.
-- **One graphic:** edit `gfx_<sk>.py`, rebuild, run `render_full.sh` for that run, then re-run its compose segment and `--concat`.
-- **Line timing or line choice:** edit `shorts.json`, then run `align_lines.py` (for new lines only) and `cut2.py`. Graphics whose runs moved need re-rendering; re-composite everything after the change.
-- **Music or SFX levels:** `audio.py`, then `--concat` (seconds).
+Change the smallest thing and re-run only what it touches. `finish.sh` re-renders only the segments whose inputs changed (it prints which), so after any of these the last step is always `bash scripts/finish.sh s1 NN slug`:
+- **Captions, cover or CTA:** edit `shorts.json` (highlights, cover, keyword), then `finish.sh`. Only the runs whose captions changed are re-rendered.
+- **Camera framing (split):** delete `s1/cam/split_geom.json`, then `finish.sh` (the split segments re-render).
+- **One graphic:** edit `gfx_<sk>.py`, rebuild, `render_full.sh` for that run, then `finish.sh` (that run's segment only).
+- **Line timing or line choice:** edit `shorts.json`, then `cut.sh` (align_lines re-transcribes every line; it's fast), `prep.sh` (the camera clips and mattes of the runs that moved; mattes are cached per run file), re-render the graphics whose runs moved, then `finish.sh`.
+- **Music or SFX levels:** `finish.sh` (audio.py + concat, seconds; no segment is touched).
 - **Title or description:** edit `PUBLISH.md` only.

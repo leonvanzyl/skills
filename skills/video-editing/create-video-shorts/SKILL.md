@@ -28,27 +28,20 @@ Where the user's request differs from the spec, the user wins. Speed comes from 
 ## Workflow
 Detailed commands are in `references/pipeline.md`. `SKILL` is this skill's folder, and each video gets a work folder `work-<stem>/` where every script runs.
 
+Each stage is one shell call that runs its scripts with the right dependencies and all the parallelism the machine has, so you spend your turns on judgement (the plan, the checks, the graphics), not on babysitting jobs. Run the long ones in the background and keep working.
+
 1. **Setup (about 15 s once cached):** `bash SKILL/scripts/setup.sh <folder>`. It creates `.venv`, `edit/` and one `work-<stem>/` per video, containing the scripts, graphics engine, fonts, face model and `project.json`. It needs ffmpeg, Node 22+ and uv.
-2. **Ingest and analyse, all at once.** `scripts/ingest.py` is the only full decode of the master. It writes the audio, the RMS map, a 10 fps proxy and thumbnails, and handles clean-audio sync. As soon as each input exists, run these in the background:
-   - `transcribe.py` (GPU Whisper)
-   - `detect_camera.py`, then look at `detect_camera.png`
-   - `gaze.py` and `zoomscan.py`
-   - a **research subagent** that fact-checks every figure against 2+ sources and captures the source pages
-   With several videos, run their ingests concurrently too.
+2. **Ingest and analyse, all at once:** `bash scripts/analyze.sh` (in the background) runs the one full decode of the master, then transcription, camera detection, gaze and zoom scans, each the moment its input exists (about 1.7 min for a 15 min 4K master). Meanwhile brief the **research subagent** that fact-checks every figure against 2+ sources and captures the source pages. When it returns, look at `detect_camera.png` and fix `project.json` if the window is wrong (then re-run `gaze.py`, under a minute). With several videos, start one `analyze.sh` per work folder at once.
 3. **Plan once.** Pick the lines and check eye contact with `eyesheet.py`. Write `shorts.json`, following `examples/plan_example_shorts.json`: the lines, layouts, word-level camera switches, cover, CTA keyword, caption highlights and a `music` style and mood that fit the topic (lofi by default; never the same track twice). Then write the run plan tiling [0, END].
-4. **Cut:** `align_lines.py`, then `cut2.py`, then `verify_voice.py` (the track must read word-perfect with no join over 150 ms) and `eyesheet.py <sk>`. Iterate; it's fast.
+4. **Cut:** `bash scripts/cut.sh s1` runs `align_lines.py`, `cut2.py`, then `verify_voice.py` (the track must read word-perfect with no join over 150 ms) and `eyesheet.py` in parallel, and prints the runs, the proof and the eye sheet to look at. Iterate; it's fast.
 5. **Fan out in parallel:**
-   - **Graphics:** one subagent per composition, following `references/graphics.md` and `examples/gfx_s1.py`. Each builds its composition, renders a 10 fps draft, checks a contact sheet, fixes, then renders at 240 fps with motion blur.
-   - **Main agent, meanwhile:**
-     - `cam_prep.py` (frame-exact camera clips)
-     - the matte for split runs, all shorts in one GPU call (`scripts/matte_gpu.py s1:0,3 s2:0 --jobs 4`)
-     - `compose.py --preview 0` (captions, cover and CTA events)
-     - `audio.py` (SFX, riser, music, stems, mix)
-6. **Composite:** render one `compose.py --runs i --seg-out …` process per run, in parallel, then `--concat`. Verify with `verify_final.py` and look at the contact sheet and a full-resolution frame of every split.
+   - **Graphics:** one subagent per composition, following `references/graphics.md` and `examples/gfx_s1.py`. Each builds its composition, renders a 10 fps draft with `render_draft.sh` (draft + contact sheet in one call), fixes, then renders at 240 fps with motion blur with `render_full.sh`, which throttles itself machine-wide (3 renders x 8 Chrome browsers at a time) so any number of subagents can call it at once.
+   - **Main agent, meanwhile:** `bash scripts/prep.sh s1 [s2 ...]`: frame-exact camera clips (all runs in parallel, NVDEC), the mattes for every split run of every short in one GPU call, the captions and CTA events, and a full-resolution frame of every split run whose graphic is already rendered (`chk/<sk>_splits.png`; run `prep.sh` again once the rest are).
+6. **Finish:** once every `render_full.sh` for the short has printed `done`, `bash scripts/finish.sh s1 NN slug`: audio (SFX, riser, music, stems, mix) and every compose segment in parallel, the frame-count check, the concat, `verify_final.py`, and the copy into `edit/short-NN_<slug>/`. Look at `chk/s1_final.png` and the split frames.
 7. **Deliver:**
    - `edit/short-NN_<slug>/`: `final.mp4`, `stems/` (voice, sfx, riser, music) and `report.md` (spec section 8)
    - `edit/PUBLISH.md`: one section per short, with the SEO title, a one-to-two-line description and the two community links exactly as written in spec section 8b
-8. **Edits** are incremental: re-run only the stage a change touches (see `references/pipeline.md` §7). A caption, framing or audio fix takes minutes, not a re-render of everything.
+8. **Edits** are incremental: change the smallest thing and re-run its stage; `finish.sh` re-renders only the segments whose inputs changed (see `references/pipeline.md` §7). A caption, framing or audio fix takes under a minute, not a re-render of everything.
 
 ## Things that are easy to get wrong
 Read `references/lessons.md` before improvising. The biggest ones:
@@ -59,7 +52,7 @@ Read `references/lessons.md` before improvising. The biggest ones:
 - **Checking:** check drafts, contact sheets and one full-resolution frame per split before any full render.
 
 ## Files
-- `scripts/`: the pipeline, all run inside `work-<stem>/`. Per-video values live in `project.json` (`config.py`), never in code.
+- `scripts/`: the pipeline, all run inside `work-<stem>/`. Per-video values live in `project.json` (`config.py`), never in code. The stage scripts `analyze.sh`, `cut.sh`, `prep.sh`, `finish.sh`, `render_draft.sh` and `render_full.sh` chain the Python scripts with their dependencies and parallelism; every Python script still runs on its own for an incremental edit (`references/pipeline.md`).
 - `assets/gfx/`: `engine.js` (the world camera, depth of field, motion blur, captures), GSAP and the HyperFrames project files.
 - `assets/fonts/`: Poppins and Instrument Serif. `assets/models/`: the face landmarker.
 - `examples/`: a complete worked short, "Half the price of Opus?":

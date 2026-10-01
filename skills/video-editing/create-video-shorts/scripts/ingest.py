@@ -7,6 +7,8 @@ import subprocess, os, sys, numpy as np, soundfile as sf
 sys.path.insert(0, 'scripts'); import config as C
 
 os.makedirs('thumbs', exist_ok=True)
+for f in ('ingest_audio.done', 'ingest.done'):          # stage markers: analyze.sh starts transcription / camera detection on them
+    if os.path.exists(f): os.remove(f)
 hw = ['-hwaccel', 'cuda'] if subprocess.run(['ffmpeg', '-v', 'error', '-hwaccels'], capture_output=True, text=True).stdout.find('cuda') >= 0 else []
 clean = C.get('clean_audio')
 # The decode of a 4K master is bound by ONE hardware decoder session (~340 fps on an RTX 5090, whatever the filters or
@@ -57,6 +59,7 @@ x, sr = sf.read('clean48.wav'); m = x.mean(1) if x.ndim > 1 else x
 hop = sr // 100; n = len(m) // hop
 db = 20 * np.log10(np.sqrt((m[:n * hop].reshape(n, hop) ** 2).mean(1) + 1e-12))
 np.save('rms10ms.npy', db.astype(np.float32))
+open('ingest_audio.done', 'w').write('clean48.wav clean16.wav rms10ms.npy\n')   # transcription can start now
 for v in vids: v.wait()
 if N_SLICES == 1:
     os.replace('_proxy_part0.mp4', C.PROXY)
@@ -65,4 +68,5 @@ else:
     subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', '_proxy_parts.txt', '-c', 'copy', C.PROXY], check=True)
     for k in range(N_SLICES): os.remove(f'_proxy_part{k}.mp4')
     os.remove('_proxy_parts.txt')
+open('ingest.done', 'w').write(C.PROXY + ' thumbs/\n')
 print('ingest done: clean48.wav clean16.wav rms10ms.npy', C.PROXY, 'thumbs/', '(gpu decode)' if hw else '(cpu decode)')

@@ -1,12 +1,19 @@
 """Final compositor for one short: layouts (full cam / split / full visual), camera card + matted head,
 captions, CTA comment box, cover (frame 0). Writes <sk>/final_video.mp4 (video+mix) and caption/CTA metadata.
-usage: python compose.py s1 [--preview t1,t2,...]"""
+usage: python compose.py s1 --events-only            captions.json + events_extra.json only (audio.py can start)
+       python compose.py s1 --preview t1,t2,...      full-resolution frames -> <sk>/preview/ (add --runs i,j to decode only those)
+       python compose.py s1 --runs i --seg-out f.mp4 one run as a video segment (one process per run)
+       python compose.py s1 --segments [--jobs N] [--no-concat] [--force]
+                                                    every run as its own process in parallel, cached by its inputs (a run whose
+                                                    graphic, camera clip, matte, captions and code are unchanged is skipped),
+                                                    frame counts verified, then --concat
+       python compose.py s1 --concat                stream-copy the segments + the mix -> <sk>/final_video.mp4"""
 import json, sys, os, subprocess, re, numpy as np, cv2
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 sk = sys.argv[1]
 PREVIEW = None
-ONLY = None; SEG_OUT = None; CONCAT = '--concat' in sys.argv
+ONLY = None; SEG_OUT = None; CONCAT = '--concat' in sys.argv; SEGMENTS = '--segments' in sys.argv
 if '--runs' in sys.argv: ONLY = [int(x) for x in sys.argv[sys.argv.index('--runs') + 1].split(',')]
 if '--seg-out' in sys.argv: SEG_OUT = sys.argv[sys.argv.index('--seg-out') + 1]
 if CONCAT: ONLY = []
@@ -121,18 +128,25 @@ def shadow_from(mask):
 CARD = dict(x=-65, y=1200, w=1210, h=864, r=200)
 CM = squircle_mask(CARD['x'], CARD['y'], CARD['w'], CARD['h'], CARD['r'])
 CSH = shadow_from(CM) * (1 - CM)
+# constants of the split blend, computed once (same float32 expressions as the per-frame form they replace)
+SHADE = 1 - CSH[..., None] * (1 - np.array([24, 24, 32], np.float32) / 255)      # card shadow multiplier
+CM3 = CM[..., None]; CM3I = 1 - CM3
+Y_CARD = int(np.argmax((CM.max(1) > 0) | (CSH.max(1) > 0)))                     # first row the card or its shadow touches
 SCALE_SPLIT = 1.35      # set per short by split_geometry(): webcam = whole face (hair ~1105 .. chin <= ~1895) fits the visible card;
                         # 16:9 camera frame = the spec geometry (1890x1063 at x -405, y 1008)
 HAIR_Y, CHIN_Y = 1105, 1895
 RAMP = np.ones(Hc, np.float32); RAMP[1200:1240] = np.linspace(1, 0, 40); RAMP[1240:] = 0
 
 # ---------------------------------------------------------------- readers
-def reader(path, pix='rgb24', ch=3, size=None):
+def reader(path, pix='rgb24', ch=3, size=None, start=None, count=None):
+    """decoded frames of a stream; start/count seek frame-exactly to frame `start` of these 60 fps CFR streams (previews)"""
     if size is None:
         o = subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height', '-of', 'csv=p=0', path], capture_output=True, text=True).stdout.strip().split(',')
         size = (int(o[0]), int(o[1]))
     w, h = size
-    p = subprocess.Popen(['ffmpeg', '-v', 'error', '-i', path, '-f', 'rawvideo', '-pix_fmt', pix, '-'], stdout=subprocess.PIPE, bufsize=10 ** 8)
+    pre = ['-ss', f'{(start - 0.5) / FPS:.6f}'] if start else []     # half a frame early: lands on frame `start` whatever the container's timestamp rounding
+    post = ['-frames:v', str(count)] if count else []
+    p = subprocess.Popen(['ffmpeg', '-v', 'error'] + pre + ['-i', path] + post + ['-f', 'rawvideo', '-pix_fmt', pix, '-'], stdout=subprocess.PIPE)
     n = w * h * ch
     while True:
         b = p.stdout.read(n)
@@ -173,10 +187,14 @@ def split_frame(bg, fr, al, yf):
     foot[ys0:ys1, xs0:xs1] = big[ys0 - yf:ys1 - yf, xs0 - xf:xs1 - xf] * wgt + foot[ys0:ys1, xs0:xs1] * (1 - wgt)
     alpha[ys0:ys1, xs0:xs1] = A[ys0 - yf:ys1 - yf, xs0 - xf:xs1 - xf] * SIDE_W[xs0 - xf:xs1 - xf][None, :]
     out = bg.astype(np.float32)
-    out *= (1 - CSH[..., None] * (1 - np.array([24, 24, 32], np.float32) / 255))
-    out = out * (1 - CM[..., None]) + foot * CM[..., None]
-    Ah = alpha * RAMP[:, None]
-    out = out * (1 - Ah[..., None]) + foot * Ah[..., None]
+    # above the card, its shadow and the head nothing changes (shade 1, card 0, alpha 0), so the blend runs on the rows below y only:
+    # the same three float32 expressions as before, on fewer pixels, identical output
+    y = max(0, min(Y_CARD, ys0))
+    o = out[y:]
+    o *= SHADE[y:]
+    o[:] = o * CM3I[y:] + foot[y:] * CM3[y:]
+    Ah = alpha[y:] * RAMP[y:, None]
+    o[:] = o * (1 - Ah[..., None]) + foot[y:] * Ah[..., None]
     return out
 
 def hair_top(matte_path, size):
@@ -204,10 +222,13 @@ def split_geometry():
     """one scale for every split run of the short (cached): whole face visible, hair popping ~95 px above the card"""
     gf = f'{sk}/cam/split_geom.json'
     runs = sorted(int(ri) for ri, p in CAM.items() if p['layout'] == 'split')
+    # the cache is keyed by the clips it was measured on (a re-cut that keeps the same run indices still re-measures)
+    src = {str(ri): [(f, os.path.getsize(f), int(os.path.getmtime(f) * 1000)) if os.path.exists(f) else (f, None, None)
+                     for f in (CAM[str(ri)]['file'], f'{sk}/cam/r{ri}_matte.mov')] for ri in runs}
     if os.path.exists(gf):
         g = json.load(open(gf))
-        if g.get('runs') == runs: return g
-    g = dict(runs=runs, per_run={})
+        if g.get('runs') == runs and g.get('src') == json.loads(json.dumps(src)): return g
+    g = dict(runs=runs, src=src, per_run={})
     kinds = {CAM[str(ri)].get('kind', 'pip') for ri in runs}
     if kinds == {'frame'}:
         g.update(scale=1890 / 1920)
@@ -216,7 +237,11 @@ def split_geometry():
         scales = []
         for ri in runs:
             p = CAM[str(ri)]; size = p.get('size', [680, 924])
-            med, mn = hair_top(f'{sk}/cam/r{ri}_matte.mov', size); cm = chin_max(p['file'], size)
+            try:
+                med, mn = hair_top(f'{sk}/cam/r{ri}_matte.mov', size); cm = chin_max(p['file'], size)
+            except ValueError:
+                raise SystemExit(f'{sk} run {ri} (split): no head found in its matte. The camera is probably hidden in that part of the '
+                                 f'source (check {sk}_eyes.png / gaze.py); a split run needs the speaker on camera. Fix shorts.json and re-cut.')
             scales.append((CHIN_Y - HAIR_Y) / max(1, cm - med))
             g['per_run'][str(ri)] = dict(hair_med=med, hair_min=mn, chin_max=cm)
         g['scale'] = float(np.floor(min(min(scales), 2.2) * 100) / 100)
@@ -227,11 +252,26 @@ def split_geometry():
 
 # ---------------------------------------------------------------- CTA comment box
 CTA_BOX = (43, 1344, 994, 276)
+CTA_CACHE = {}
 def cta_render(t_rel, spec):
-    """returns RGBA (Hc x Wc) numpy or None"""
-    x0, y0, bw, bh = CTA_BOX
-    land = min(1, max(0, (t_rel - spec['land']) / 0.5)); e = 1 - (1 - land) ** 3
+    """returns RGBA (Hc x Wc) numpy or None. The drawing is a pure function of (landing progress, typed chars, posted,
+    caret blink, press squash, button colour); frames with the same state reuse the same canvas (the three shadow blurs at 2x
+    are the cost), so the outro renders ~60 distinct boxes instead of one per frame. Pixel-identical by construction."""
+    land = min(1, max(0, (t_rel - spec['land']) / 0.5))
     if land <= 0: return None
+    n = int(max(0, min(len(spec['kw']), (t_rel - spec['type0']) * spec['cps'] + 1e-6))) if t_rel >= spec['type0'] else 0
+    posted = t_rel >= spec['press'] + 0.12
+    blink = (int((t_rel - spec['type0']) * 2.2) % 2 == 0) if t_rel > spec['type0'] + len(spec['kw']) / spec['cps'] else True
+    pp = (t_rel - spec['press']) / 0.24
+    sc = 1 - 0.08 * np.sin(np.pi * pp) if 0 <= pp <= 1 else 1
+    col = CLAY_T if 0 <= pp <= 1 else CLAY
+    key = (land, n, posted, blink, float(sc), col)
+    if key not in CTA_CACHE: CTA_CACHE[key] = _cta_draw(land, n, posted, blink, sc, col, spec)
+    return CTA_CACHE[key]
+
+def _cta_draw(land, n, posted, blink, sc, col, spec):
+    x0, y0, bw, bh = CTA_BOX
+    e = 1 - (1 - land) ** 3
     ss = 2
     im = Image.new('RGBA', (bw * ss + 400, bh * ss + 400), (0, 0, 0, 0))
     ox, oy = 200, 200
@@ -255,19 +295,13 @@ def cta_render(t_rel, spec):
     fx0, fx1 = cx + rr + 26 * ss, ox + bw * ss - 250 * ss
     fy0, fy1 = cy - 58 * ss, cy + 58 * ss
     d.rounded_rectangle((fx0, fy0, fx1, fy1), 58 * ss, fill=(244, 244, 241, 255))
-    n = int(max(0, min(len(spec['kw']), (t_rel - spec['type0']) * spec['cps'] + 1e-6))) if t_rel >= spec['type0'] else 0
     txt = spec['kw'][:n]
     ft = ImageFont.truetype(F + 'Poppins-Bold.ttf', 52 * ss)
     tx = fx0 + 36 * ss; tw = d.textlength(txt, font=ft)
     d.text((tx, cy), txt, font=ft, fill=INK + (255,), anchor='lm')
-    posted = t_rel >= spec['press'] + 0.12
-    blink = (int((t_rel - spec['type0']) * 2.2) % 2 == 0) if t_rel > spec['type0'] + len(spec['kw']) / spec['cps'] else True
     if not posted and blink:
         d.rounded_rectangle((tx + tw + 6 * ss, cy - 32 * ss, tx + tw + 12 * ss, cy + 32 * ss), 3 * ss, fill=CLAY + (255,))
     # Post button (press = quick squash + darker clay)
-    pp = (t_rel - spec['press']) / 0.24
-    sc = 1 - 0.08 * np.sin(np.pi * pp) if 0 <= pp <= 1 else 1
-    col = CLAY_T if 0 <= pp <= 1 else CLAY
     bxc, byc = ox + bw * ss - 40 * ss - 95 * ss, cy
     hw, hh = 95 * ss * sc, 50 * ss * sc
     d.rounded_rectangle((bxc - hw, byc - hh, bxc + hw, byc + hh), hh, fill=col + (255,))
@@ -303,9 +337,20 @@ def cover_rgba(title_lines):
         d.text((Wc / 2, by0 + lh * (j + 0.5)), l, font=ft, fill=(0, 0, 0, 255), anchor='mm')
     return np.asarray(im).astype(np.float32)
 
+_BBOX = {}
 def over(dst, rgba, y=None):
-    a = rgba[..., 3:4] / 255.0
-    dst[:] = dst * (1 - a) + rgba[..., :3] * a
+    """alpha-over an RGBA float canvas onto dst, touching only the rows/cols where its alpha is non-zero (elsewhere the
+    blend is dst*1 + rgb*0 = dst exactly). The bounding box is cached per canvas object (the CTA canvases are memoised)."""
+    key = id(rgba)
+    box = _BBOX.get(key)
+    if box is None or box[0] is not rgba:
+        rows = np.where(rgba[..., 3].any(1))[0]; cols = np.where(rgba[..., 3].any(0))[0]
+        box = (rgba, (rows[0], rows[-1] + 1, cols[0], cols[-1] + 1) if len(rows) else None); _BBOX[key] = box
+    if box[1] is None: return
+    y0, y1, x0, x1 = box[1]
+    a = rgba[y0:y1, x0:x1, 3:4] / 255.0
+    sub = dst[y0:y1, x0:x1]
+    sub[:] = sub * (1 - a) + rgba[y0:y1, x0:x1, :3] * a
 
 # ---------------------------------------------------------------- main loop
 chunks = build_chunks()
@@ -323,6 +368,8 @@ extra = [dict(t=last['T0'] + spec['land'], type='pop')]
 extra += [dict(t=last['T0'] + spec['type0'] + k / spec['cps'], type='key') for k in range(len(kw))]
 extra += [dict(t=last['T0'] + spec['press'], type='click')]
 json.dump(extra, open(f'{sk}/events_extra.json', 'w'), indent=1)
+if '--events-only' in sys.argv:
+    print(f'{sk}: {len(chunks)} caption chunks -> {sk}/captions.json; {len(extra)} CTA events -> {sk}/events_extra.json'); sys.exit(0)
 
 yf = {}
 if any(p['layout'] == 'split' for p in CAM.values()) and not CONCAT:
@@ -340,6 +387,22 @@ def frames():
         n0, n1 = round(r['T0'] * FPS), round(r['T1'] * FPS)
         need = lambda n: want is None or n in want
         if want is not None and not any(need(n) for n in range(n0, n1)): continue
+        if want is not None:
+            # preview: seek each stream straight to the wanted frames instead of decoding the run from its start (same frame
+            # data, same composite); a spot-check takes seconds instead of the whole run's decode
+            gfx = f'gfx/out60/{sk}_r{r["i"]}.mp4'; cam = CAM.get(str(r['i']), {})
+            for n in sorted(x for x in want if n0 <= x < n1):
+                k = n - n0
+                if r['layout'] == 'fv':
+                    yield n, r, next(reader(gfx, start=k, count=1)).astype(np.float32)
+                elif r['layout'] == 'fc':
+                    fr = next(reader(cam['file'], 'rgb24', 3, start=k, count=1))
+                    yield n, r, (fr if cam.get('kind', cam.get('cam')) in ('slice', 'cam4k') else pip_fullcam(fr)).astype(np.float32)
+                else:
+                    bg = next(reader(gfx, start=k, count=1)); fr = next(reader(cam['file'], 'rgb24', 3, start=k, count=1))
+                    ma = next(reader(f'{sk}/cam/r{r["i"]}_matte.mov', 'rgba', 4, tuple(cam.get('size', [680, 924])), start=k, count=1))
+                    yield n, r, split_frame(bg, fr, ma[..., 3], yf[r['i']])
+            continue
         if r['layout'] == 'fv':
             g = reader(f'gfx/out60/{sk}_r{r["i"]}.mp4')
             for n in range(n0, n1):
@@ -360,12 +423,71 @@ def frames():
 want = None if PREVIEW is None else {int(round(t * FPS)) for t in PREVIEW}
 VENC = ['-vf', 'scale=out_color_matrix=bt709:out_range=tv,format=yuv420p', '-c:v', 'libx264', '-preset', 'slow', '-crf', '14', '-profile:v', 'high',
         '-r', str(FPS), '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709']
-if CONCAT:
+
+def concat():
     segs = [f'{sk}/seg/run{r["i"]:02d}.mp4' for r in RUNS]
     open(f'{sk}/seg/list.txt', 'w').write(''.join("file '" + os.path.basename(p) + "'\n" for p in segs))
     subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', f'{sk}/seg/list.txt', '-i', f'{sk}/mix.wav', '-map', '0:v', '-map', '1:a',
                     '-c:v', 'copy', '-c:a', 'aac', '-b:a', '320k', '-ar', '48000', '-ac', '2', '-movflags', '+faststart', f'{sk}/final_video.mp4'], check=True)
-    print('concatenated', len(segs), 'segments'); sys.exit(0)
+    print('concatenated', len(segs), 'segments ->', f'{sk}/final_video.mp4')
+
+if CONCAT:
+    concat(); sys.exit(0)
+
+# ---------------------------------------------------------------- parallel, cached segments
+def seg_inputs(r):
+    """everything a run's segment depends on: its inputs (path, size, mtime), its captions, the CTA/cover, this code"""
+    i = r['i']; files = []
+    if r['layout'] in ('fv', 'split'): files.append(f'gfx/out60/{sk}_r{i}.mp4')
+    if r['layout'] in ('fc', 'split'): files.append(CAM[str(i)]['file'])
+    if r['layout'] == 'split': files += [f'{sk}/cam/r{i}_matte.mov', f'{sk}/cam/split_geom.json']
+    fst = [(f, os.path.getsize(f), int(os.path.getmtime(f) * 1000)) if os.path.exists(f) else (f, None, None) for f in files]
+    caps = [dict(text=c['text'], hl=c['hl'], t0=round(c['t0'], 4), t1=round(c['t1'], 4)) for c in chunks if c['t1'] > r['T0'] and c['t0'] < r['T1']]
+    key = dict(run=r, files=fst, caps=caps, cam=CAM[str(i)] if str(i) in CAM else None, scale=SCALE_SPLIT, yf=yf.get(i),
+               cta=spec if r is last else None, cover=title if i == 0 else None, code=CODE_HASH, venc=VENC)
+    return json.dumps(key, sort_keys=True, default=str), [f for f, s, m in fst if s is None]
+
+if SEGMENTS:
+    import hashlib, time
+    CODE_HASH = hashlib.md5(open(__file__, 'rb').read()).hexdigest()
+    jobs = int(sys.argv[sys.argv.index('--jobs') + 1]) if '--jobs' in sys.argv else len(RUNS)
+    force = '--force' in sys.argv
+    os.makedirs(f'{sk}/seg', exist_ok=True)
+    todo, kept, missing = [], [], []
+    for r in RUNS:
+        key, miss = seg_inputs(r)
+        if miss: missing += miss
+        out = f'{sk}/seg/run{r["i"]:02d}.mp4'; kf = out[:-4] + '.key'
+        if not force and os.path.exists(out) and os.path.getsize(out) > 0 and os.path.exists(kf) and open(kf).read() == key:
+            kept.append(r['i']); continue
+        todo.append((r, out, kf, key))
+    if missing: raise SystemExit('missing inputs: ' + ', '.join(sorted(set(missing))) + '  (render the graphics / cam_prep / matte first)')
+    print(f'{sk}: {len(todo)} segment(s) to render {[r["i"] for r, *_ in todo]}, {len(kept)} unchanged {kept}, {min(jobs, len(todo)) if todo else 0} at a time', flush=True)
+    t0 = time.time(); procs = []; pending = list(todo); failed = []
+    while pending or procs:
+        while pending and len(procs) < jobs:
+            r, out, kf, key = pending.pop(0)
+            if os.path.exists(kf): os.remove(kf)
+            p = subprocess.Popen([sys.executable, __file__, sk, '--runs', str(r['i']), '--seg-out', out]); procs.append((p, r, out, kf, key))
+        time.sleep(0.5)
+        for item in procs[:]:
+            p, r, out, kf, key = item
+            if p.poll() is None: continue
+            procs.remove(item)
+            if p.returncode != 0: failed.append(r['i']); continue
+            open(kf, 'w').write(key)
+    # every segment must hold exactly its run's frames (a graphic re-rendering underneath a composite yields a short segment)
+    bad = []
+    for r in RUNS:
+        out = f'{sk}/seg/run{r["i"]:02d}.mp4'
+        n = subprocess.run(['ffprobe', '-v', 'error', '-count_frames', '-select_streams', 'v:0', '-show_entries', 'stream=nb_read_frames', '-of', 'csv=p=0', out],
+                           capture_output=True, text=True).stdout.strip()
+        want_n = round(r['T1'] * FPS) - round(r['T0'] * FPS)
+        if not n.isdigit() or int(n) != want_n: bad.append((r['i'], n, want_n))
+    print(f'{sk}: segments done in {time.time() - t0:.0f}s' + (f'; FAILED runs {failed}' if failed else '') + (f'; FRAME COUNT MISMATCH (run, got, want): {bad}' if bad else ''), flush=True)
+    if failed or bad: sys.exit(1)
+    if '--no-concat' not in sys.argv: concat()
+    sys.exit(0)
 if PREVIEW is None:
     if SEG_OUT:
         enc = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{Wc}x{Hc}', '-r', str(FPS), '-i', '-'] + VENC + [SEG_OUT], stdin=subprocess.PIPE)
@@ -390,7 +512,7 @@ for n, r, img in frames():
         ov = cta_render(t - r['T0'], spec)
         if ov is not None: over(img, ov)
     if n == 0: over(img, COVER)
-    out = np.clip(img + 0.5, 0, 255).astype(np.uint8)
+    np.add(img, 0.5, out=img); np.clip(img, 0, 255, out=img); out = img.astype(np.uint8)   # in place: same values, no temporaries
     if want is not None:
         Image.fromarray(out).save(f'{sk}/preview/f_{t:07.3f}.png')
     else:

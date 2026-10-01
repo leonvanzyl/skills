@@ -94,7 +94,9 @@ for sk,sv in S.items():
                 p['a_in']=max(p['src0']-0.04, p['src0']-(p['fl']-p['src0'])) if False else p['src0']-0.04
             else:
                 p['a_in']=p['src0']
-        off=round(off*FPS)/FPS; p['off']=off
+        # snap to the 60 fps grid; the first piece rounds UP so its 40 ms lead-in never lands before T=0 (a negative start
+        # emptied the audio slice and crashed when src0 was not frame-aligned)
+        off=(np.ceil(off*FPS-1e-9) if p_i==0 else round(off*FPS))/FPS; p['off']=off
         p['T_on']=p['src0']+off; p['T_in']=p['a_in']+off; p['T_end']=p['src1']+off
         p['T_fl']=p['fl']+off; p['T_ll']=p['ll']+off
         tl.append(p)
