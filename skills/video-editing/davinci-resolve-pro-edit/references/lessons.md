@@ -33,7 +33,34 @@
   at rest is bit-identical to V1, so the cut in is invisible. ffmpeg's default YUV->RGB is bt601: never use it for
   footage that sits next to V1.
 - **Windows pipes:** a default subprocess pipe moved raw 4K frames at 4 fps; a 64 MB pipe (`_winapi.CreatePipe`)
-  did 16x better. Measure the pipe before blaming the encoder.
+  did 16x better. Measure the pipe before blaming the encoder. The shorts skill found the other half of the story:
+  Python's *buffered* reader is the slow part (`bufsize=10**8` read at 130 MB/s, the default or an unbuffered
+  `readinto` at 1.6 GB/s). `media.py` reads unbuffered; never add `bufsize=` to a frame pipe.
+- **HyperFrames workers are tabs of one Chrome by default** (`PRODUCER_ENABLE_BROWSER_POOL=true`), and that browser's
+  single GPU process encodes every screenshot: more `--workers` barely helps. `render_gfx.sh` exports
+  `PRODUCER_ENABLE_BROWSER_POOL=false` (one Chrome per worker) and captures lossless PNG frames
+  (`--format png-sequence`); the MP4 path captures JPEG at quality 95, which measured 48.6 dB against the lossless
+  frame on the cubefarm g03 beat (no right-edge strip at 3840 px, unlike the shorts' 1080 px). At 4K the PNG encode
+  inside each Chrome is the cost: 8 workers captured g03 (1,349 frames) in 70 s, 12 in 62 s, 16 in 80 s, so 12 is
+  the default and the script throttles to RENDER_SLOTS x HF_WORKERS browsers machine-wide. The old MP4 path took
+  88 s in total and JPEG capture with 16 separate browsers 100 s: lossless is also fastest. The tmix output is NVENC
+  lossless when an NVIDIA encoder exists (11 s vs 16 s for x264 crf 10 slow on g03, zero generation loss, same
+  decode speed).
+- **The matte on the GPU:** `hyperframes remove-background --device cuda` can't use CUDA on Windows (its
+  onnxruntime-node build lacks it) and runs the CPU at 2-3 fps. `matte_gpu.py` runs the same cached u2net model on
+  onnxruntime-gpu with the shorts' speaker-only cleanup (a horizontal opening drops thin strips that touch the
+  head, then the largest blob is kept - the guitar-headstock case from the first test), lossless FFV1 out.
+  `compose.py --matte` uses it and falls back to the CLI by itself.
+- **Frames are pure functions of a small state.** The keyword pop and CTA overlays are drawn once per distinct
+  state (landing progress, typed characters, caret, press) and written into a persistent transparent 4K frame as
+  their own box; the split blend runs only on the columns right of the card's shadow. Both are pixel-identical to
+  the per-frame code they replaced. Previews seek straight to the wanted frames instead of decoding the beat up to
+  them - except the source footage, which `media.decode_at` decodes from the start of its contiguous run: a time
+  seek to a single frame of an OBS recording (millisecond timestamps) lands one frame late, so a seeked still is
+  not the frame the render uses. (`look.py` and `assets.py still` keep the direct seek: they are for looking and
+  for assets, not frame-locked.) The PiP inpaint patch of a zoom is made from the beat's first zoomed frame of the
+  V1 item, in renders and previews alike; with one process per beat, two beats on the same item no longer share
+  whichever patch came first.
 - **NVENC for intermediates:** Resolve re-encodes on delivery, so zoom and graphic clips use NVENC (cq 15) when
   available. x264 `-preset fast -crf 12` is the fallback.
 - **GPU decode per seek is slower:** one CUDA context per short seek (scene sampling) cost more than it saved. Use

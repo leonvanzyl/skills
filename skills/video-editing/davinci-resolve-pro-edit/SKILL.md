@@ -29,9 +29,9 @@ recordings that switch between a full-frame camera and a screen with a webcam Pi
 |---|---|
 | DaVinci Resolve Studio + the `davinci-resolve` MCP server | Community server [samuelgursky/davinci-resolve-mcp](https://github.com/samuelgursky/davinci-resolve-mcp). Load its tools with ToolSearch query `davinci resolve` (it may still be connecting at session start). Studio is needed for external scripting; see `references/resolve-assembly.md`. |
 | CrisperWhisper env (transcription) | The same env as davinci-resolve-video-edit: `~/.venvs/crisperwhisper` or `VEDIT_VENV`, model `nyralabs/CrisperWhisper2.0_large` in the Hugging Face cache. Never modified by this skill. |
-| Render env | `~/.venvs/pro-edit` or `PRO_EDIT_VENV` (Python 3.11: numpy, scipy, soundfile, pyloudnorm, opencv, pillow, mediapipe). `setup.sh` creates it with uv. |
+| Render env | `~/.venvs/pro-edit` or `PRO_EDIT_VENV` (Python 3.11: numpy, scipy, soundfile, pyloudnorm, opencv, pillow, mediapipe, onnxruntime-gpu for the split matte). `setup.sh` creates it with uv and adds what an older env lacks. |
 | ffmpeg, Node 22+, uv | ffmpeg with NVENC is used when present. HyperFrames runs through `npx --yes hyperframes`. |
-| NVIDIA GPU | Recommended (transcription, NVENC). Everything has a CPU fallback. |
+| NVIDIA GPU | Recommended (transcription, NVENC, the split matte). Everything has a CPU fallback. |
 
 Missing pieces: `references/setup-and-troubleshooting.md` (ask before the ~7 GB CrisperWhisper install).
 
@@ -65,13 +65,15 @@ Commands for every step are in `references/pipeline.md`.
    Use `look.py` to see the programme at any time with a source-pixel grid, and `--zoom k,fx,fy` to frame a zoom
    clear of the webcam. Check the plan against the spec's density rules before rendering anything.
 5. **Render, fanning out:**
-   - zooms: `zoom.py` (preview frames first, then all zoom beats - NVENC, ~20 fps at 4K);
-   - overlays: `overlay.py` (keyword pops, CTA cards; ProRes 4444 with alpha);
+   - zooms, keyword pops, CTA cards and the audio: preview a few zoom frames first (`zoom.py --preview`, seconds),
+     then `bash scripts/render_beats.sh` in the background renders every zoom / words / cta beat of the plan in
+     parallel (one process per beat) and runs `audio.py` after them - then listen to the hook in `mix_preview.wav`;
    - graphics: one subagent per 1-3 gfx beats, following `references/graphics.md` and `examples/gfx_example.py`:
-     assets -> `build_gfx.py` -> draft -> `draftsheet.py` (LOOK, fix) -> `render_gfx.sh full` -> `compose.py`
-     (split beats: `--matte` first);
-   - audio: `audio.py` (SFX clips, hook music, riser; levels baked in) - then listen to the hook in `mix_preview.wav`.
-   Check every render: previews and sheets before full renders, one full-resolution frame of every split.
+     assets -> `build_gfx.py` -> `render_gfx.sh draft` -> `draftsheet.py` (LOOK, fix) -> `render_gfx.sh full`
+     (lossless PNG capture, one Chrome per worker, throttled machine-wide so any number of subagents can call it)
+     -> `compose.py` (split beats: `--matte` first, on the GPU; several beats with `--jobs`).
+   Check every render: previews and sheets before full renders, one full-resolution frame of every split
+   (`compose.py <id> --preview t` seeks straight to it).
 6. **Assemble in Resolve** (`references/resolve-assembly.md`): duplicate the clean cut as
    "<base> - Pro Edit vN", count its tracks, `place.py plan`, add and name the PE tracks, import `M` into a bin,
    `place.py ids`, one `append_to_timeline`, punch-ins with `bulk_set_item_properties`, markers, save. Then
@@ -86,7 +88,8 @@ Commands for every step are in `references/pipeline.md`.
 Read `references/lessons.md` before improvising. The biggest ones:
 - **Colour at the cut:** zoom renders work on the source's own YUV planes, so a frame at rest is bit-identical to
   V1. Never route footage through ffmpeg's default RGB conversion (bt601) - the cut into V2 would shift colour.
-- **Windows pipes:** raw 4K video through a default Windows pipe crawls at ~4 fps; `media.py` uses 64 MB pipes.
+- **Windows pipes:** raw 4K video through a Python-buffered pipe crawls; `media.py`'s unbuffered 64 MB pipes move
+  it at GB/s. Never add `bufsize=` to a frame pipe (the shorts skill lost 48 ms a frame to a 100 MB buffer).
 - **The user's timeline is not pristine:** duplicate it, never rebuild it; skip titles/transitions in the
   programme map; never plan a beat across a transition.
 - **Frame the zoom around the webcam:** the PiP is held still; keep targets out of `look.py`'s red box.
@@ -96,8 +99,9 @@ Read `references/lessons.md` before improvising. The biggest ones:
 ## Files
 - `scripts/`: the pipeline (copied into `W/scripts` by `setup.sh`; per-project values live in `W/project.json`).
   `vedit.py` (vendored from davinci-resolve-video-edit), `program.py`, `scenes.py`, `look.py`, `zoom.py`,
-  `overlay.py`, `assets.py`, `build_gfx*.py`, `render_gfx.sh`, `draftsheet.py`, `compose.py`, `audio.py`,
-  `music.py` (from create-video-shorts), `place.py`, `publish.py`, `media.py`, `config.py`, `faces.py`.
+  `overlay.py`, `assets.py`, `build_gfx*.py`, `render_gfx.sh`, `draftsheet.py`, `compose.py`, `matte_gpu.py`,
+  `audio.py`, `music.py` (from create-video-shorts), `render_beats.sh`, `place.py`, `publish.py`, `media.py`,
+  `config.py`, `faces.py`.
 - `assets/`: the 16:9 graphics engine + GSAP, Poppins and Instrument Serif, the face models.
 - `examples/`: the real test plan, its graphics config and its report.
 - `references/`: `editing-spec.md` (the contract), `pipeline.md` (commands), `resolve-assembly.md` (MCP calls and

@@ -70,7 +70,7 @@ def main():
         for t in ts:
             jobs.append((it['v1'], it['t0'] + t, it['file'], (it['src0'] + t * fps) / fps))
     print(f'sampling {len(jobs)} frames from {len(P["items"])} items ...')
-    with ThreadPoolExecutor(8) as ex:
+    with ThreadPoolExecutor(int(os.environ.get('SCENE_WORKERS', '16'))) as ex:     # each grab is one ffmpeg seek + decode: 16 at once on a 32-core box
         frames = list(ex.map(lambda j: grab(j[2], j[3], SW, SH), jobs))
     res = {}
     by_file = {}
@@ -86,7 +86,7 @@ def main():
         entry = dict(size=[sw_, sh_], pip=None, safe=None)
         if len(sts) >= 4:
             pick = [sts[int(k)] for k in np.linspace(0, len(sts) - 1, min(24, len(sts)))]
-            with ThreadPoolExecutor(8) as ex:
+            with ThreadPoolExecutor(int(os.environ.get('SCENE_WORKERS', '16'))) as ex:
                 big = [b for b in ex.map(lambda st: grab(f, st, 1920, 1080), pick) if b is not None]
             fcs = [FD.detect(b)[0][:4] for b in big if FD.detect(b)]
             if len(fcs) >= 3:

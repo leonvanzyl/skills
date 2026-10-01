@@ -16,8 +16,9 @@ Mark types: box (clay outline, lands with a small settle), band (marker-pen swee
 tint on light pages), spot (dims everything else), underline (a sweeping clay bar under the rect).
 Frames that move get a 4-sample 270-degree shutter (motion blur); frames at rest are sharp.
 
-usage: python scripts/zoom.py z01 [z02 ...] [--preview 1.0,3.5] [--x264] [--tag v2]   -> media/<id>[_v2].mp4 (or preview/<id>_<t>.png)
-       (NVENC is used when available; --x264 forces the software encoder)"""
+usage: python scripts/zoom.py z01 [z02 ...] [--preview 1.0,3.5] [--x264] [--tag v2] [--jobs N]   -> media/<id>[_v2].mp4 (or preview/<id>_<t>.png)
+       (NVENC is used when available; --x264 forces the software encoder; several beats render at once, one process
+        each, up to --jobs (default 4); a preview decodes only the wanted frames, not the beat up to them)"""
 import sys, os, json
 import numpy as np, cv2
 sys.path.insert(0, 'scripts'); import config as C, media as M
@@ -139,7 +140,9 @@ _FILL = {}
 
 def fill_pip(P, win, key=None):
     """replace the source PiP window with an inpainted patch so zoomed views never show a second, bigger face.
-    The patch sits under the held-still PiP, so it is computed once per V1 item (key) and reused."""
+    The patch sits under the held-still PiP, so it is computed once per V1 item (key) and reused: in a render, from
+    the item's first zoomed frame of the beat (one process per beat with --jobs, so beats never share a patch); a
+    preview primes the same patch from the same frame."""
     x, y, w, h = win
     if key is not None and key in _FILL:
         for c, s in ((0, 1), (1, 2), (2, 2)):
@@ -193,16 +196,36 @@ def render(bid, preview=None, nvenc=None):
         Wo_, Ho_ = int(round(win[2] * kfit)), int(round(win[3] * kfit))
         pm = M.pip_mask(Wo_, Ho_); pmask = [pm, cv2.resize(pm, (Wo_ // 2, Ho_ // 2), interpolation=cv2.INTER_AREA)]
         pmask.append(pmask[1])
-    want = None if preview is None else {int(round(t * C.FPS)) for t in preview}
+    want = None if preview is None else sorted({int(round(t * C.FPS)) for t in preview})
     os.makedirs(C.MEDIA, exist_ok=True); os.makedirs('preview', exist_ok=True)
     out = os.path.join(C.MEDIA, f'{bid}{TAG}.mp4')
     enc = None if want is not None else M.yuv_encoder(out, C.TW, C.TH, src, nvenc=nvenc)
     N = f1 - f0; moving_frames = 0; passthrough = 0
-    for n, planes in enumerate(M.decode(seq, W, H, yuv=True)):
+    def is_zoomed(n):
+        t = n / C.FPS
+        st = [cam_state(b, t + (j - (SUB - 1) / 2) * 0.75 / (SUB * C.FPS), W, H, kfit) for j in range(SUB)]
+        a, z = st[0], st[-1]
+        mv = abs(a[0] - z[0]) * a[2] > 0.35 or abs(a[1] - z[1]) * a[2] > 0.35 or abs(a[2] / z[2] - 1) > 2e-4
+        return cam_state(b, t, W, H, kfit)[2] > kfit * 1.0005 or mv
+
+    def prime_fill(n):
+        """the render inpaints each V1 item's PiP area once, on the item's first zoomed frame, and reuses that patch;
+        a seeked preview primes the same patch from the same frame so it shows exactly what the render will"""
         item = seq[n][1]['v1']
-        if want is not None and n not in want:
-            if n > max(want): break
-            continue
+        if not keep or item in _FILL: return
+        n0 = next((m for m in range(N) if seq[m][1]['v1'] == item and is_zoomed(m)), None)
+        if n0 is None or n0 == n: return
+        P0 = [pl.copy() for pl in M.decode_at(seq, n0, W, H, yuv=True)]
+        t0_ = n0 / C.FPS
+        painter.draw(P0, [mk for mk in marks if mk['t'] <= t0_ <= mk.get('t_out', 1e9) + 0.3], t0_, W, H)
+        fill_pip(P0, win, item)
+
+    if want is not None:                                              # previews: decode just those frames, as the render would
+        frames = ((n, (prime_fill(n), M.decode_at(seq, n, W, H, yuv=True))[1]) for n in want if 0 <= n < N)
+    else:
+        frames = enumerate(M.decode(seq, W, H, yuv=True))
+    for n, planes in frames:
+        item = seq[n][1]['v1']
         t = n / C.FPS
         states = [cam_state(b, t + (j - (SUB - 1) / 2) * 0.75 / (SUB * C.FPS), W, H, kfit) for j in range(SUB)]
         a, z = states[0], states[-1]
@@ -248,10 +271,30 @@ def scene_kinds(seq):
     return {S['items'].get(str(it['v1']), {}).get('scene', 'unknown') for _, it, _ in seq[::30]}
 
 
+def run_parallel(ids, jobs):
+    """one process per beat, up to `jobs` at once (the per-beat work is one decoder, one encoder and OpenCV)"""
+    import subprocess, time
+    keep = [a for a in sys.argv[1:] if a not in ids and a not in ('--jobs',) and not a.isdigit()]
+    procs, pending, failed = [], list(ids), []
+    while pending or procs:
+        while pending and len(procs) < jobs:
+            bid = pending.pop(0); procs.append((bid, subprocess.Popen([sys.executable, __file__, bid] + keep)))
+        time.sleep(0.5)
+        for item in procs[:]:
+            if item[1].poll() is not None:
+                procs.remove(item)
+                if item[1].returncode: failed.append(item[0]); print(f'FAILED {item[0]} (exit {item[1].returncode})')
+    return failed
+
+
 if __name__ == '__main__':
-    argv = sys.argv[1:]; prev = None
+    argv = sys.argv[1:]; prev = None; jobs = 4
     if '--tag' in argv: k = argv.index('--tag'); argv = argv[:k] + argv[k + 2:]
+    if '--jobs' in argv: k = argv.index('--jobs'); jobs = int(argv[k + 1]); argv = argv[:k] + argv[k + 2:]
     if '--preview' in argv:
         k = argv.index('--preview'); prev = [float(x) for x in argv[k + 1].split(',')]; argv = argv[:k] + argv[k + 2:]
-    for bid in [a for a in argv if not a.startswith('--')]:
+    ids = [a for a in argv if not a.startswith('--')]
+    if len(ids) > 1 and jobs > 1 and prev is None:
+        sys.exit(1 if run_parallel(ids, jobs) else 0)
+    for bid in ids:
         render(bid, prev, False if '--x264' in argv else None)

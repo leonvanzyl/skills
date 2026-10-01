@@ -66,30 +66,38 @@ no beat across a V1 transition or a scene change, no overlap between beats on th
 V+1, words/CTAs share V+2).
 
 ## 5. Render
-Zoom beats (preview first; frames at rest are bit-identical to V1):
+Preview a few zooms first (frames at rest are bit-identical to V1; a preview decodes only the frames it shows):
 ```bash
-$PY scripts/zoom.py z01 --preview 0.0,1.2,6.5          # preview/z01_<t>.png - LOOK
-$PY scripts/zoom.py z01 z02 z03                        # -> $M/z01.mp4 ... (NVENC when available; --x264 forces software)
-```
-Overlays (keyword pops, CTA cards):
-```bash
+$PY scripts/zoom.py z01 --preview 0.0,1.2,6.5          # preview/z01_<t>.png - LOOK (seconds, not the beat's decode)
 $PY scripts/overlay.py w01 c01 --preview 0.6,3.2       # on grey, to see the alpha
-$PY scripts/overlay.py w01 c01                         # -> $M/w01.mov, $M/c01.mov (ProRes 4444 + alpha), events/<id>.json
+```
+Then every zoom, keyword pop and CTA of the plan plus the audio, in one background call:
+```bash
+bash scripts/render_beats.sh                           # all zoom/words/cta beats: zooms 4 at a time, overlays 3 at a time, then audio.py
+bash scripts/render_beats.sh z01 z02 c01               # only these (and audio.py again)
+```
+What it runs (each also takes `--jobs N` on its own):
+```bash
+$PY scripts/zoom.py z01 z02 z03 --jobs 4               # -> $M/z01.mp4 ... one process per beat (NVENC when available; --x264 forces software)
+$PY scripts/overlay.py w01 c01 --jobs 3                # -> $M/w01.mov, $M/c01.mov (ProRes 4444 + alpha), events/<id>.json
+$PY scripts/audio.py                                   # after the overlays (it reads their SFX events)
 ```
 Graphics (one subagent per 1-3 beats; `references/graphics.md`):
 ```bash
 $PY scripts/assets.py still 260.0 700,880,1120,200 session.png          # real UI/numbers from the recording
 $PY scripts/assets.py still src:7.mkv@473.27 0,110,3060,1720 game.png   # a later moment of any source file
 $PY scripts/build_gfx.py <name>                        # scripts/gfx_<name>.py -> gfx/<id>.html (+ gfx/sfx_events.json)
-bash scripts/render_gfx.sh draft g01 g02
+bash scripts/render_gfx.sh draft g01 g02               # 10 fps drafts, all at once
 $PY scripts/draftsheet.py g01 8                        # chk/g01_sheet.png - LOOK, fix, rebuild
-bash scripts/render_gfx.sh full g01 g02                # 4x fps + motion blur, UHD at device scale 2 -> gfx/out/
-$PY scripts/compose.py g02 --matte                     # split beats only: background removal on the frame-exact camera
-$PY scripts/compose.py g01 g02                         # -> $M/g01.mp4 (fvp: PiP pasted; split: camera card + head)
-$PY scripts/compose.py g02 --preview 0.5               # one full-resolution split frame - LOOK at the whole face
+bash scripts/render_gfx.sh full g01 g02                # 4x fps + motion blur, lossless PNG capture, UHD at device scale 2 -> gfx/out/
+$PY scripts/compose.py g02 --matte                     # split beats only: the frame-exact camera clip + its matte on the GPU (matte_gpu.py)
+$PY scripts/compose.py g01 g02 --jobs 3                # -> $M/g01.mp4 (fvp: PiP pasted; split: camera card + head), one process per beat
+$PY scripts/compose.py g02 --preview 0.5               # one full-resolution split frame in seconds - LOOK at the whole face
 $PY scripts/draftsheet.py g01 8 --full
 ```
-Run zooms, overlays, graphics renders and audio concurrently; HyperFrames and the matte are the long poles.
+`render_gfx.sh full` throttles itself machine-wide (RENDER_SLOTS renders at a time, HF_WORKERS Chrome browsers each),
+so every graphics subagent can call it freely; it prints `done <id> ... (capture N s, tmix M s)` or `FAILED <id>`.
+Run `render_beats.sh`, the graphics renders and the composes concurrently; HyperFrames is the long pole.
 
 ## 6. Audio
 ```bash
@@ -137,10 +145,16 @@ that clip picks up the new render in place (tested: same length, same position, 
 Report what was re-rendered and how long it took.
 
 ## Timings
-Measured on the first project (RTX 5090, 32 cores, another heavy render running at the same time):
-- `vedit transcribe`: 141 clips in 4 min. `program.py`: 10 s (+ one-off 48 kHz extraction). `scenes.py`: 4-6 min.
-- `zoom.py`: ~20 fps at 4K with NVENC (a 7 s beat in ~20 s).
-- `overlay.py`: a 5 s CTA in ~50 s (4K ProRes 4444).
-- HyperFrames full render at 240 fps, UHD: ~5 min per 10 s graphic; `compose.py` fvp ~40 s, split ~4 min per 5 s.
-- Background removal: 2-3 fps on the CPU when GPU matting is unavailable.
+Measured on the cubefarm project (RTX 5090, 32 cores, 4K60 timeline, 192 V1 items), old scripts vs the current ones
+on the same beats; every "new" output was compared frame for frame with the old one (lessons.md):
+- `vedit transcribe`: 141 clips in 4 min (unchanged; the CrisperWhisper env). `program.py`: 10 s.
+- `scenes.py`: 858 samples from 192 items, 243 s -> 195 s with 16 decode threads (`SCENE_WORKERS`), same labels and
+  PiP windows; each sample is one ffmpeg seek into a 4K60 recording, so this stays decode-bound.
+- `zoom.py`: a 7 s beat in 26 s (NVENC, unchanged per beat); four beats 101 s one after another -> 69 s with
+  `--jobs 4` (`render_beats.sh` does this for the whole plan). A 3-frame preview 6 s -> 2 s.
+- `overlay.py`: a 1 s keyword pop 7 s -> 3 s; a 5 s CTA 80 s -> 29 s (94 distinct drawings for 300 frames).
+- HyperFrames full render at 240 fps, UHD (g03, 5.6 s, 1,349 frames): 88 s -> 68 s capture with 12 own browsers,
+  lossless instead of JPEG; tmix 16 s (x264 slow) -> 11 s (NVENC lossless). Budget ~2 min per 10 s graphic.
+- `compose.py`: fvp 10 s beat 35 s (unchanged, encoder-bound); split 5.6 s beat 137 s -> 88 s; a split preview
+  8 s -> 4 s. The split matte: 87 s on the CPU CLI -> 15 s on the GPU (`matte_gpu.py`).
 - Assembly in Resolve: under a minute of MCP calls.

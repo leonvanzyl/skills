@@ -116,11 +116,15 @@ whooshes only on whips, UI sounds only for visible presses, typing and landings,
 ## Render and check
 ```bash
 $PY scripts/build_gfx.py <name>                      # gfx/<id>.html for every beat in scripts/gfx_<name>.py
-bash scripts/render_gfx.sh draft g01 g02             # 10 fps drafts
+bash scripts/render_gfx.sh draft g01 g02             # 10 fps drafts, all at once
 $PY scripts/draftsheet.py g01 8                      # chk/g01_sheet.png - LOOK
-bash scripts/render_gfx.sh full g01 g02              # 4x rate + motion blur -> gfx/out/<id>.mp4 (UHD: device scale 2)
-$PY scripts/compose.py g01 g02                       # -> media/<id>.mp4 (PiP pasted for fvp, camera card for split)
+bash scripts/render_gfx.sh full g01 g02              # 4x rate + motion blur, lossless PNG capture -> gfx/out/<id>.mp4 (UHD: device scale 2)
+$PY scripts/compose.py g02 --matte                   # split beats: camera clip + GPU matte
+$PY scripts/compose.py g01 g02 --jobs 3              # -> media/<id>.mp4 (PiP pasted for fvp, camera card for split), one process per beat
+$PY scripts/compose.py g02 --preview 0.5             # one full-resolution frame, in seconds
 $PY scripts/draftsheet.py g01 8 --full               # the finished clip
 ```
+`render_gfx.sh full` renders each composition with its own Chrome per worker and throttles itself machine-wide
+(`RENDER_SLOTS` x `HF_WORKERS`), so call it from as many subagents as you like, always through the script.
 Look for: the frame-0 landing state; content inside its bounds and clear of the PiP corner; nothing important
 blurred at rest; each cue on its word; text crisp in one full-resolution frame.

@@ -15,8 +15,16 @@ command -v node >/dev/null || { echo "ERROR: node (22+) not found"; exit 1; }
 VENV="${PRO_EDIT_VENV:-$HOME/.venvs/pro-edit}"
 PY="$VENV/Scripts/python.exe"; [ -e "$PY" ] || PY="$VENV/bin/python"
 if [ ! -e "$PY" ]; then mkdir -p "$(dirname "$VENV")"; uv venv "$VENV" --python 3.11; PY="$VENV/Scripts/python.exe"; [ -e "$PY" ] || PY="$VENV/bin/python"; fi
-if ! "$PY" -c "import numpy, scipy, soundfile, pyloudnorm, cv2, PIL, mediapipe" 2>/dev/null; then
-  uv pip install --python "$PY" numpy scipy soundfile pyloudnorm opencv-python pillow mediapipe
+if ! "$PY" -c "import numpy, scipy, soundfile, pyloudnorm, cv2, PIL, mediapipe, onnxruntime" 2>/dev/null; then
+  uv pip install --python "$PY" numpy scipy soundfile pyloudnorm opencv-python pillow mediapipe \
+    onnxruntime-gpu nvidia-cublas-cu12 "nvidia-cudnn-cu12==9.*"      # the split matte on the GPU (matte_gpu.py)
+fi
+# a CPU-only `onnxruntime` pulled in by another package shadows onnxruntime-gpu (same import name): the CUDA provider
+# never shows up and the matte falls back to the CPU CLI. Remove it and reinstall the GPU build.
+if ! "$PY" -c "import onnxruntime as o, sys; sys.exit(0 if 'CUDAExecutionProvider' in o.get_available_providers() else 1)" 2>/dev/null; then
+  uv pip uninstall --python "$PY" onnxruntime >/dev/null 2>&1 || true
+  uv pip install --python "$PY" --reinstall onnxruntime-gpu >/dev/null 2>&1 || true
+  "$PY" -c "import onnxruntime as o; print('onnxruntime providers:', o.get_available_providers())"
 fi
 mkdir -p "$W/scripts" "$W/gfx/assets" "$W/fonts" "$W/models" "$M"
 cp "$SKILL"/scripts/*.py "$SKILL"/scripts/*.sh "$W/scripts/"

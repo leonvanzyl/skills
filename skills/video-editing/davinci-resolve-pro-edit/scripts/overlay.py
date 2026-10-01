@@ -10,8 +10,12 @@
 
 Positions and sizes are layout px (1920x1080) and scale to the timeline. SFX for visible events (pop on landing,
 key ticks while typing, click on the press) go to events/<id>.json for audio.py.
-usage: python scripts/overlay.py w02 c01 ... [--preview 0.5] [--tag v2]   -> media/<id>[_v2].mov (or preview/<id>_<t>.png)
---tag v2 writes a new file for an edit (Resolve holds the old one open): then media_pool_item replace_clip."""
+Every frame is a pure function of a small state (landing/fade progress, typed characters, caret, press): frames with
+the same state reuse the same drawing, and only the drawing's own box is written into a persistent, otherwise
+transparent frame, so a 4K overlay no longer allocates and converts a 130 MB canvas per frame. Pixel-identical.
+usage: python scripts/overlay.py w02 c01 ... [--preview 0.5] [--tag v2] [--jobs N]   -> media/<id>[_v2].mov (or preview/<id>_<t>.png)
+--tag v2 writes a new file for an edit (Resolve holds the old one open): then media_pool_item replace_clip.
+--jobs N renders several beats at once, one process each (default 3)."""
 import sys, os, json
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
@@ -73,11 +77,15 @@ def words_img(text, hl):
     return im
 
 
-def words_frame(b, t, cache):
-    if 'img' not in cache: cache['img'] = words_img(b['text'], b.get('hl', False))
+def words_state(b, t):
     dur = b['t1'] - b['t0']
     pin = min(1.0, t / 0.18); pout = min(1.0, max(0.0, (dur - t) / 0.14))
-    if pin <= 0 or pout <= 0: return None
+    return None if (pin <= 0 or pout <= 0) else (pin, pout)
+
+
+def words_draw(b, state, cache):
+    if 'img' not in cache: cache['img'] = words_img(b['text'], b.get('hl', False))
+    pin, pout = state
     e = M.ease('power3.out')(pin)
     cx, cy = b.get('xy', [960, 905])
     canvas = np.zeros((C.TH, C.TW, 4), np.float32)
@@ -112,29 +120,35 @@ def cta_static(b):
     return im, box, tx
 
 
-def cta_frame(b, t, cache):
-    if 'st' not in cache: cache['st'] = cta_static(b)
-    base, box, tx = cache['st']
+def cta_state(b, t):
     dur = b['t1'] - b['t0']
-    land = min(1.0, max(0.0, t / 0.5)); e = M.ease('power3.out')(land)
-    out = min(1.0, max(0.0, (dur - t) / 0.35))
+    land = min(1.0, max(0.0, t / 0.5)); out = min(1.0, max(0.0, (dur - t) / 0.35))
     if land <= 0 or out <= 0: return None
-    im = base.copy(); d = ImageDraw.Draw(im)
     url = b['url']; cps = b.get('cps', 12.0); t0 = b.get('type_at', 0.6)
     n = int(max(0, min(len(url), (t - t0) * cps + 1e-6))) if t >= t0 else 0
+    press = t0 + len(url) / cps + 0.45; typed_end = t0 + len(url) / cps
+    blink = True if t < typed_end else int((t - typed_end) * 2.2) % 2 == 0
+    caret = t < press + 0.12 and blink
+    pp = (t - press) / 0.24
+    sc = float(1 - 0.08 * np.sin(np.pi * pp)) if 0 <= pp <= 1 else 1
+    col = C.CLAY_T if 0 <= pp <= 1 else C.CLAY
+    return (land, out, n, caret, sc, col)
+
+
+def cta_draw(b, state, cache):
+    if 'st' not in cache: cache['st'] = cta_static(b)
+    base, box, tx = cache['st']
+    land, out, n, caret, sc, col = state
+    e = M.ease('power3.out')(land)
+    im = base.copy(); d = ImageDraw.Draw(im)
+    url = b['url']
     fb = font('Poppins-Bold.ttf', 44)
     ty = box[1] + (100 if b.get('label') else 88) * U
     d.text((tx, ty), url[:n], font=fb, fill=C.INK + (255,), anchor='lm')
-    press = t0 + len(url) / cps + 0.45
-    typed_end = t0 + len(url) / cps
-    blink = True if t < typed_end else int((t - typed_end) * 2.2) % 2 == 0
-    if t < press + 0.12 and blink:
+    if caret:
         cw = d.textlength(url[:n], font=fb)
         d.rounded_rectangle((tx + cw + 5 * U, ty - 28 * U, tx + cw + 10 * U, ty + 28 * U), int(2 * U), fill=C.CLAY + (255,))
     if b.get('button'):
-        pp = (t - press) / 0.24
-        sc = 1 - 0.08 * np.sin(np.pi * pp) if 0 <= pp <= 1 else 1
-        col = C.CLAY_T if 0 <= pp <= 1 else C.CLAY
         bxc, byc = box[2] - (40 + 80) * U, box[1] + CTA_BOX[3] * U / 2
         hw, hh = 80 * U * sc, 40 * U * sc
         d.rounded_rectangle((bxc - hw, byc - hh, bxc + hw, byc + hh), int(hh), fill=col + (255,))
@@ -154,38 +168,87 @@ def cta_events(b):
     return ev
 
 
+KINDS = {'words': (words_state, words_draw), 'cta': (cta_state, cta_draw)}
+
+
+class Frames:
+    """frames by state: the drawing (an RGBA float canvas) is made once per distinct state and kept as its uint8 box;
+    each output frame is the persistent transparent frame with that box written in (what np.clip(canvas + 0.5) gave)"""
+
+    def __init__(self, b):
+        self.b = b; self.state_fn, self.draw_fn = KINDS[b['kind']]; self.cache = {}; self.boxes = {}
+        self.frame = np.zeros((C.TH, C.TW, 4), np.uint8); self.last = None
+
+    def box(self, state):
+        if state not in self.boxes:
+            canvas = self.draw_fn(self.b, state, self.cache)
+            ys, xs = np.where(canvas[..., 3] > 0)
+            if len(ys):
+                y0, y1, x0, x1 = ys.min(), ys.max() + 1, xs.min(), xs.max() + 1
+                self.boxes[state] = ((y0, y1, x0, x1), np.clip(canvas[y0:y1, x0:x1] + 0.5, 0, 255).astype(np.uint8))
+            else:
+                self.boxes[state] = None
+        return self.boxes[state]
+
+    def at(self, t):
+        """the full RGBA uint8 frame for beat-relative time t (a view of the persistent buffer)"""
+        state = self.state_fn(self.b, t)
+        box = None if state is None else self.box(state)
+        if self.last is not None:                                 # clear what the previous frame drew
+            y0, y1, x0, x1 = self.last; self.frame[y0:y1, x0:x1] = 0
+        if box is None: self.last = None; return self.frame
+        (y0, y1, x0, x1), px = box
+        self.frame[y0:y1, x0:x1] = px; self.last = (y0, y1, x0, x1)
+        return self.frame
+
+
 def render(bid, preview=None):
     b = M.beat(bid)
     f0, f1 = M.frames_of(b['t0'], b['t1'])
-    fn = {'words': words_frame, 'cta': cta_frame}[b['kind']]
     os.makedirs(C.MEDIA, exist_ok=True); os.makedirs('preview', exist_ok=True); os.makedirs('events', exist_ok=True)
     ev = cta_events(b) if b['kind'] == 'cta' else []
     json.dump(ev, open(f'events/{bid}.json', 'w'), indent=1)
-    cache = {}
+    fr = Frames(b)
     if preview is not None:
         for t in preview:
-            fr = fn(b, t, cache)
-            fr = np.zeros((C.TH, C.TW, 4), np.float32) if fr is None else fr
+            f = fr.at(t).astype(np.float32)
             # preview on a mid-grey checker so the alpha is visible
             bg = np.full((C.TH, C.TW, 3), 90, np.float32)
-            a = fr[..., 3:4] / 255
-            Image.fromarray((bg * (1 - a) + fr[..., :3] * a).astype(np.uint8)).save(f'preview/{bid}_{t:06.2f}.png')
+            a = f[..., 3:4] / 255
+            Image.fromarray((bg * (1 - a) + f[..., :3] * a).astype(np.uint8)).save(f'preview/{bid}_{t:06.2f}.png')
         print(f'{bid}: previews in preview/{bid}_*.png'); return
     out = os.path.join(C.MEDIA, f'{bid}{TAG}.mov')
     enc = M.prores4444(out, C.TW, C.TH)
-    blank = np.zeros((C.TH, C.TW, 4), np.uint8).tobytes()
     for n in range(f1 - f0):
-        fr = fn(b, n / C.FPS, cache)
-        enc.stdin.write(blank if fr is None else np.clip(fr + 0.5, 0, 255).astype(np.uint8).tobytes())
+        enc.stdin.write(fr.at(n / C.FPS).tobytes())
     enc.stdin.close(); enc.wait()
-    print(f'{bid}: {f1 - f0} frames -> {out} | {len(ev)} sfx events')
+    print(f'{bid}: {f1 - f0} frames ({len(fr.boxes)} distinct drawings) -> {out} | {len(ev)} sfx events', flush=True)
+
+
+def run_parallel(ids, jobs):
+    import subprocess, time
+    keep = [a for a in sys.argv[1:] if a not in ids and a != '--jobs' and not a.isdigit()]
+    procs, pending, failed = [], list(ids), []
+    while pending or procs:
+        while pending and len(procs) < jobs:
+            bid = pending.pop(0); procs.append((bid, subprocess.Popen([sys.executable, __file__, bid] + keep)))
+        time.sleep(0.5)
+        for item in procs[:]:
+            if item[1].poll() is not None:
+                procs.remove(item)
+                if item[1].returncode: failed.append(item[0]); print(f'FAILED {item[0]} (exit {item[1].returncode})')
+    return failed
 
 
 if __name__ == '__main__':
     argv = sys.argv[1:]
-    prev = None
+    prev = None; jobs = 3
     if '--tag' in argv: k = argv.index('--tag'); argv = argv[:k] + argv[k + 2:]
+    if '--jobs' in argv: k = argv.index('--jobs'); jobs = int(argv[k + 1]); argv = argv[:k] + argv[k + 2:]
     if '--preview' in argv:
         k = argv.index('--preview'); prev = [float(x) for x in argv[k + 1].split(',')]; argv = argv[:k] + argv[k + 2:]
-    for bid in argv:
+    ids = [a for a in argv if not a.startswith('--')]
+    if len(ids) > 1 and jobs > 1 and prev is None:
+        sys.exit(1 if run_parallel(ids, jobs) else 0)
+    for bid in ids:
         render(bid, prev)

@@ -179,6 +179,16 @@ def decode(seq, w, h, vf='', yuv=False):
         k = j + 1
 
 
+def decode_at(seq, n, w, h, vf='', yuv=False):
+    """the single program frame seq[n], decoded exactly as a full render decodes it: from the start of the contiguous
+    source run it belongs to, counting forward. A time seek straight to one frame can land a frame late on OBS
+    recordings (millisecond timestamps), so previews use this to show what the render will show."""
+    import itertools
+    j = n
+    while j > 0 and seq[j - 1][0] == seq[j][0] and seq[j - 1][2] == seq[j][2] - 1: j -= 1
+    return next(itertools.islice(decode(seq[j:n + 1], w, h, vf, yuv), n - j, None))
+
+
 def yuv_encoder(out, w, h, path=None, nvenc=None, crf=12, gop=30):
     """raw yuv420p in, H.264 out, tagged with the source's own colour - no conversion anywhere"""
     args = enc_args(path, crf=crf, nvenc=nvenc, gop=gop)
