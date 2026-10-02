@@ -179,6 +179,11 @@ def warp(P, states):
 
 
 def render(bid, preview=None, nvenc=None):
+    try:
+        import censor
+        if not any(x['kind'] == 'censor' for x in M.plan()['beats']): censor = None
+    except ImportError:
+        censor = None
     b = M.beat(bid)
     f0, f1 = M.frames_of(b['t0'], b['t1'])
     seq = M.source_map(f0, f1)
@@ -225,6 +230,7 @@ def render(bid, preview=None, nvenc=None):
     else:
         frames = enumerate(M.decode(seq, W, H, yuv=True))
     for n, planes in frames:
+        if censor is not None: planes = censor.baked(f0 + n, planes)       # a censored block: blurred before any move
         item = seq[n][1]['v1']
         t = n / C.FPS
         states = [cam_state(b, t + (j - (SUB - 1) / 2) * 0.75 / (SUB * C.FPS), W, H, kfit) for j in range(SUB)]

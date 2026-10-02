@@ -142,7 +142,12 @@ def cta_draw(b, state, cache):
     e = M.ease('power3.out')(land)
     im = base.copy(); d = ImageDraw.Draw(im)
     url = b['url']
-    fb = font('Poppins-Bold.ttf', 44)
+    if 'fb' not in cache:                   # the whole URL must fit left of the button: shrink long URLs (never under 30)
+        avail = (box[2] - (40 + 160 + 28) * U if b.get('button') else box[2] - 40 * U) - tx
+        size = 44
+        while size > 30 and ImageDraw.Draw(base).textlength(url, font=font('Poppins-Bold.ttf', size)) > avail: size -= 1
+        cache['fb'] = font('Poppins-Bold.ttf', size)
+    fb = cache['fb']
     ty = box[1] + (100 if b.get('label') else 88) * U
     d.text((tx, ty), url[:n], font=fb, fill=C.INK + (255,), anchor='lm')
     if caret:

@@ -62,9 +62,12 @@ Commands for every step are in `references/pipeline.md`.
    cites but the recording doesn't show, official logos, pricing and docs as 2x PNGs into `W/captures/`.
 4. **Plan once** into `W/edit_plan.json` (`examples/edit_plan_example.json`): hook_end, music style and mood,
    the beats (zoom, punch, gfx, words, cta) with word-cued times, chapters, caption fixes, the publishing copy.
+   Anything private on screen (a message with fees or contact details, an account number) gets a `censor` beat.
    Use `look.py` to see the programme at any time with a source-pixel grid, and `--zoom k,fx,fy` to frame a zoom
    clear of the webcam. Check the plan against the spec's density rules before rendering anything.
 5. **Render, fanning out:**
+   - censor beats first: `censor.py track` (zooms inside the beat bake the blur in from it), `scan` the whole
+     programme for the same words, check `preview` frames, then `render`;
    - zooms, keyword pops, CTA cards and the audio: preview a few zoom frames first (`zoom.py --preview`, seconds),
      then `bash scripts/render_beats.sh` in the background renders every zoom / words / cta beat of the plan in
      parallel (one process per beat) and runs `audio.py` after them - then listen to the hook in `mix_preview.wav`;
@@ -93,6 +96,8 @@ Read `references/lessons.md` before improvising. The biggest ones:
 - **The user's timeline is not pristine:** duplicate it, never rebuild it; skip titles/transitions in the
   programme map; never plan a beat across a transition.
 - **Frame the zoom around the webcam:** the PiP is held still; keep targets out of `look.py`'s red box.
+- **Private details on screen:** blur them with a censor beat on the topmost track, scan the whole programme for the
+  same words, and keep the words themselves out of the report and the publishing copy.
 - **Resolve's API can't set clip volume or keyframes reliably:** levels are baked into the audio files, motion is
   rendered, punch-ins are static transforms.
 
@@ -100,8 +105,8 @@ Read `references/lessons.md` before improvising. The biggest ones:
 - `scripts/`: the pipeline (copied into `W/scripts` by `setup.sh`; per-project values live in `W/project.json`).
   `vedit.py` (vendored from davinci-resolve-video-edit), `program.py`, `scenes.py`, `look.py`, `zoom.py`,
   `overlay.py`, `assets.py`, `build_gfx*.py`, `render_gfx.sh`, `draftsheet.py`, `compose.py`, `matte_gpu.py`,
-  `audio.py`, `music.py` (from create-video-shorts), `render_beats.sh`, `place.py`, `publish.py`, `media.py`,
-  `config.py`, `faces.py`.
+  `audio.py`, `music.py` (from create-video-shorts), `render_beats.sh`, `censor.py`, `place.py`, `publish.py`,
+  `media.py`, `config.py`, `faces.py`.
 - `assets/`: the 16:9 graphics engine + GSAP, Poppins and Instrument Serif, the face models.
 - `examples/`: the real test plan, its graphics config and its report.
 - `references/`: `editing-spec.md` (the contract), `pipeline.md` (commands), `resolve-assembly.md` (MCP calls and

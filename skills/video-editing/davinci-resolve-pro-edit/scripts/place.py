@@ -2,7 +2,8 @@
 
 1) python scripts/place.py plan --video-tracks 1 --audio-tracks 2
      --video-tracks / --audio-tracks: how many tracks the DUPLICATED timeline already has (probe it). The edit's own
-     tracks go above them: V+1 "PE Graphics" (opaque V2-style clips), V+2 "PE Overlays" (alpha), A+1 "PE SFX",
+     tracks go above them: V+1 "PE Graphics" (opaque V2-style clips), V+2 "PE Overlays" (alpha), V+3 "PE Censor"
+     (alpha blur over sensitive UI, always topmost), A+1 "PE SFX",
      A+2 "PE Music", A+3 "PE Riser". Writes placement.json: the tracks to add, the files to import, every clip with
      its record frame, the punch-in transforms for V1 items and the markers.
 2) python scripts/place.py ids <import_result.json> [--existing-markers <get_all.json>]
@@ -17,7 +18,7 @@ Record frames are relative to the timeline start (the MCP's default), end frames
 import sys, os, json
 sys.path.insert(0, 'scripts'); import config as C, media as M
 
-ROLES_V = [('graphics', 'PE Graphics'), ('overlays', 'PE Overlays')]
+ROLES_V = [('graphics', 'PE Graphics'), ('overlays', 'PE Overlays'), ('censor', 'PE Censor')]   # censor: always on top
 ROLES_A = [('sfx', 'PE SFX'), ('music', 'PE Music'), ('riser', 'PE Riser')]
 
 
@@ -48,12 +49,13 @@ def plan(nv, na):
                 p = M.probe(it['file'])
                 punches.append(dict(beat=b['id'], item_index=v1, transform=punch_transform(it, face, b.get('zoom', 1.15), p['width'], p['height'])))
             continue
-        ext = '.mov' if b['kind'] in ('words', 'cta') else '.mp4'
+        ext = '.mov' if b['kind'] in ('words', 'cta', 'censor') else '.mp4'
+        role = 'censor' if b['kind'] == 'censor' else 'overlays' if ext == '.mov' else 'graphics'
         f = os.path.abspath(os.path.join(C.MEDIA, b['id'] + ext))
         if not os.path.exists(f): missing.append(f"{b['id']}: {f} not rendered"); continue
         f0, f1 = M.frames_of(b['t0'], b['t1'])
-        clips.append(dict(beat=b['id'], role='overlays' if ext == '.mov' else 'graphics', file=f, media_type=1,
-                          track_index=vt['overlays' if ext == '.mov' else 'graphics'], record_frame=f0, start_frame=0, end_frame=f1 - f0))
+        clips.append(dict(beat=b['id'], role=role, file=f, media_type=1,
+                          track_index=vt[role], record_frame=f0, start_frame=0, end_frame=f1 - f0))
     A = json.load(open('audio_clips.json')) if os.path.exists('audio_clips.json') else {'clips': []}
     for c in A['clips']:
         clips.append(dict(beat=c.get('src', c['track']), role=c['track'], file=c['file'], media_type=2, track_index=at[c['track']],
@@ -70,7 +72,7 @@ def plan(nv, na):
                             note='The riser lands here and the hook music fades out over the next few seconds.', duration=1))
     markers = nudge(markers)
     out = dict(source_timeline=PL.get('source_timeline'), new_timeline=PL.get('new_timeline'),
-               tracks=dict(video=[dict(index=vt[r], name=n) for r, n in ROLES_V], audio=[dict(index=at[r], name=n, audio_type='stereo') for r, n in ROLES_A]),
+               tracks=dict(video=[dict(index=vt[r], name=n) for r, n in ROLES_V if r != 'censor' or any(c['role'] == 'censor' for c in clips)], audio=[dict(index=at[r], name=n, audio_type='stereo') for r, n in ROLES_A]),
                import_files=sorted({c['file'] for c in clips}), clips=clips, punches=punches, markers=markers, problems=missing)
     json.dump(out, open('placement.json', 'w'), indent=1)
     print(f"placement.json: {len(clips)} clips ({sum(c['media_type'] == 1 for c in clips)} video, {sum(c['media_type'] == 2 for c in clips)} audio), "

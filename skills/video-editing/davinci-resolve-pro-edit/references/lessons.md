@@ -29,6 +29,9 @@
   its corners comes along. On the white world it also gets the spec shadow.
 - **Zooms near the webcam:** the held-still PiP covers part of the zoomed view. Frame the target outside
   `look.py`'s red box. The source PiP area is inpainted once per V1 item so a zoomed view never shows a second face.
+  That patch must stay under the held-still PiP, or the smudge shows. For a top-right PiP whose left edge is Xp and
+  bottom edge Yp (source px, UHD), a zoom of k centred on fx,fy is safe when fx <= Xp - (Xp - 1920)/k and
+  fy >= Yp - (Yp - 1080)/k (openai-dots: Xp 3074, Yp 1171). Outside that, move the target or skip the zoom.
 - **Colour exactness:** zoom renders work on the source's own YUV planes and encode with the source's tags - a frame
   at rest is bit-identical to V1, so the cut in is invisible. ffmpeg's default YUV->RGB is bt601: never use it for
   footage that sits next to V1.
@@ -77,6 +80,8 @@
   the full-resolution split frame; choose a different beat for the split if it's distracting.
 - **Mark rects:** `box` and `band` add 8 layout px of padding around the rect. Leave room, or the band grazes the
   next row (it did on the first benchmark zoom).
+- **CTA URLs:** a long URL ran under the CTA button. `overlay.py` now shrinks the URL font (44 down to 30 px) until
+  the whole URL fits left of the button.
 - **Captions:** convert "five point five" to "5.5" and apply phrase fixes on the WORDS before cutting cues, or a
   number splits across two cues. Hotword mishearings ("agent-decoding", "Gentic Labs") go in `caption_fixes`.
 - **Markers:** one per frame. A duplicated clean cut brings its own review markers (frame 0 was taken).
@@ -84,6 +89,26 @@
   -14 LUFS is one normalisation on delivery; don't touch A1.
 - **The machine is shared:** the user may be rendering something else (a shorts session was compositing during the
   first test). Timings vary; keep parallelism reasonable and never touch processes you didn't start.
+
+**Censoring private details** (openai-dots, 2026-10-01: a chat message with private business details, on screen
+for two minutes while the chat scrolled)
+- **Match words, trace the block.** Templates of the sensitive words, cut from one full-resolution reference frame
+  and matched at half resolution (normalised cross-correlation), followed the message through reflowed lines,
+  scrolling and dimming. The blur shape is a flood of the bubble's own flat colour from each hit, so it hugs the
+  bubble, and a popup drawn over it (its own colour and border) stays sharp.
+- **No pre-roll before the first detection.** The block fades in where the chat has just jumped, so a mask held back
+  from later frames blurred the wrong bubbles. The faintest first frame is already detected; bridge gaps only
+  between detections inside one V1 item.
+- **Zooms carry their own blur.** An overlay can't follow a camera move, so `zoom.py` bakes the censor into the
+  source planes before the move (from `censor/<id>_track.json`), and `censor.py render` leaves the overlay clear
+  over zoom clips. Track before rendering any zoom inside the beat.
+- **Transitions can't be followed from the source.** Render the transition's frames out of Resolve and let
+  `censor.py transition` register each one against the last clean frame (ECC, affine), warp the mask onto it and
+  widen it by the frame's motion. Check the incoming side by eye.
+- **Scan the whole programme.** The same words can show up outside the beat (a notification, a later scroll back).
+  `censor.py scan --gpu` decodes on NVDEC: CPU decoding of 4K for a full scan would starve the renders beside it.
+- **Reference frames:** `censor.py ref` is frame-exact. The first reference was cut with a direct seek and came out
+  one frame late (see "Frames are pure functions" above); harmless for matching, but measure boxes on the exact frame.
 
 ## User feedback log
 Add the user's reactions to each edit here so the rules keep improving.

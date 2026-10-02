@@ -178,7 +178,8 @@ files, because Resolve's scripting API cannot set clip volume.
 - The pro edit is a **duplicate of the clean cut** named "<clean cut base name> - Pro Edit vN", so everything the
   editor put on it (transitions, sounds, titles, grades) is kept. The clean cut itself is never modified.
 - New tracks go above whatever exists: "PE Graphics" (zoom and graphic clips), "PE Overlays" (alpha: keyword pops,
-  CTA cards), "PE SFX", "PE Music", "PE Riser" (stereo).
+  CTA cards), "PE Censor" (alpha blur over private details, always topmost, only when the plan has a censor beat),
+  "PE SFX", "PE Music", "PE Riser" (stereo).
 - Clips are placed at exact frames; punch-ins are transforms on V1 items; chapters and a "Listen: hook -> content"
   marker go on the timeline. Verify the build (`references/resolve-assembly.md`) before reporting.
 

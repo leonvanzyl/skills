@@ -2,7 +2,7 @@
 
 Conventions (SKILL.md): `SKILL` this skill's folder, `CW` the CrisperWhisper Python, `PY` the render Python,
 `W` the work dir (every command runs there: `cd "$W"`), `M` the media dir next to the source media.
-Beat ids: `z..` zoom, `p..` punch, `g..` gfx, `w..` words, `c..` cta.
+Beat ids: `z..` zoom, `p..` punch, `g..` gfx, `w..` words, `c..` cta, `x..` censor.
 
 Contents: [1 Setup](#1-setup) · [2 Programme map](#2-programme-map) · [3 Research](#3-research) · [4 Plan](#4-plan) ·
 [5 Render](#5-render) · [6 Audio](#6-audio) · [7 Assemble](#7-assemble-in-resolve) · [8 Edits](#8-edits) · [Timings](#timings)
@@ -59,13 +59,25 @@ Word times for cues: `python -c "import json;P=json.load(open('program.json'));p
 Write `edit_plan.json` (schema: `SKILL/examples/edit_plan_example.json`):
 - `hook_end` (spec section 2), `music` {style, mood, fade_out, optional drop/seed/bpm/key}
 - `beats`: every beat with `id`, `kind`, `t0`/`t1` (programme seconds; snap to frames: round(t*fps)/fps), a `note`
-  saying why it earns its place, and the kind's fields (`zoom.py`, `overlay.py`, `compose.py` docstrings)
+  saying why it earns its place, and the kind's fields (`zoom.py`, `overlay.py`, `compose.py`, `censor.py` docstrings)
 - `chapters` [{t, title}], `caption_fixes` {phrase: replacement}, `publish` {title, description}
 Check before rendering: every hook sentence treated, no two hook beats alike in a row, body density per the spec,
 no beat across a V1 transition or a scene change, no overlap between beats on the same track (graphics/zooms share
 V+1, words/CTAs share V+2).
 
 ## 5. Render
+Censor beats come first, because a zoom inside one bakes the blur into its own frames from the track file:
+```bash
+$PY scripts/censor.py ref 450.0                        # censor/ref_450.0.png, full resolution: measure the word boxes on it
+$PY scripts/censor.py track x01 --jobs 12              # censor/x01_track.json; prints detections per V1 item - check the first and last
+$PY scripts/censor.py scan x01 0 <programme end> --gpu # the same words anywhere else? (NVDEC, so it can run beside renders)
+$PY scripts/censor.py preview x01 442.0 500.0 565.5    # preview/x01_<t>.png - LOOK: the whole block blurred, nothing else
+$PY scripts/censor.py render x01                       # -> $M/x01.mov (ProRes 4444 + alpha) for "PE Censor", the top track
+```
+A V1 transition inside the beat (a Bounce the editor added) can't be followed from the source: render its frames out
+of Resolve, then `censor.py transition x01 <that.mov> <its first timeline frame>` before `render`. It patches the
+outgoing side; check the incoming side by eye.
+
 Preview a few zooms first (frames at rest are bit-identical to V1; a preview decodes only the frames it shows):
 ```bash
 $PY scripts/zoom.py z01 --preview 0.0,1.2,6.5          # preview/z01_<t>.png - LOOK (seconds, not the beat's decode)
@@ -134,6 +146,8 @@ NEW file (`--tag v2` -> `<id>_v2.<ext>`) and swaps it in with
 `media_pool_item replace_clip {clip_id: <the old file's media pool id>, path: <new file>}`: every timeline use of
 that clip picks up the new render in place (tested: same length, same position, new pixels).
 - **A zoom or overlay (same t0/t1):** `zoom.py <id> --tag v2` / `overlay.py <id> --tag v2` -> `replace_clip`.
+- **A censor (same t0/t1):** `censor.py track` -> `censor.py render <id> --tag v2` -> `replace_clip`; re-render
+  every zoom inside the beat too, since they carry the old blur.
 - **A graphic (same t0/t1):** edit `scripts/gfx_<name>.py` -> build -> draft -> `render_gfx.sh full <id>` ->
   `compose.py <id> --tag v2` -> `replace_clip`.
 - **Music or SFX:** edit the plan -> `audio.py` writes the same names; copy the changed WAVs to new names (or
