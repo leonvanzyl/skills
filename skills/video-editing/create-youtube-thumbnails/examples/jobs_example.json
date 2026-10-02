@@ -1,0 +1,256 @@
+[
+ {
+  "id": "v1a",
+  "prompt": "@prompts/v1_floor.txt",
+  "refs": [
+   [
+    "~/.youtube-thumbnails/avatar/leon.jpg",
+    "AVATAR: the real person, reference for his exact likeness"
+   ],
+   [
+    "refs/logos_openai-white_claude.png",
+    "LOGO: OPENAI + CLAUDE: the official OpenAI logo (white knot, left) and the official Claude logo (orange starburst, right), one transparent PNG (combined because the image tool takes at most five reference images)"
+   ],
+   [
+    "competitors/bo0067_daniel-jindoo__EkVRn_Hb7Y.jpg",
+    "LAYOUT REFERENCE: a top-performing niche thumbnail (\"$0 AI AGENT\", Daniel Jindoo, 153k views, 66.5x: flat blue, dark screen-card left, face right pointing); re-make its layout, background, palette, type style and treatment exactly as written in REFERENCE DNA; never copy its person, its words, its logos or its screenshots"
+   ],
+   [
+    "competitors/owntop02_leon-van-zyl_uZGDO0L-Dr4.jpg",
+    "HOUSE STYLE: one of his own best thumbnails (OpenCode Tutorial, 243k views, 24.4x); match how he is photographed and lit, nothing else"
+   ],
+   [
+    "refs/ui/mov_84.png",
+    "UI: a real frame of the CubeFarm app from his recording (the office floor, agents at desks with terminal monitors, the 'Ada · #17' tag); copy its art style for the scene on the tablet"
+   ]
+  ],
+  "out": "out/v1a.png"
+ },
+ {
+  "id": "v1b",
+  "prompt": "@prompts/v1_floor.txt",
+  "refs": [
+   [
+    "~/.youtube-thumbnails/avatar/leon.jpg",
+    "AVATAR: the real person, reference for his exact likeness"
+   ],
+   [
+    "refs/logos_openai-white_claude.png",
+    "LOGO: OPENAI + CLAUDE: the official OpenAI logo (white knot, left) and the official Claude logo (orange starburst, right), one transparent PNG (combined because the image tool takes at most five reference images)"
+   ],
+   [
+    "competitors/bo0067_daniel-jindoo__EkVRn_Hb7Y.jpg",
+    "LAYOUT REFERENCE: a top-performing niche thumbnail (\"$0 AI AGENT\", Daniel Jindoo, 153k views, 66.5x: flat blue, dark screen-card left, face right pointing); re-make its layout, background, palette, type style and treatment exactly as written in REFERENCE DNA; never copy its person, its words, its logos or its screenshots"
+   ],
+   [
+    "competitors/owntop02_leon-van-zyl_uZGDO0L-Dr4.jpg",
+    "HOUSE STYLE: one of his own best thumbnails (OpenCode Tutorial, 243k views, 24.4x); match how he is photographed and lit, nothing else"
+   ],
+   [
+    "refs/ui/mov_84.png",
+    "UI: a real frame of the CubeFarm app from his recording (the office floor, agents at desks with terminal monitors, the 'Ada · #17' tag); copy its art style for the scene on the tablet"
+   ]
+  ],
+  "out": "out/v1b.png"
+ },
+ {
+  "id": "v2a",
+  "prompt": "@prompts/v2_terminal3d.txt",
+  "refs": [
+   [
+    "~/.youtube-thumbnails/avatar/leon.jpg",
+    "AVATAR: the real person, reference for his exact likeness"
+   ],
+   [
+    "refs/claude-mark.png",
+    "LOGO: CLAUDE: the official Claude logo (orange starburst, transparent PNG)"
+   ],
+   [
+    "competitors/bo0033_neuralnine_qg9EyGOZd9U.jpg",
+    "LAYOUT REFERENCE: a top-performing niche thumbnail (\"DEEPSEEK HARNESS IS CRAZY\", NeuralNine, 253k views, 33.3x: dark code wall, glowing cyan/white headline, big screenshot window, face lower right pointing); re-make its layout, background, palette, type style and treatment exactly as written in REFERENCE DNA; never copy its person, its words, its logos or its screenshots"
+   ],
+   [
+    "competitors/owntop02_leon-van-zyl_uZGDO0L-Dr4.jpg",
+    "HOUSE STYLE: one of his own best thumbnails (OpenCode Tutorial, 243k views, 24.4x); match how he is photographed and lit, nothing else"
+   ],
+   [
+    "refs/ui/edit_315.png",
+    "UI: a real frame of the CubeFarm app from his video (over Ada's shoulder at her terminal, 'View Ada's terminal'); this is the content of the screenshot window"
+   ]
+  ],
+  "out": "out/v2a.png"
+ },
+ {
+  "id": "v2b",
+  "prompt": "@prompts/v2_terminal3d.txt",
+  "refs": [
+   [
+    "~/.youtube-thumbnails/avatar/leon.jpg",
+    "AVATAR: the real person, reference for his exact likeness"
+   ],
+   [
+    "refs/claude-mark.png",
+    "LOGO: CLAUDE: the official Claude logo (orange starburst, transparent PNG)"
+   ],
+   [
+    "competitors/bo0033_neuralnine_qg9EyGOZd9U.jpg",
+    "LAYOUT REFERENCE: a top-performing niche thumbnail (\"DEEPSEEK HARNESS IS CRAZY\", NeuralNine, 253k views, 33.3x: dark code wall, glowing cyan/white headline, big screenshot window, face lower right pointing); re-make its layout, background, palette, type style and treatment exactly as written in REFERENCE DNA; never copy its person, its words, its logos or its screenshots"
+   ],
+   [
+    "competitors/owntop02_leon-van-zyl_uZGDO0L-Dr4.jpg",
+    "HOUSE STYLE: one of his own best thumbnails (OpenCode Tutorial, 243k views, 24.4x); match how he is photographed and lit, nothing else"
+   ],
+   [
+    "refs/ui/edit_315.png",
+    "UI: a real frame of the CubeFarm app from his video (over Ada's shoulder at her terminal, 'View Ada's terminal'); this is the content of the screenshot window"
+   ]
+  ],
+  "out": "out/v2b.png"
+ },
+ {
+  "id": "v4a",
+  "prompt": "@prompts/v4_ceo.txt",
+  "refs": [
+   [
+    "~/.youtube-thumbnails/avatar/leon.jpg",
+    "AVATAR: the real person, reference for his exact likeness"
+   ],
+   [
+    "competitors/bo0027_eric-morrison_tmy2ix76_0I.jpg",
+    "LAYOUT REFERENCE: a top-performing niche thumbnail (\"wtf is this...\", Eric Morrison, 130k views, 26.8x: pure black, man centre pointing right at a dark navy card, short lowercase line left); re-make its layout, background, palette, type style and treatment exactly as written in REFERENCE DNA; never copy its person, its words, its logos or its screenshots"
+   ],
+   [
+    "competitors/owntop02_leon-van-zyl_uZGDO0L-Dr4.jpg",
+    "HOUSE STYLE: one of his own best thumbnails (OpenCode Tutorial, 243k views, 24.4x); match how he is photographed and lit, nothing else"
+   ],
+   [
+    "refs/ui/mov_30.png",
+    "UI: a real frame of the CubeFarm app from his recording (the CEO desk, 'Megan · CEO'); this is the content of the card"
+   ]
+  ],
+  "out": "out/v4a.png"
+ },
+ {
+  "id": "v4b",
+  "prompt": "@prompts/v4_ceo.txt",
+  "refs": [
+   [
+    "~/.youtube-thumbnails/avatar/leon.jpg",
+    "AVATAR: the real person, reference for his exact likeness"
+   ],
+   [
+    "competitors/bo0027_eric-morrison_tmy2ix76_0I.jpg",
+    "LAYOUT REFERENCE: a top-performing niche thumbnail (\"wtf is this...\", Eric Morrison, 130k views, 26.8x: pure black, man centre pointing right at a dark navy card, short lowercase line left); re-make its layout, background, palette, type style and treatment exactly as written in REFERENCE DNA; never copy its person, its words, its logos or its screenshots"
+   ],
+   [
+    "competitors/owntop02_leon-van-zyl_uZGDO0L-Dr4.jpg",
+    "HOUSE STYLE: one of his own best thumbnails (OpenCode Tutorial, 243k views, 24.4x); match how he is photographed and lit, nothing else"
+   ],
+   [
+    "refs/ui/mov_30.png",
+    "UI: a real frame of the CubeFarm app from his recording (the CEO desk, 'Megan · CEO'); this is the content of the card"
+   ]
+  ],
+  "out": "out/v4b.png"
+ },
+ {
+  "id": "v5a",
+  "prompt": "@prompts/v5_opensource.txt",
+  "refs": [
+   [
+    "~/.youtube-thumbnails/avatar/leon.jpg",
+    "AVATAR: the real person, reference for his exact likeness"
+   ],
+   [
+    "refs/claude-mark-white.png",
+    "LOGO: CLAUDE: the official Claude logo in white (transparent PNG), for inside the orange tile"
+   ],
+   [
+    "competitors/bo0004_nate-herk_6MC1XqZSltw.jpg",
+    "LAYOUT REFERENCE: a top-performing niche thumbnail (\"$10,000\", Nate Herk, 'I Turned Claude Into a 24/7 Trader', 633k views, 4.3x: dark room, orange tile + white number top-left, laptop left, face right pointing); re-make its layout, background, palette, type style and treatment exactly as written in REFERENCE DNA; never copy its person, its words, its logos or its screenshots"
+   ],
+   [
+    "competitors/owntop02_leon-van-zyl_uZGDO0L-Dr4.jpg",
+    "HOUSE STYLE: one of his own best thumbnails (OpenCode Tutorial, 243k views, 24.4x); match how he is photographed and lit, nothing else"
+   ],
+   [
+    "refs/ui/mov_98.png",
+    "UI: a real frame of the CubeFarm app from his recording (over Linus's shoulder at his terminal, 'Linus · #9'); this is the content of the laptop screen"
+   ]
+  ],
+  "out": "out/v5a.png"
+ },
+ {
+  "id": "v5b",
+  "prompt": "@prompts/v5_opensource.txt",
+  "refs": [
+   [
+    "~/.youtube-thumbnails/avatar/leon.jpg",
+    "AVATAR: the real person, reference for his exact likeness"
+   ],
+   [
+    "refs/claude-mark-white.png",
+    "LOGO: CLAUDE: the official Claude logo in white (transparent PNG), for inside the orange tile"
+   ],
+   [
+    "competitors/bo0004_nate-herk_6MC1XqZSltw.jpg",
+    "LAYOUT REFERENCE: a top-performing niche thumbnail (\"$10,000\", Nate Herk, 'I Turned Claude Into a 24/7 Trader', 633k views, 4.3x: dark room, orange tile + white number top-left, laptop left, face right pointing); re-make its layout, background, palette, type style and treatment exactly as written in REFERENCE DNA; never copy its person, its words, its logos or its screenshots"
+   ],
+   [
+    "competitors/owntop02_leon-van-zyl_uZGDO0L-Dr4.jpg",
+    "HOUSE STYLE: one of his own best thumbnails (OpenCode Tutorial, 243k views, 24.4x); match how he is photographed and lit, nothing else"
+   ],
+   [
+    "refs/ui/mov_98.png",
+    "UI: a real frame of the CubeFarm app from his recording (over Linus's shoulder at his terminal, 'Linus · #9'); this is the content of the laptop screen"
+   ]
+  ],
+  "out": "out/v5b.png"
+ },
+ {
+  "id": "v6a",
+  "prompt": "@prompts/v6_floors.txt",
+  "refs": [
+   [
+    "~/.youtube-thumbnails/avatar/leon.jpg",
+    "AVATAR: the real person, reference for his exact likeness"
+   ],
+   [
+    "competitors/bo0016_metics-media_XXplTbQR9to.jpg",
+    "LAYOUT REFERENCE: a top-performing niche thumbnail (\"PAPERCLIP AI / TUTORIAL\", Metics Media, 322k views, 15.6x: dark warm brown, huge two-line headline with an orange box, laptop lower left, face right pointing); re-make its layout, background, palette, type style and treatment exactly as written in REFERENCE DNA; never copy its person, its words, its logos or its screenshots"
+   ],
+   [
+    "competitors/owntop02_leon-van-zyl_uZGDO0L-Dr4.jpg",
+    "HOUSE STYLE: one of his own best thumbnails (OpenCode Tutorial, 243k views, 24.4x); match how he is photographed and lit, nothing else"
+   ],
+   [
+    "refs/ui/mov_84.png",
+    "UI: a real frame of the CubeFarm app from his recording (the office floor with the orange 'FLOOR 1' sign and the elevator); this is the content of the laptop screen"
+   ]
+  ],
+  "out": "out/v6a.png"
+ },
+ {
+  "id": "v6b",
+  "prompt": "@prompts/v6_floors.txt",
+  "refs": [
+   [
+    "~/.youtube-thumbnails/avatar/leon.jpg",
+    "AVATAR: the real person, reference for his exact likeness"
+   ],
+   [
+    "competitors/bo0016_metics-media_XXplTbQR9to.jpg",
+    "LAYOUT REFERENCE: a top-performing niche thumbnail (\"PAPERCLIP AI / TUTORIAL\", Metics Media, 322k views, 15.6x: dark warm brown, huge two-line headline with an orange box, laptop lower left, face right pointing); re-make its layout, background, palette, type style and treatment exactly as written in REFERENCE DNA; never copy its person, its words, its logos or its screenshots"
+   ],
+   [
+    "competitors/owntop02_leon-van-zyl_uZGDO0L-Dr4.jpg",
+    "HOUSE STYLE: one of his own best thumbnails (OpenCode Tutorial, 243k views, 24.4x); match how he is photographed and lit, nothing else"
+   ],
+   [
+    "refs/ui/mov_84.png",
+    "UI: a real frame of the CubeFarm app from his recording (the office floor with the orange 'FLOOR 1' sign and the elevator); this is the content of the laptop screen"
+   ]
+  ],
+  "out": "out/v6b.png"
+ }
+]

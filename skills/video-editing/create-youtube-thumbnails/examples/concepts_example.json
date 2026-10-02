@@ -1,0 +1,160 @@
+[
+ {
+  "id": "v1",
+  "title": "I Turned My AI Coding Agents Into a Video Game",
+  "angle": "the payoff: the whole office floor of agent-workers at their terminals, plus proof they ship real work",
+  "mechanic": "creator points at a big screen of the payoff, price-style hook in a highlighter band",
+  "hero": "the cartoon 3D office floor in first person: little blocky agent-workers at desks, each black monitor showing a live terminal, a purple name tag 'Ada · #17' over the nearest one",
+  "hero_source": "refs/ui/mov_84.png (clean recording, the floor tour; also mov_98.png 'Linus · #9' at his terminal)",
+  "borrows": "bo0067_daniel-jindoo__EkVRn_Hb7Y.jpg (\"$0 AI AGENT\", Daniel Jindoo, 153k views, 66.5x)",
+  "why_this_reference": "a big dark screen-card on the left that the creator points at from the right: the screen holds a whole scene, so the office floor is shown big and clean, and the floating Claude + OpenAI stickers in the reference are exactly the two agent brands the video names",
+  "dna": {
+   "background": "#325C93 mid cobalt/denim blue, flat with a soft fabric texture and a gentle vignette; one thin light-blue diagonal line (#52739C) from the bottom-left corner (x 4%) up to the top edge at x 34%, the area left of it a touch lighter",
+   "subject": "photographic cut-out, no outline; soft frontal studio light; a soft dark drop shadow on the wall behind him, to the right of his head",
+   "type": "heavy geometric sans (Inter/Roboto Black feel), ALL CAPS, white #FFFFFF with a faint dark drop shadow, one line top-left; a solid flat coral-orange highlighter band #D56846 behind the lower 45% of the letters",
+   "hero_treatment": "a black rounded-rectangle tablet/phone in landscape with a thin grey bezel and soft shadow, tilted about 3 degrees counter-clockwise, at x 10-42%, y 37-70% (about a third of the frame); small flat logo stickers float around it (white OpenAI knot, orange Claude starburst), each about 9% of the frame height, with soft shadows",
+   "grid": "text x 4.5-56%, y 9-27%, cap height about 13%; screen x 10-42%, y 37-70%; face right, figure x 55-93%, head top at 5%, eyes at 26%, face about 15% of the frame width; his right hand points left at the screen at chest height (y 55-63%)",
+   "finish": "bright, clean, soft photographic studio light; no glow"
+  },
+  "house": "owntop02_leon-van-zyl_uZGDO0L-Dr4.jpg (OpenCode Tutorial, 243k views, 24.4x)",
+  "text": "16 PRs MERGED",
+  "face": "right, pointing left at the screen, calm satisfied closed-mouth smile, eyes on the lens",
+  "palette": "the reference's: cobalt blue #325C93, coral band #D56846, white",
+  "logos": [
+   "refs/claude-mark.png (stamped)",
+   "refs/openai-mark-white.png (stamped)"
+  ],
+  "claims": [
+   "Each little worker is a real Claude Code / Codex agent: \"Each of these little workers sitting here are actual Claude Code or Codex agents.\" (0:07)",
+   "16 PRs merged: the in-world trophy sign over the CEO desk reads \"16 PRs merged\" (edit 2:51)",
+   "PRs auto-merge: \"this app will also merge the pull requests automatically\" (8:41)"
+  ],
+  "why": "Pictures title 1 literally (the agents as workers at their terminals) and answers the 'kids' game' misread with a real result number from the video: they merge pull requests.",
+  "rank": 1,
+  "file": "A_16-prs-merged"
+ },
+ {
+  "id": "v2",
+  "title": "Forget the Terminal. This Is the Future of AI Coding",
+  "angle": "the old way is the background (a wall of terminal text); the new way is the screen: the agent's terminal now sits on her desk in a 3D office",
+  "mechanic": "big-screen proof on a dark code background, two-colour glowing headline",
+  "hero": "over the shoulder of Ada, a blocky cartoon agent with curly blond hair and a blue sweater, at her desk; her black monitor shows her live terminal; the in-game prompt 'View Ada's terminal'",
+  "hero_source": "refs/ui/edit_315.png (edited video, the walk-up to Ada's desk)",
+  "borrows": "bo0033_neuralnine_qg9EyGOZd9U.jpg (\"DEEPSEEK HARNESS IS CRAZY\", NeuralNine, 253k views, 33.3x)",
+  "why_this_reference": "its background is literally a dim wall of code on near-black (our villain, the terminal) and its hero is one big screenshot window the creator points at: the 3D office goes in the window, so old and new are both in the picture without a crossed-out split",
+  "dna": {
+   "background": "#020204 near-black, flat, covered edge to edge in dim low-contrast code text (dark grey #232428 and blue-grey #363E46, like an editor at 15% brightness)",
+   "subject": "no outline; soft key light on the face from the left, his dark clothing melts into the black background",
+   "type": "tall heavy condensed sans caps (Bebas Neue / Oswald Bold feel), one line across the top; the first words bright cyan #04F4FD with a strong cyan outer glow, the last words white #FFFFFF with a soft white glow",
+   "hero_treatment": "one big flat screenshot window with a thin light-grey border, straight (not tilted), x 8.5-71%, y 28-91%; the product logo overlaps its bottom-left corner at x 6-18%, y 76-93%",
+   "grid": "headline x 7-93%, y 7-23%, cap height about 15%; window x 8.5-71%, y 28-91%; face lower right, figure x 67-100%, head top at 29%, eyes at 44%, face about 17% of the frame width; his right hand points up-left at the window (x 74-83%, y 63-77%)",
+   "finish": "dark, high-contrast, neon-glow text, crisp screenshot"
+  },
+  "house": "owntop02_leon-van-zyl_uZGDO0L-Dr4.jpg (OpenCode Tutorial, 243k views, 24.4x)",
+  "text": "CLAUDE CODE IN 3D",
+  "face": "lower right, pointing at the window, knowing half-smirk, eyes on the lens",
+  "palette": "the reference's: near-black #020204, cyan #04F4FD, white",
+  "logos": [
+   "refs/claude-mark.png (stamped)"
+  ],
+  "claims": [
+   "The workers are Claude Code agents: \"Each of these little workers sitting here are actual Claude Code or Codex agents.\" (0:07); the floor sign reads \"A cartoon 3D office where a swarm of Claude Code agents...\" (clean recording)",
+   "You see each agent's live terminal in the world: \"we can see in real time the actual terminal UI and agent browser.\" (5:15)",
+   "The old way is the terminal: \"It all works, but it's not very sexy\" (0:58)"
+  ],
+  "why": "Title 2 names the villain (the terminal); the picture shows the terminal moved into a 3D office, and the words name the tool the audience searches for (claude code, 2.48M/month).",
+  "rank": 2,
+  "file": "B_claude-code-in-3d"
+ },
+ {
+  "id": "v6",
+  "title": "My AI Software Factory Is Now a 3D World",
+  "angle": "every project is its own floor of the 3D office (the elevator between them)",
+  "mechanic": "huge two-line headline with a highlight box, creator pointing at a laptop showing the product",
+  "hero": "a laptop screen showing the cartoon 3D office floor: little blocky agent-workers at desks with black terminal monitors, the elevator, and the big orange wall sign 'FLOOR 1' (the repo line under it reduced to a small light line)",
+  "hero_source": "refs/ui/mov_84.png (clean recording, the floor tour with the FLOOR 1 sign and the elevator)",
+  "borrows": "bo0016_metics-media_XXplTbQR9to.jpg (\"PAPERCLIP AI / TUTORIAL\", Metics Media, 322k views, 15.6x)",
+  "why_this_reference": "a laptop showing the product in the lower left, the creator pointing at it from the right, and a huge two-line headline with an orange box: room for a 4-word hook at full size, and the screen holds the floor scene",
+  "dna": {
+   "background": "#120D0B near-black warm charcoal-brown, flat, with a faint thin grid of slightly lighter lines and a soft warm orange glow (#4C2717) behind the man on the right",
+   "subject": "no outline; soft frontal light with a warm orange rim light on the right edge of his head and shoulder from the glow",
+   "type": "huge heavy geometric sans caps (Montserrat Black / Gilroy Heavy feel), line 1 white #FFFFFF, line 2 white on a solid orange box #E2623A (sampled #F37654; deepened by Delta E 8.6 so white text reaches 3.5:1 instead of 2.8:1), both left-aligned to the top-left",
+   "hero_treatment": "an open laptop with a thin silver bezel seen straight on, its screen filling x 1-67%, y 41-100% (bottom cut by the frame), showing the product UI dark and big (the reference also floats a glossy product tile in front of the screen; dropped here because a logo tile would make a logo the hero)",
+   "grid": "line 1 x 3-67%, y 5-21%, cap height about 15%; line 2 box x 13-58%, y 22-38%, cap height about 12%; laptop x 1-67%, y 41-100%; face right, figure x 63-100%, head top at 3%, eyes at 31%, face about 22% of the frame width; his right hand (on the viewer's left) points left at the laptop (x 54-68%, y 66-78%)",
+   "finish": "dark, warm, crisp, a soft orange glow"
+  },
+  "house": "owntop02_leon-van-zyl_uZGDO0L-Dr4.jpg (OpenCode Tutorial, 243k views, 24.4x)",
+  "text": "ONE FLOOR PER REPO",
+  "face": "right, pointing at the laptop, knowing half-smirk, eyes on the lens",
+  "palette": "the reference's: near-black warm brown #120D0B, orange box #E2623A, white",
+  "logos": [],
+  "claims": [
+   "Each project is its own floor: \"Each of our projects are on a separate floor within this 3D world. So we can simply go to the elevator\" (4:50-4:56)"
+  ],
+  "why": "Title 3 needs the 3D world and the scale of the system; the hook (each repo is its own floor) is a concrete structural fact the title can't say, and the floor sign + elevator in the real frame back it.",
+  "rank": 3,
+  "file": "C_one-floor-per-repo"
+ },
+ {
+  "id": "v5",
+  "title": "I Turned My AI Coding Agents Into a Video Game",
+  "angle": "spare: same title formula as the reference ('I Turned Claude Into...'), the floor on a laptop, hook = open source",
+  "mechanic": "logo tile + payoff word, creator pointing at a laptop showing the result",
+  "hero": "a laptop screen showing the cartoon 3D office floor: Linus, a blocky agent, at his desk with a live terminal on his monitor, more workers at desks behind, a purple name tag 'Linus · #9'",
+  "hero_source": "refs/ui/mov_98.png (clean recording)",
+  "borrows": "bo0004_nate-herk_6MC1XqZSltw.jpg (\"$10,000\", Nate Herk, \"I Turned Claude Into a 24/7 Trader\", 633k views, 4.3x)",
+  "why_this_reference": "the same 'I Turned X Into Y' title formula, a laptop screen showing the result, the creator pointing at it",
+  "dna": {
+   "background": "#2C2C2A dark charcoal room, flat and soft, the laptop casting a warm orange glow",
+   "subject": "no outline; soft frontal light",
+   "type": "heavy rounded bold sans, white #FFFFFF with a soft white glow, one line top-left beside a glossy orange app tile with a glow",
+   "hero_treatment": "a laptop screen filling x 5-63%, y 31-100%, dark bezel, warm orange glow around it",
+   "grid": "tile x 3.5-15.5%, y 5-26%; text x 18-64%, y 7-26%, cap height about 18%; face right, figure x 62-98%, head top at 7%, eyes at 43%, face about 22% of the frame width; his right hand points up-left at the screen (x 58-70%, y 62-80%)",
+   "finish": "warm, moody, glow"
+  },
+  "house": "owntop02_leon-van-zyl_uZGDO0L-Dr4.jpg (OpenCode Tutorial, 243k views, 24.4x)",
+  "text": "OPEN SOURCE",
+  "face": "right, pointing at the laptop, calm satisfied closed-mouth smile, eyes on the lens",
+  "palette": "the reference's: charcoal #2C2C2A, Claude orange tile, white",
+  "logos": [
+   "refs/claude-mark.png (stamped, inside the tile)"
+  ],
+  "claims": [
+   "Open source and free: \"this is completely open source. It's free to use.\" (10:37)"
+  ],
+  "why": "Spare for title 1 with a different hook (open source instead of a result number).",
+  "rank": 4,
+  "file": "D_open-source"
+ },
+ {
+  "id": "v4",
+  "title": "Forget the Terminal. This Is the Future of AI Coding",
+  "angle": "you don't drive the agents from a terminal: you text an AI CEO who runs them",
+  "mechanic": "creator centre on black pointing at a product card, a short lowercase reaction line",
+  "hero": "the CEO agent's corner desk: a blocky cartoon CEO in a black suit at her desk typing at a monitor full of terminal text, the white name tag 'Megan · CEO', the purple 'Megan's board' sign behind",
+  "hero_source": "refs/ui/mov_30.png (clean recording, the CEO desk; 'P texts them from anywhere')",
+  "borrows": "bo0027_eric-morrison_tmy2ix76_0I.jpg (\"wtf is this...\", Eric Morrison, 130k views, 26.8x)",
+  "why_this_reference": "a centred creator on pure black pointing at one flat product card: the CEO-desk frame becomes the card, and the reference's short lowercase reaction line carries the hook",
+  "dna": {
+   "background": "#000000 pure black, flat; the man's edges fall off into the black",
+   "subject": "no outline; one soft key light from the front-left, black t-shirt, no rim light",
+   "type": "clean semibold sans (Open Sans Semibold feel), lowercase, white #FFFFFF, no stroke, no box, left of the man at mid-height",
+   "hero_treatment": "one flat dark-navy rectangle card #0E1824 with square corners, x 60-93%, y 35.5-64.5%, straight, holding the product",
+   "grid": "man centre, figure x 19-74%, head top at 13%, eyes at 38%, face about 17% of the frame width; his left hand (on the viewer's right) points right across his chest at the card (x 50-61%, y 66-76%); text x 9-35%, y 45-55%",
+   "finish": "moody talking-head, single key light, natural skin"
+  },
+  "house": "owntop02_leon-van-zyl_uZGDO0L-Dr4.jpg (OpenCode Tutorial, 243k views, 24.4x)",
+  "text": "texting my AI CEO",
+  "face": "centre, pointing right at the card, one eyebrow slightly raised, eyes on the lens",
+  "palette": "the reference's: pure black, dark navy card #0E1824, white",
+  "logos": [],
+  "claims": [
+   "You text the CEO from a phone: \"From our mobile phone, we can interact with Morgan, which is our CEO.\" (1:25-1:32, 3:25-3:32); in-game prompt \"P texts them from anywhere\" (mov_30)",
+   "You talk to a CEO, not the agents: \"our primary contact is our CEO agent. The CEO agent can hire new agents, it can manage their workload\" (1:24-1:31)"
+  ],
+  "why": "A second angle on title 2: not the terminal moved into a game, but the way you manage the team (you message a CEO agent). The CEO desk is a real frame with a terminal on her monitor as the tech cue.",
+  "text_note": "the stranger test saw \"i text my AI CEO\" (5 words); cut to 4 words for the spec, same meaning. Set in two lines at about 9-10% cap height: the reference line is about 5% cap height and its slot (left of the centred man) is too narrow for the spec's 12% floor",
+  "rank": 5,
+  "file": "(spare, not delivered)"
+ }
+]

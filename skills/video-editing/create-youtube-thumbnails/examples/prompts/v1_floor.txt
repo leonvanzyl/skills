@@ -1,0 +1,28 @@
+FORMAT: A YouTube thumbnail, 16:9 landscape. A faithful re-make of the LAYOUT REFERENCE for a different video: same layout, background, palette, type style and treatment; only the person, the words and the hero content change.
+
+REFERENCE DNA (keep exactly): a flat mid cobalt-denim blue background #325C93 with a soft fabric texture and a gentle vignette; one thin light-blue diagonal line #52739C runs from the bottom edge at 4% of the width up to the top edge at 34% of the width, and the area left of it is a touch lighter. The man is a photographic cut-out with no outline, soft frontal studio light and a soft dark drop shadow on the blue wall to the right of his head. He stands on the right (body x 55-93%), head top at 5% of the frame height, eyes at 26%, face about 15% of the frame width, cropped at mid-torso by the bottom edge; his right hand (on the viewer's left) points left at the screen at chest height. The hero is a black rounded-rectangle tablet in landscape with a thin grey bezel and a soft shadow, tilted about 3 degrees counter-clockwise, at x 10-42%, y 37-70%. Two small flat logo stickers float beside it with soft shadows, each about 9% of the frame height. Text: one line at the top left, heavy geometric sans in ALL CAPS, white, with a faint dark drop shadow, and a solid flat coral-orange highlighter band behind the lower half of the letters. Bright, clean studio finish, no glow.
+
+PERSON: {LIKENESS}
+  Treatment: photographic cut-out with no outline, a soft dark drop shadow on the blue wall to the right of his head, as the reference.
+  Position: right side, body from x 55% to 93% of the width, head top at 5% of the frame height, eyes at about 26%, face about 15% of the frame width (from about x 67% to 82%), cropped at mid-torso by the bottom edge.
+  Expression: a calm, satisfied closed-mouth smile, relaxed brows. Natural, not exaggerated.
+  {GAZE}
+  Hands: his right hand (on the viewer's left) is raised at chest height (about 55-62% of the frame height), index finger pointing left at the tablet. Natural hand, five fingers. His other arm hangs down out of frame.
+
+HERO: a black rounded-rectangle tablet in landscape, thin grey bezel, soft shadow, tilted about 3 degrees counter-clockwise, at x 10-42% and y 37-70% of the frame, exactly where and how the reference shows its dark card. Its screen is filled edge to edge with the CubeFarm office floor from the reference image labelled UI, seen in first person: rows of light wooden desks receding into the distance, little blocky cartoon agent-workers sitting at them in orange chairs, each facing a black monitor with a dark terminal window of green and white lines; the nearest worker, on the right of the screen (a woman with a dark bun and a purple top, typing), has a rounded white name tag with a purple outline floating above her that reads exactly "Ada · #17". {CUBEFARM STYLE}
+  Two small flat logo stickers float in the gap between the tablet and the man, as in the reference, each about 9% of the frame height with a soft shadow: the white OpenAI knot (the left mark in the reference image labelled LOGO: OPENAI + CLAUDE, no tile) at about x 46%, y 33%, and the orange Claude starburst (the right mark in that image, no tile) at about x 44%, y 76%.
+
+TEXT: Exactly "16 PRs MERGED" (3 words; the "s" in "PRs" is lowercase), in the reference's type style: heavy geometric sans (Inter Black / Roboto Black feel), white #FFFFFF, one line at the top left starting at x 4.5% and ending by x 60% of the width (never touching his head), cap height about 12% of the frame height, top of the letters at 10% of the frame height, with a faint dark drop shadow. A solid flat coral-orange highlighter band #D56846 runs behind the lower 45% of the letters, from x 4% to the end of the word, as the reference. No other text anywhere in the image except the small "Ada · #17" name tag on the screen.
+
+LOGOS: Reproduce the two marks in the reference image labelled LOGO: OPENAI + CLAUDE exactly as given: the white OpenAI knot and the orange Claude starburst (#D97757), same shape, ray count, proportions and colours, flat, no tile behind them; do not redraw, restyle or add text to them.
+
+LAYOUT: {LAYOUT REFERENCE}
+HOUSE: {HOUSE STYLE}
+
+BACKGROUND AND LIGHT: flat mid cobalt-denim blue #325C93 with a soft fabric texture and a gentle vignette, and the thin light-blue diagonal line from the bottom-left up to the top at 34% of the width, as the reference. Soft frontal studio light, no glow, no coloured rim light.
+
+KEEP CLEAR: {KEEP CLEAR}
+
+AVOID: extra text, watermarks, fake UI with gibberish text, extra fingers or hands, warped letters, busy small detail, any background or colour scheme other than the reference's blue, a phone game, robots, mascots, logo tiles standing in for the workers, an open mouth.
+
+{STYLE RULES}

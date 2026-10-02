@@ -1,0 +1,27 @@
+FORMAT: A YouTube thumbnail, 16:9 landscape. A faithful re-make of the LAYOUT REFERENCE for a different video: same layout, background, palette, type style and treatment; only the person, the words and the hero content change.
+
+REFERENCE DNA (keep exactly): a near-black flat background #020204 covered edge to edge in dim, low-contrast lines of code (dark grey and blue-grey, like a code editor at 15% brightness). One line of huge, tall, heavy condensed sans capitals across the top (x 7-93%, y 7-23%, cap height about 15%): the first words bright cyan with a strong cyan outer glow, the last words white with a soft white glow. One big flat screenshot window with a thin light-grey border, straight (not tilted), at x 8.5-71%, y 28-91%. The product logo (a flat colour mark, no tile) overlaps the window's bottom-left corner at x 6-18%, y 76-93%. The man sits in the lower right (body x 67-100%), head top at 29% of the frame height, eyes at 44%, face about 17% of the frame width, no outline, a soft key light on his face from the left, his dark clothing melting into the black; his right hand (on the viewer's left) points up-left at the window. Dark, high-contrast finish with neon-glow type.
+
+PERSON: {LIKENESS}
+  Treatment: no outline, no rim light; a soft key light on his face from the left; his navy t-shirt falls off into the black background, as the reference.
+  Position: lower right, body from x 67% to 100% of the width, head top at 29% of the frame height, eyes at about 44%, face about 17% of the frame width (from about x 75% to 91%), cut at the chest by the bottom edge.
+  Expression: a confident, knowing half-smirk: lips closed, one corner of the mouth slightly raised, the brow on that side lifted a few millimetres. Natural, not exaggerated.
+  {GAZE}
+  Hands: his right hand (on the viewer's left) is raised in front of his chest, index finger pointing up and to the left at the screenshot window (the hand at about x 72-82%, y 64-77%). Natural hand, five fingers. His other arm is out of frame.
+
+HERO: one big flat screenshot window with a thin light-grey border, straight, at x 8.5-71% and y 28-91% of the frame, exactly where and how the reference shows its app window. It is filled edge to edge with the real CubeFarm frame from the reference image labelled UI: over the shoulder of Ada, a blocky cartoon agent-worker with big curly blond hair, dark-framed glasses and a blue sweater, sitting at her light wooden desk (the back of her head fills the left third of the window); her black monitor in the centre-right of the window shows a dark terminal window with green and white lines beside a small light browser panel; a white keyboard, a small potted cactus, big windows with blue sky, white clouds and pale city blocks behind. A rounded white prompt box with a thick black outline near the bottom of the window reads exactly "View Ada's terminal". {CUBEFARM STYLE}
+
+TEXT: Exactly "CLAUDE CODE IN 3D" (4 words), in the reference's type style: tall heavy condensed sans capitals (Bebas Neue / Oswald Bold feel), one line across the top from x 7% to 93% of the width, cap height about 15% of the frame height, top of the letters at 7%. "CLAUDE CODE" is bright cyan #04F4FD and "IN 3D" is white #FFFFFF; the cyan words have a strong cyan outer glow and the white words a soft white glow, as the reference. No other text anywhere in the image except the "View Ada's terminal" prompt inside the window.
+
+LOGOS: Reproduce the reference image labelled LOGO: CLAUDE exactly as given (the orange starburst, flat, no tile), overlapping the window's bottom-left corner at x 6-17% and y 76-92%, about 16% of the frame height, as the reference places its product logo. {CLAUDE LOGO}
+
+LAYOUT: {LAYOUT REFERENCE}
+HOUSE: {HOUSE STYLE}
+
+BACKGROUND AND LIGHT: near-black #020204, flat, covered edge to edge in dim low-contrast lines of terminal code (dark grey and blue-grey at about 15% brightness), as the reference. A soft key light on his face from the left; no coloured rim light, no orange glow.
+
+KEEP CLEAR: {KEEP CLEAR}
+
+AVOID: extra text, watermarks, fake UI with gibberish text, extra fingers or hands, warped letters, busy small detail, any background or colour scheme other than the reference's near-black code wall, headphones, a red X or a crossed-out terminal, robots, mascots, an open mouth.
+
+{STYLE RULES}

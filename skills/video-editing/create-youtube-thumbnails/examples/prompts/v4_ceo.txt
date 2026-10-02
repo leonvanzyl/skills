@@ -1,0 +1,25 @@
+FORMAT: A YouTube thumbnail, 16:9 landscape. A faithful re-make of the LAYOUT REFERENCE for a different video: same layout, background, palette, type style and treatment; only the person, the words and the hero content change.
+
+REFERENCE DNA (keep exactly): a pure black flat background #000000. The man stands in the centre (body x 19-74%), head top at 13% of the frame height, eyes at 38%, face about 17% of the frame width, lit by one soft key light from the front-left, no outline, no rim light, his edges falling off into the black. His left hand (on the viewer's right) points right across his chest at the card. One flat dark-navy rectangle card with square corners at x 60-93%, y 35.5-64.5%, straight, holding the product. A short lowercase line in a clean semibold sans, white, with no stroke and no box, sits to the left of the man at mid-height. Moody, natural talking-head finish.
+
+PERSON: {LIKENESS}
+  Treatment: no outline, no rim light, one soft key light from the front-left; his navy t-shirt falls off into the black, as the reference.
+  Position: centre, body from x 22% to 72% of the width, head top at 13% of the frame height, eyes at about 38%, face about 17% of the frame width (from about x 40% to 57%), cut at the upper chest by the bottom edge.
+  Expression: skeptical-knowing: one eyebrow raised slightly, lips closed in a faint, amused line. Natural, not exaggerated.
+  {GAZE}
+  Hands: his left hand (on the viewer's right) comes across his chest at about 66-76% of the frame height, index finger pointing right at the card. Natural hand, five fingers. His other arm is out of frame.
+
+HERO: one flat dark-navy card #0E1824 with square corners, straight, at x 60-94% and y 33-66% of the frame, exactly where and how the reference shows its product card. Inside it, with a thin navy margin, the real CubeFarm frame from the reference image labelled UI, simplified and oversized: the CEO's corner desk in the cartoon 3D office, a blocky cartoon CEO character with dark hair in a bun and a black suit sitting in a purple office chair seen from behind and to the right, typing at a black monitor that shows a dark terminal window with green and white lines; a light wooden desk with a small potted cactus; a rounded white name tag with a purple outline floating above her that reads exactly "Megan · CEO"; part of a big purple wall sign behind her with only light lines on it (no readable words). {CUBEFARM STYLE}
+
+TEXT: Exactly "texting my AI CEO" (4 words; "texting my" lowercase, "AI CEO" in capitals), in the reference's type style: a clean semibold sans (Open Sans Semibold feel), white #FFFFFF, no stroke, no box, no glow. Set left-aligned in two lines to the left of the man at mid-height: "texting my" on the first line and "AI CEO" on the second, the block from x 4% to at most 35% of the width and from y 38% to 62%, cap height about 9-10% of the frame height (as large as fits in that block), never touching his face or shoulder. No other text anywhere in the image except the small "Megan · CEO" name tag inside the card.
+
+LAYOUT: {LAYOUT REFERENCE}
+HOUSE: {HOUSE STYLE}
+
+BACKGROUND AND LIGHT: pure black #000000, flat, as the reference. One soft key light from the front-left on his face; no rim light, no glow, no coloured light.
+
+KEEP CLEAR: {KEEP CLEAR}
+
+AVOID: extra text, watermarks, fake UI with gibberish text, extra fingers or hands, warped letters, busy small detail, any background other than the reference's pure black, glasses, a phone in his hand, robots, mascots, logos, an open mouth.
+
+{STYLE RULES}

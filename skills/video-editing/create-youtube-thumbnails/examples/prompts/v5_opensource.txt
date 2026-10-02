@@ -1,0 +1,27 @@
+FORMAT: A YouTube thumbnail, 16:9 landscape. A faithful re-make of the LAYOUT REFERENCE for a different video: same layout, background, palette, type style and treatment; only the person, the words and the hero content change.
+
+REFERENCE DNA (keep exactly): a dark charcoal background #2C2C2A, a soft dim room with no detail, flat. A glossy rounded orange app tile with a soft orange glow sits at the top left (x 3.5-15.5%, y 5-26%) holding the product mark in white; next to it, one line of heavy rounded bold sans, white with a soft white glow (x 18-64%, y 7-26%). The hero is a laptop screen with a dark bezel filling x 5-63%, y 31-100% (its bottom cut by the frame), with a warm orange glow around its edges. The man is on the right (body x 62-98%), head top at 7% of the frame height, eyes at 43%, face about 22% of the frame width, no outline, soft frontal light; his right hand (on the viewer's left) points up-left at the screen. Warm, moody finish with glow.
+
+PERSON: {LIKENESS}
+  Treatment: no outline, soft frontal light, a faint warm glow from the laptop on the near side of his face, as the reference.
+  Position: right side, body from x 62% to 98% of the width, head top at 7% of the frame height, eyes at about 43%, face about 22% of the frame width (from about x 68% to 90%), cut at the chest by the bottom edge.
+  Expression: a calm, satisfied closed-mouth smile, relaxed brows. Natural, not exaggerated.
+  {GAZE}
+  Hands: his right hand (on the viewer's left) is raised at about 62-80% of the frame height, index finger pointing up and to the left at the laptop screen (the hand at about x 58-70%). Natural hand, five fingers. His other arm is out of frame.
+
+HERO: a laptop screen with a thin dark bezel filling x 5% to 63% of the width and y 31% to 100% of the height (its bottom edge cut by the frame), with a warm orange glow around its edges, exactly where and how the reference shows its laptop. The screen is filled edge to edge with the real CubeFarm frame from the reference image labelled UI: over the shoulder of Linus, a blocky cartoon agent-worker with a round black head and a purple shirt in an orange chair, at his light wooden desk, his black monitor showing a dark terminal window with green and white lines; behind him, more little cartoon workers at desks with black monitors and a big whiteboard; a rounded white name tag with a purple outline and a green check box floats above his monitor and reads exactly "Linus · #9". {CUBEFARM STYLE}
+
+TEXT: Exactly "OPEN SOURCE" (2 words, all caps), in the reference's type style: heavy rounded bold sans, white #FFFFFF with a soft white glow, one line at the top left from x 18% to at most 62% of the width (never touching his head), cap height about 12% of the frame height, vertically centred on the orange tile. No other text anywhere in the image except the small "Linus · #9" name tag on the screen.
+
+LOGOS: A glossy rounded orange app tile (#E96E4D) with a soft orange glow at the top left, x 3.5-15.5% and y 5-26% of the frame, as the reference. Inside it, reproduce the reference image labelled LOGO: CLAUDE exactly as given (the Claude starburst in white): same shape, ray count and proportions, centred, about 70% of the tile's width.
+
+LAYOUT: {LAYOUT REFERENCE}
+HOUSE: {HOUSE STYLE}
+
+BACKGROUND AND LIGHT: dark charcoal #2C2C2A, flat, a soft dim room with no visible detail, as the reference. Soft frontal light on his face and a warm orange glow around the laptop screen; no coloured rim light on his hair.
+
+KEEP CLEAR: {KEEP CLEAR}
+
+AVOID: extra text, watermarks, fake UI with gibberish text, a stock chart, extra fingers or hands, warped letters, busy small detail, any background or colour scheme other than the reference's dark charcoal, robots, mascots, an open mouth or a toothy grin.
+
+{STYLE RULES}

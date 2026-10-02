@@ -1,0 +1,25 @@
+FORMAT: A YouTube thumbnail, 16:9 landscape. A faithful re-make of the LAYOUT REFERENCE for a different video: same layout, background, palette, type style and treatment; only the person, the words and the hero content change.
+
+REFERENCE DNA (keep exactly): a near-black warm charcoal-brown background #120D0B, flat, with a faint thin grid of slightly lighter lines and a soft warm orange glow behind the man on the right. A huge two-line headline at the top left in a heavy geometric sans, all caps: line 1 white (x 3-67%, y 5-21%, cap height about 15%), line 2 white on a solid orange box (box x 13-58%, y 22-38%). The hero is an open laptop with a thin silver bezel seen straight on, its screen filling x 1-67%, y 41-100% (bottom cut by the frame), showing the product big. The man is on the right (body x 63-100%), head top at 3% of the frame height, eyes at 31%, face about 22% of the frame width, no outline, soft frontal light with a warm orange rim light on the right edge of his head and shoulder; his right hand (on the viewer's left) points left at the laptop. Dark, warm, crisp finish.
+
+PERSON: {LIKENESS}
+  Treatment: no outline; soft frontal light and a warm orange rim light on the right edge of his hair and shoulder from the glow behind him, as the reference.
+  Position: right side, body from x 63% to 100% of the width, head top at 4% of the frame height, eyes at about 31%, face about 22% of the frame width (from about x 70% to 92%), cut at the chest by the bottom edge.
+  Expression: a confident, knowing half-smirk: lips closed, one corner of the mouth slightly raised, the brow on that side lifted a few millimetres. Natural, not exaggerated.
+  {GAZE}
+  Hands: his right hand (on the viewer's left) is raised at about 64-78% of the frame height, index finger pointing left at the laptop screen (the hand at about x 54-68%). Natural hand, five fingers. His other arm is out of frame.
+
+HERO: an open laptop with a thin silver bezel, seen straight on, its screen filling x 1% to 67% of the width and y 41% to 100% of the height (its bottom cut by the frame), exactly where and how the reference shows its laptop, but with no app tile floating in front of it. The screen is filled edge to edge with the real CubeFarm floor from the reference image labelled UI, in first person: a long office floor with rows of light wooden desks and little blocky cartoon agent-workers in orange chairs at black monitors with dark terminal windows (green and white lines); on the right wall a big orange sign that reads exactly "FLOOR 1" in large white italic letters (the smaller line under it becomes a thin light line, no readable words), and a grey elevator door next to it. {CUBEFARM STYLE}
+
+TEXT: Exactly "ONE FLOOR PER REPO" (4 words, all caps), in the reference's type style: a heavy geometric sans (Montserrat Black / Gilroy Heavy feel). Line 1 "ONE FLOOR" in white #FFFFFF at the top left, x 3% to at most 62% of the width, cap height about 15% of the frame height, top of the letters at 5%. Line 2 "PER REPO" in white with a faint dark drop shadow on a solid orange box #E2623A just below it, the box from x 3% to about 52% and y 22% to 38%, cap height about 11%. No other text anywhere in the image except "FLOOR 1" on the laptop screen.
+
+LAYOUT: {LAYOUT REFERENCE}
+HOUSE: {HOUSE STYLE}
+
+BACKGROUND AND LIGHT: near-black warm charcoal-brown #120D0B, flat, with a faint thin grid of slightly lighter lines and a soft warm orange glow behind the man on the right, as the reference. Soft frontal light on his face and a warm orange rim light on his right edge.
+
+KEEP CLEAR: {KEEP CLEAR}
+
+AVOID: extra text, watermarks, fake UI with gibberish text, a glossy app tile or logo in front of the laptop, a paperclip, glasses, extra fingers or hands, warped letters, busy small detail, any background or colour scheme other than the reference's dark warm brown, robots, mascots, an open mouth.
+
+{STYLE RULES}
