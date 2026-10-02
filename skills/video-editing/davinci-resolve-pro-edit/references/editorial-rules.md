@@ -105,3 +105,7 @@ Add the user's reactions to each edit here so the rules keep improving.
 - 2026-09-26, Jev video: "excellent job", "phenomenal" - no pacing complaints. Keep this level of cutting.
 - 2026-09-29, Sonnet 5.5 vs Opus 5.5 vs Fable 5.1 video: 399 clips, 22:59 -> 142 clips, 11:11 (51% removed).
   User confirmed CrisperWhisper + hotwords is the right setup, and the mislabelled-demo call. Pacing feedback pending.
+- 2026-09-30, Cubefarm demo (cubefarm-demo project): 336 clips, 23:11 -> 192 clips, 16:09 (30% removed, 45 in-clip
+  cuts). Lower than the 45-51% of earlier videos: many clips were already single clean takes. Two things QA caught:
+  a stutter the first transcript hid ("I am" was really "I, I'm") and a word said twice across a silence-cut
+  boundary ("career advice, issues || issues, new model releases"). Pacing feedback pending.
