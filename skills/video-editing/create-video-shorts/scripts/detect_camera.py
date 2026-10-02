@@ -14,11 +14,11 @@ p = subprocess.run(['ffmpeg', '-v', 'error', '-i', C.PROXY, '-vf', 'select=' + '
                     '-f', 'rawvideo', '-pix_fmt', 'bgr24', '-'], capture_output=True)
 frames = np.frombuffer(p.stdout, np.uint8).reshape(-1, ph, pw, 3)
 import faces as FD
-faces = []
-for f in frames:
+faces = []; face_t = []
+for k, f in enumerate(frames):
     d = FD.detect(f)
-    if d: faces.append([int(v) for v in d[0][:4]])
-faces = np.array(faces)
+    if d: faces.append([int(v) for v in d[0][:4]]); face_t.append(idx[k] / C.PROXY_FPS)
+faces = np.array(faces); face_t = np.array(face_t)
 if len(faces) == 0:
     print('no face found in the samples - set camera manually in project.json'); sys.exit(1)
 # a real full-frame camera face is large AND horizontally central; a webcam window sits off to a side
@@ -28,7 +28,7 @@ s = C.SRC_W / pw
 if big.mean() > 0.5:
     cam = {'mode': 'full', 'window': [0, 0, C.SRC_W, C.SRC_H], 'safe': [0, 0, C.SRC_W, C.SRC_H]}
 else:
-    small = faces[~big]
+    small = faces[~big]; small_t = face_t[~big]
     cx, cy = np.median(small[:, 0] + small[:, 2] / 2), np.median(small[:, 1] + small[:, 3] / 2)
     fh = np.median(small[:, 3])
     # static edges: fraction of sampled frames with a strong gradient at each pixel
@@ -37,17 +37,32 @@ else:
     ex = np.mean([g > 40 for g in gx], 0); ey = np.mean([g > 40 for g in gy], 0)
     y0b, y1b = int(max(0, cy - 1.2 * fh)), int(min(ph, cy + 1.2 * fh)); x0b, x1b = int(max(0, cx - 1.2 * fh)), int(min(pw, cx + 1.2 * fh))
     colscore = ex[y0b:y1b].mean(0); rowscore = ey[:, x0b:x1b].mean(1)
-    def nearest(score, c, direction, lo, hi):
+    def nearest(score, c, direction, lo, hi, thr=0.4):
         # first static edge outward from just outside the face centre; snap to that peak's maximum
         rng = range(int(c - 0.5 * fh), lo, -1) if direction < 0 else range(int(c + 0.5 * fh), hi)
         for i in rng:
-            if score[i] > 0.4:
+            if score[i] > thr:
                 j = i
                 while lo < j + direction < hi and score[j + direction] > score[j]: j += direction
                 return j
         return lo if direction < 0 else hi - 1
     L = nearest(colscore, cx, -1, 0, pw); R = nearest(colscore, cx, 1, 0, pw)
     T = nearest(rowscore, cy, -1, 0, ph); B = nearest(rowscore, cy, 1, 0, ph)
+    # A window edge against dark UI (dark clothing on a dark app) can score just under 0.4 (measured 0.385), and the search
+    # then runs on to the screen's own edge. If a side lands on the frame border or the box is implausibly long, look again
+    # for that side with a lower threshold.
+    for thr in (0.25, 0.15):
+        if (B >= ph - 2 or (B - T) > 1.9 * (R - L)) and B > cy: B = nearest(rowscore, cy, 1, 0, ph, thr)
+        if (T <= 1 or (B - T) > 1.9 * (R - L)) and T < cy: T = nearest(rowscore, cy, -1, 0, ph, thr)
+        if (R >= pw - 2 or (R - L) > 1.9 * (B - T)) and R > cx: R = nearest(colscore, cx, 1, 0, pw, thr)
+        if (L <= 1 or (R - L) > 1.9 * (B - T)) and L < cx: L = nearest(colscore, cx, -1, 0, pw, thr)
+    # a finished edit can move the webcam for a stretch (e.g. to another corner): report the samples whose face is far from
+    # the main position, so camera runs stay out of those times (the window above is the main position only)
+    far = np.hypot(small[:, 0] + small[:, 2] / 2 - cx, small[:, 1] + small[:, 3] / 2 - cy) > 1.2 * fh
+    if far.any():
+        t_far = sorted(round(float(t), 1) for t in small_t[far])
+        print(f'WARNING: in {far.sum()} of {len(small)} samples the face is elsewhere (the webcam moves, or a full-frame shot): '
+              f'around t = {t_far} s. Check those stretches (thumbs/) and keep camera runs out of them.')
     win = [int(round(L * s)), int(round(T * s)), int(round((R - L) * s)), int(round((B - T) * s))]
     ins = int(round(12 * C.SRC_W / 3840)) or 2
     safe = [win[0] + ins, win[1] + ins, (win[2] - 2 * ins) // 2 * 2, (win[3] - 2 * ins) // 2 * 2]

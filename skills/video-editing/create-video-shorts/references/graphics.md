@@ -14,6 +14,7 @@ Contents: [Build helpers](#build-helpers) · [CFG](#cfg) · [Cards](#cards) · [
   - `backdrop=('img'|'video', src, fw, fh)` adds the washed clone behind a capture.
 - **`capture_card(id, fw, fh, x=540, y=720, inner0=…, inner=[…], img=…)`:** the spec's fixed capture frame: x 24, y 200, 1032×1040, radius 36, when the world camera rests at (540, 720, s=1) in `fv` mode.
 - **`LOGO_HTML`:** `<img src="assets/claude-logo.svg">`. Copy the product's official logo into `gfx/assets/` in `prep_assets.py`, and swap the file per product.
+- **`D`:** asset dimensions, merged from `gfx/asset_dims.json` and every `gfx/asset_dims_<tag>.json`. Parallel graphics subagents each write their own file, so they never race. Modules are `scripts/gfx_<tag>.py`; `build_gfx.py <tag>` builds one, and with no tag it builds them all.
 
 ## CFG
 ```python
@@ -44,8 +45,9 @@ dict(id='bench', kind='media'|'doc'|'tile'|'phone'|'capture'|'logo'|'plain',
      noDof=True, forceSharp=True)
 ```
 - **Shadows:** every non-logo card gets the spec's three-layer shadow automatically.
-- **Landing:** a landing uses power3.out: scale 0.92 → 1, +70 px → 0, fade in. Add a `pop` SFX at `land.t`. Nothing lands at frame 0.
+- **Landing:** a landing uses power3.out: scale 0.92 → 1, +70 px → 0, fade in. Add a `pop` SFX at `land.t`. Nothing lands at frame 0, and the HERO is already on screen at frame 0: the cut lands on it. Landing the hero at 0.05 s leaves empty frames after the cut. Only supporting cards (logo tiles, a message arriving) land later.
 - **Highlight bands on screenshots:** blend modes are isolated per card. Put the band `div` under the screenshot inside the same card `html`, and give the `<img>` `mix-blend-mode:multiply`. See the `bench` card in `gfx_s1.py`.
+- **Highlights on dark UI:** a multiply band vanishes on a dark app. Instead, pre-render the real text re-inked #111 on #FBEEE8 as an overlay revealed by a left-to-right wipe, or use a clay #D97757 outline with a dark clay fill, screen-blended, with a hole over bright elements.
 
 ## Camera moves
 `moves` is a list of `dict(t, dur, kind, to=dict(x, y, s), ease=None)`. Geometric scale interpolation is built in.
@@ -97,7 +99,8 @@ Before any full render, check each composition:
 - one full-resolution frame of anything with text
 
 Look for:
-- the frame-0 landing state
+- the frame-0 landing state (the hero already on screen)
+- any text the viewer must read at 30 px or more (captured UI included)
 - content inside its bounds
 - nothing important blurred at rest
 - the bottom edge in 880–900 (split) or 1200–1240 (full visual)

@@ -64,3 +64,41 @@ json.dump(out,open('line_align.json','w'),indent=1)
 # transcript lacks, add it by hand here from the RMS envelope, e.g.:
 #   a = out['s2.L3']; a['words'].insert(a['li'] + 1, {'w': 'one.', 's': 247.71, 'e': 248.14, 'sc': 1.0}); a['li'] += 1
 #   json.dump(out, open('line_align.json', 'w'), indent=1)
+# (hand fixes go above this line; the generic passes below run last)
+
+def _n(w): return re.sub(r'[^a-z0-9$]', '', w.lower())
+for sk, sv in S.items():
+    for L in sv['lines']:
+        a = out.get(f'{sk}.{L["id"]}')
+        if not a: continue
+        ws = a['words']; toks = L['text'].split()
+        if L.get('echo'):
+            # Opt-in per line ("echo": true) for audio with a room echo, e.g. an AI voice on a call through speakers: the window
+            # ASR hears phrases twice ("I'm doing great. I'm doing great."). Collapse an immediately repeated n-gram that the
+            # plan's text has only once into ONE phrase spanning both copies, so the cut keeps the whole echo tail and the
+            # captions show it once. Never use it on a stutter (that would keep the stutter in the cut).
+            tn = [_n(t) for t in toks]
+            def text_repeats(g): return any(tn[i:i + len(g)] == g and tn[i + len(g):i + 2 * len(g)] == g for i in range(len(tn)))
+            changed = True
+            while changed:
+                changed = False
+                hi = min(len(ws), a['li'] + 1 + 4)          # also an echo of the line's last words just after it
+                for n in (4, 3, 2, 1):
+                    for i in range(a['fi'], hi - 2 * n + 1):
+                        g1 = [_n(w['w']) for w in ws[i:i + n]]; g2 = [_n(w['w']) for w in ws[i + n:i + 2 * n]]
+                        if g1 == g2 and not text_repeats(g1) and i + n - 1 <= a['li'] and ws[i + n]['s'] - ws[i + n - 1]['e'] < 0.8:
+                            end2 = i + 2 * n - 1
+                            ws[i + n - 1]['e'] = ws[end2]['e']; del ws[i + n:end2 + 1]
+                            if a['li'] >= end2: a['li'] -= n
+                            elif a['li'] >= i + n: a['li'] = i + n - 1
+                            changed = True; break
+                    if changed: break
+            print(f'{sk} {L["id"]} echo collapsed:', ' '.join(w['w'] for w in ws[a['fi']:a['li'] + 1]))
+        # Captions use the plan's exact words (casing at sentence starts, "five" not "5", a word the ASR misheard) with the
+        # aligned timings, whenever the aligned span has as many words as the line's text.
+        span = ws[a['fi']:a['li'] + 1]
+        if len(span) == len(toks):
+            for w, t in zip(span, toks): w['w'] = t
+        else:
+            print(f'captions keep the ASR words for {sk}.{L["id"]}: {len(span)} aligned vs {len(toks)} text words')
+json.dump(out, open('line_align.json', 'w'), indent=1)

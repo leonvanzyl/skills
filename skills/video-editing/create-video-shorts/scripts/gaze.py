@@ -84,7 +84,9 @@ def main():
     print(f'{len(g)} frames, face found in {ok.mean()*100:.0f}% ({len(jobs)} parallel slices)')
     for k in range(2):
         print(f' pose cluster {k}: pitch {cen[k,0]:.1f} yaw {cen[k,1]:.1f}  share {np.mean(lab==k)*100:.0f}%')
-    print(' Typically the on-lens cluster is the one that matches the hook / direct-to-camera lines. Confirm with eyesheet.py.')
+    print(' The on-lens cluster is NOT always the frontal one: with the webcam beside the screen, looking at the lens is a head turn')
+    print(' (yaw ~10-15 deg) and reading the screen is frontal and slightly down. Identify it with eyesheet.py on a line you know is')
+    print(' said to camera (the outro / CTA), then label every line from that.')
     if C.MODE == 'pip' and g[:, 8].mean() > 0.01:
         f = g[:, 8] > 0; runs = []; st = None
         for j, v in enumerate(f):

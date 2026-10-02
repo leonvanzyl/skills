@@ -12,7 +12,10 @@ Contents: [0 Setup](#0-setup) · [1 Ingest](#1-ingest-and-analysis-all-in-parall
 ## 0. Setup
 ```bash
 bash "$SKILL/scripts/setup.sh" "$P"
+bash "$SKILL/scripts/setup.sh" "$P/<video>.mp4"     # ONE video in a folder that also holds others (e.g. a finished edit next to its raw recordings)
 ```
+The single-file form works in `<its folder>/shorts/` with a hard link to that video only (a copy if the link fails), so the other videos aren't processed. `P` is then that `shorts/` folder.
+
 Setup creates:
 - `P/.venv`. It takes about 15 s if the uv cache is warm and a few minutes on a new machine.
 - `P/edit/`.
@@ -45,11 +48,25 @@ If a clean-audio file exists, ingest cross-correlates it against the camera trac
   - Sets `camera.mode`: `full` means the frame is the camera; `pip` means a webcam window inside a screen recording.
   - Sets `camera.window` and `camera.safe`, which is the window inset past its border and rounded corners.
   - Always look at `detect_camera.png`. The red box is the window; the green box is the safe area. Fix `project.json` by hand if it's wrong.
+- **`detect_camera.py` WARNING:** it lists sample times whose face sits elsewhere (the webcam moves for a stretch, or a full-frame shot). Keep camera runs out of those stretches.
 - **`gaze.py`:**
-  - Prints two head-pose clusters: on-lens vs reading.
+  - Prints two head-pose clusters: on-lens vs reading. The on-lens one is NOT always the frontal one: with the webcam beside the screen, looking at the lens is the turned cluster. Calibrate on the outro with `eyesheet.py --window`.
   - In `pip` mode, it also lists stretches where a finished edit cuts to a full-frame camera shot. Mark lines taken from those with `"cam": "fullframe"`.
   - It runs `GAZE_WORKERS` (8) slices of the proxy in parallel, each with its own landmarker warmed up on the second before its slice. If `detect_camera.py` got the window wrong, fix `project.json` and re-run `gaze.py` (under a minute).
 - **`zoomscan.py`:** lists punch-ins and framing jumps baked into the source. Keep every camera run clear of them. Also sliced (`ZOOM_WORKERS`, 8), with identical rows to a sequential pass.
+
+### 1b. Finished edit with sound under the voice (only if needed)
+If the source is a finished edit whose audio has music, a riser or SFX under lines you may keep, rebuild the clean audio from a clean voice stem (e.g. the long-form edit's dialogue track; a davinci-resolve-pro-edit run keeps `voice48.wav`). Do this before `cut.sh`. The transcript doesn't need re-running.
+```bash
+# project.json -> "clean_stem": {"voice": "<stem.wav>"}
+$PY scripts/clean_from_stem.py --scan        # piecewise sync map (trims found automatically) + stretches the stem lacks
+$PY scripts/clean_from_stem.py --suspects    # where the export has extra low-band sound: risers, pops, whooshes, music bass
+# project.json -> "clean_stem.patches": [[t0, t1, "why"], ...]   kept lines inside music/SFX spans; boundaries in quiet gaps
+$PY scripts/clean_from_stem.py --build       # clean48/clean16/rms10ms rebuilt, export audio kept as export48.wav
+```
+- **What gets patched:** only the patch windows take the stem. It is EQ-, compression- and level-matched to the export, so patched and unpatched lines sound the same. Everything else stays the export's own (processed) voice.
+- **Never patch** a stretch the stem lacks, e.g. a call's far-end voice. `--scan` lists it as weak correlation.
+- **The hook:** treat it as suspect even when `--suspects` is quiet. A music bed far under the voice doesn't show in the low band.
 
 Meanwhile, spawn a research subagent. It fact-checks every figure the speaker says against 2+ sources. It also captures source pages, logos and pricing tables as 2x PNGs into `W/captures/` using a local Playwright, and writes `captures/facts.json`.
 
@@ -73,6 +90,9 @@ Meanwhile, spawn a research subagent. It fact-checks every figure the speaker sa
    - `text`, which is the exact words and is used for alignment
    - `switches`: `[{"t": <source s near a word>, "layout": ...}]`, to hide or show the camera at a word boundary
    - `cta: true` on the outro line
+   - optional `echo: true` on a line with a room echo (an AI voice on a call through speakers): align_lines collapses the phrases the ASR hears twice. Never on a stutter.
+
+   Write `text` exactly as it should read on screen: captions take it word for word whenever its word count matches the aligned span (casing, numbers as said, misheard words fixed).
 
 Rules for choosing layouts are in `editing-spec.md` sections 3–4. The hook is a split, the outro is full cam, no run runs past about 8 s, and no two runs in a row share a layout.
 
@@ -92,7 +112,7 @@ $PY scripts/eyesheet.py s1 &         # 8 eye crops per line -> s1_eyes.png (LOOK
 - **Re-running:** `cut2.py` takes seconds, so iterate freely.
 
 ## 4. Fan out
-**Graphics (parallel subagents):**
+**Graphics (parallel subagents):** copy `SKILL/examples/GFX_BRIEF_template.md` to `GFX_BRIEF.md`, fill it in (paths, webcam window, regions never to show, baked zooms/titles/censor), and give each subagent a tag (`s1a`, `s1b`, `s2a`…) with 2–5 compositions. Each tag owns `scripts/prep_assets_<tag>.py`, `gfx/asset_dims_<tag>.json` (all `asset_dims*.json` are merged) and `scripts/gfx_<tag>.py`, built with `build_gfx.py <tag>` (no tag = every `gfx_*.py`). For one short done by one agent, the single-file form below still works:
 1. Write `scripts/prep_assets.py`, modelled on `SKILL/examples/prep_assets.py`. It copies captures into `gfx/assets/`, cuts still crops and synced footage clips (`synced()` follows the edit map), and writes `gfx/asset_dims.json`.
 2. Give one subagent per composition, or per 2–3 short ones:
    - the run's brief, from `cut.json` runs plus the plan
@@ -145,9 +165,15 @@ $PY scripts/verify_final.py s1/final_video.mp4 chk/s1_final.png   # streams, lou
 ```
 Otherwise copy `final_video.mp4` to `../edit/short-NN_<slug>/final.mp4`, and `s1/stems/` to `stems/`. Write `report.md` (`editing-spec.md` section 8) and update `../edit/PUBLISH.md` (section 8b).
 
+`$PY scripts/report_data.py s1` prints the report's numbers in one go:
+- lines with source ranges, runs and END;
+- every SFX event with its absolute time and level, the riser, and the music parameters;
+- the split geometry, the file facts, and the integrated loudness and true peak of `final_video.mp4`.
+
 ## 7. Edits
 Change the smallest thing and re-run only what it touches. `finish.sh` re-renders only the segments whose inputs changed (it prints which), so after any of these the last step is always `bash scripts/finish.sh s1 NN slug`:
 - **Captions, cover or CTA:** edit `shorts.json` (highlights, cover, keyword), then `finish.sh`. Only the runs whose captions changed are re-rendered.
+- **A caption word's text while graphics are rendering:** don't re-run `align_lines.py`, because re-transcription can move a word edge by a frame. Patch the `w` field in `cut.json` (and the line's `text` in `shorts.json`), then `compose.py <sk> --events-only` and `finish.sh`.
 - **Camera framing (split):** delete `s1/cam/split_geom.json`, then `finish.sh` (the split segments re-render).
 - **One graphic:** edit `gfx_<sk>.py`, rebuild, `render_full.sh` for that run, then `finish.sh` (that run's segment only).
 - **Line timing or line choice:** edit `shorts.json`, then `cut.sh` (align_lines re-transcribes every line; it's fast), `prep.sh` (the camera clips and mattes of the runs that moved; mattes are cached per run file), re-render the graphics whose runs moved, then `finish.sh`.

@@ -34,7 +34,10 @@ Target: first finished short in 20-30 min of wall time, of which the machine nee
 - Render compositions concurrently, but through `render_full.sh` only: it holds a machine-wide budget of RENDER_SLOTS (3) renders x HF_WORKERS (8) Chrome browsers, so six subagents rendering at once queue behind each other instead of launching 100 Chromes (24 workers on one render was already slower than 16). One 8 s composition: ~45 s alone; the full-render stage of a six-composition short stays around 2-3 min.
 - The 240 fps intermediate is a lossless PNG sequence, not MOV: HyperFrames' MOV/ProRes path forces its slow alpha capture (~15 fps regardless of workers) and its MP4 path captures JPEG and has the 8 px right-edge strip (lessons.md). `PRODUCER_ENABLE_BROWSER_POOL=false` (exported by both render scripts) gives each worker its own browser, which is what makes the workers count: 11 -> 41 fps at 8 workers.
 - Meanwhile, the main agent does everything that doesn't wait on graphics: frame-exact camera extraction, matting, captions, cover, CTA, and the audio synthesis and mix (`prep.sh`, one call).
-- Several shorts from one recording: one subagent per short after the shared ingest.
+- Several shorts from one recording: graphics subagents by tag (2-5 compositions each, `examples/GFX_BRIEF_template.md`), not one per short, so no agent waits on a long queue. Measured, 3 shorts / 16 compositions from a 12.5 min 4K export:
+  - machine time: analyse 95 s, one `cut.sh` for all three 68 s, one `prep.sh` for all three 39 s (15 camera clips 10 s, 8 mattes 24 s), `finish.sh` 50-80 s per short;
+  - the graphics subagents ran 15-30 min each, overlapping the research subagent and each other.
+  - Finish a short as soon as its own graphics are `done`; don't wait for the other shorts.
 
 9.4 GPU WHEREVER THERE IS A GPU PATH
 - NVDEC decode and CUDA transcription. `cam_prep.py` decodes every camera run on NVDEC too (`-hwaccel cuda` with `format=yuv420p` first, which makes the nv12 output take the same colour conversion as the CPU path: byte-identical frames, verified), four runs at once, into multi-slice FFV1. `CAM_HWACCEL=0` forces the CPU decoder.

@@ -1,12 +1,23 @@
 #!/bin/bash
 # One-time setup for a folder of recordings.
 #   bash <skill>/scripts/setup.sh <project_folder>
+#   bash <skill>/scripts/setup.sh <video_file>     one video in a folder that also holds other videos (e.g. the finished edit
+#                                                   next to its raw recordings): works in <its folder>/shorts/ with a hard link
+#                                                   to that video only (a copy if the link fails), so nothing else is processed
 # - creates <project>/.venv (local, nothing system-wide; model weights come from the user caches)
 # - for every video in the folder root creates <project>/work-<stem>/ with the scripts, the graphics engine,
 #   fonts, the face model and a project.json (init_project.py)
 set -e
 SKILL="$(cd "$(dirname "$0")/.." && pwd)"
-PROJ="$(cd "${1:-.}" && pwd)"
+ARG="${1:-.}"
+if [ -f "$ARG" ]; then
+  SRC="$(cd "$(dirname "$ARG")" && pwd)/$(basename "$ARG")"
+  mkdir -p "$(dirname "$SRC")/shorts"
+  [ -e "$(dirname "$SRC")/shorts/$(basename "$SRC")" ] || ln "$SRC" "$(dirname "$SRC")/shorts/" 2>/dev/null || cp "$SRC" "$(dirname "$SRC")/shorts/"
+  ARG="$(dirname "$SRC")/shorts"
+  echo "single video: working in $ARG (hard link to $(basename "$SRC"))"
+fi
+PROJ="$(cd "$ARG" && pwd)"
 command -v uv >/dev/null || { echo "ERROR: uv not found (https://docs.astral.sh/uv/)"; exit 1; }
 command -v ffmpeg >/dev/null || { echo "ERROR: ffmpeg not found"; exit 1; }
 command -v node >/dev/null || { echo "ERROR: node (22+) not found"; exit 1; }

@@ -4,7 +4,9 @@ import json, os, re
 import os as _os
 _os.chdir(_os.path.dirname(_os.path.abspath(__file__))+'/..')
 C = json.load(open('cut.json'))
-D = json.load(open('gfx/asset_dims.json'))
+import glob as _glob
+D = {}   # asset_dims.json plus one asset_dims_<tag>.json per graphics subagent (so parallel asset preps never race)
+for _f in sorted(_glob.glob('gfx/asset_dims*.json')): D.update(json.load(open(_f)))
 OUT = 'gfx'
 SFX = {}  # run id -> list of events (run-relative)
 

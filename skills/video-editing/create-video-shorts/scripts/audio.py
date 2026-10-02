@@ -146,7 +146,23 @@ os.makedirs(f'{sk}/stems', exist_ok=True)
 for nm, x in [('voice', voice), ('sfx', sfx2), ('riser', ris), ('music', mus)]:
     sf.write(f'{sk}/stems/{nm}.wav', x[:N].astype(np.float32), SR, subtype='PCM_24')
 mix = voice + sfx2 + ris + mus
-pk = np.abs(mix).max()
-if pk > 0.95: mix *= 0.95 / pk
+# true-peak limiter (spec: final mix <= -1 dBFS true peak). 4x oversampled peak detection, 1.5 ms look-ahead (minimum
+# filter), smoothed gain; touches only the few hot transients, so the integrated loudness stays ~-14 LUFS. (A plain
+# sample-peak rescale to 0.95 let a less-compressed voice through at -0.4 dBTP.)
+from scipy.ndimage import minimum_filter1d, uniform_filter1d
+TP_THR = 10 ** (-1.3 / 20)
+for _ in range(3):
+    os_pk = np.max(np.abs(np.stack([signal.resample_poly(mix[:, c], 4, 1) for c in range(mix.shape[1])], 1)), 1)
+    n4 = len(os_pk) // 4 * 4
+    pk_n = os_pk[:n4].reshape(-1, 4).max(1)
+    pk_n = np.pad(pk_n, (0, max(0, len(mix) - len(pk_n))), mode='edge')[:len(mix)]
+    g = np.minimum(1.0, TP_THR / np.maximum(pk_n, 1e-9))
+    if g.min() >= 0.9999: break
+    la = int(0.0015 * SR)
+    g = minimum_filter1d(g, size=4 * la + 1)
+    g = uniform_filter1d(g, size=2 * la + 1)
+    mix = mix * g[:, None]
+tp = np.max(np.abs(np.stack([signal.resample_poly(mix[:, c], 4, 1) for c in range(mix.shape[1])], 1)))
+print(f'{sk}: true peak after limiter {20 * np.log10(tp):.2f} dBTP')
 sf.write(f'{sk}/mix.wav', mix.astype(np.float32), SR, subtype='PCM_24')
 print(f'{sk}: END={END:.3f}s N={N} events={len(ev)} voice_peak={20*np.log10(vpeak):.1f}dBFS mix_peak={20*np.log10(np.abs(mix).max()):.1f} mix_lufs={meter.integrated_loudness(mix):.1f} music_lufs={meter.integrated_loudness(mus+1e-9):.1f}')

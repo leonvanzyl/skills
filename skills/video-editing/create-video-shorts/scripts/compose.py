@@ -363,6 +363,8 @@ kw = S['cta_keyword']
 tw = [w for w in C['words'] if w['line'] == cta_line['id'] and w['w'].lower().strip('.,') == kw.lower()]
 t_kw = (tw[0]['s'] if tw else last['T0'] + 0.8) - last['T0']
 spec = dict(kw=kw, land=0.12, type0=max(0.55, t_kw), cps=10.0)
+# the Post press must finish on screen: when the keyword is the outro's last word, start typing earlier
+spec['type0'] = max(0.55, min(spec['type0'], last['T1'] - last['T0'] - 0.3 - 0.55 - len(kw) / spec['cps']))
 spec['press'] = spec['type0'] + len(kw) / spec['cps'] + 0.55
 extra = [dict(t=last['T0'] + spec['land'], type='pop')]
 extra += [dict(t=last['T0'] + spec['type0'] + k / spec['cps'], type='key') for k in range(len(kw))]
