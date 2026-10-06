@@ -59,7 +59,8 @@ Target: first finished short in 20-30 min of wall time, of which the machine nee
   - Webcam framing: delete `<sk>/cam/split_geom.json`, then `finish.sh`: only the split segments change.
   - Timing change: re-cut that line (`cut.sh`), `prep.sh` for the camera clips and mattes of the runs that moved, re-render the graphics whose runs moved, then `finish.sh`.
   - Audio level: `finish.sh` re-mixes the stems and re-concatenates; no segment is touched (seconds).
-  - Title or description change: edit only that short's section in edit/PUBLISH.md; nothing is re-rendered.
+  - Title, description or caption change: edit only that short's section in edit/PUBLISH.md; nothing is re-rendered.
+  - Thumbnail: the candidates are the moments the graphics marked while being built, rendered as a handful of seeks while `finish.sh` concatenates (seconds), never a scan of the finished short. A different pick is one JPEG encode.
 - Report what was re-rendered and the wall time it took (`finish.sh` prints which runs it rendered and which it kept).
 
 9.7 CHECK CHEAPLY, FAIL FAST

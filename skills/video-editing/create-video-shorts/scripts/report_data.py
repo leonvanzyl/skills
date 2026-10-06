@@ -1,5 +1,5 @@
 # Prints the numbers a short's report.md needs: lines with source ranges, runs, SFX events (absolute time + level),
-# riser, music, final file facts and loudness. usage: python scripts/report_data.py s3
+# riser, music, final file facts and loudness, the picked thumbnail. usage: python scripts/report_data.py s3
 import json, subprocess, sys, re
 sk = sys.argv[1]
 C = json.load(open('cut.json'))[sk]; S = json.load(open('shorts.json'))[sk]
@@ -36,3 +36,8 @@ r = subprocess.run(['ffmpeg', '-hide_banner', '-nostats', '-i', f'{sk}/final_vid
 summ = r[r.rfind('Summary:'):]
 I = re.search(r'I:\s+(-?[\d.]+) LUFS', summ); TP = re.search(r'Peak:\s+(-?[\d.]+) dBFS', summ)
 print(f"## loudness integrated {I.group(1) if I else '?'} LUFS, true peak {TP.group(1) if TP else '?'} dBFS")
+try:
+    th = json.load(open(f'{sk}/thumbnail.json'))
+    print(f"## thumbnail {th['t']} s (run {th['run']}, {th['layout']}), q{th['quality']} {th['bytes'] / 1e6:.2f} MB; candidates: "
+          + ', '.join(f"{c['t']} s r{c['run']} sharp {c['sharpness']} {c['mouth']}".rstrip() for c in th.get('candidates', [])))
+except Exception as e: print('no thumbnail picked yet', e)

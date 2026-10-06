@@ -53,7 +53,10 @@ crop. Keep crops even-sized.
 - Animate the action, never label it. A product is its REAL UI from the source doing the thing. One dominant subject.
 - Camera: glide / step / push (to ~1.6x) / pull, at most ONE whip per composition (whoosh at `t+0.45`). Never blur a word to be read.
 - SFX on the CFG (run-relative): `pop` landing, `click` real press, `key` typing start, `chime` answer/message arriving, `whoosh` whip only.
+- Thumbnail moments on the CFG: `thumb=[[a, b]]` (run-relative), the window where the composition's most eye-catching state is landed
+  and still (the logo large, the real UI doing the thing, the key number). One or two per composition worth a thumbnail, none on the
+  rest. `build_gfx.py` clips the windows to where nothing moves; the short's thumbnail is picked from these frames (graphics.md).
 
 ## Report back (short)
 Per composition: what it shows, which real sources / frames (times) it uses, camera moves and whips, SFX events (run-relative),
-judgement calls, and that `render_full.sh` printed `done` (with the contact sheet you checked).
+thumbnail windows (and what is on screen in them), judgement calls, and that `render_full.sh` printed `done` (with the contact sheet you checked).

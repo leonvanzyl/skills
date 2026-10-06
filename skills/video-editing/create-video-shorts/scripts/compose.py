@@ -2,6 +2,7 @@
 captions, CTA comment box, cover (frame 0). Writes <sk>/final_video.mp4 (video+mix) and caption/CTA metadata.
 usage: python compose.py s1 --events-only            captions.json + events_extra.json only (audio.py can start)
        python compose.py s1 --preview t1,t2,...      full-resolution frames -> <sk>/preview/ (add --runs i,j to decode only those)
+       python compose.py s1 --preview t1,... --clean the same frames without captions, CTA or cover -> <sk>/thumb/ (thumbnail.py)
        python compose.py s1 --runs i --seg-out f.mp4 one run as a video segment (one process per run)
        python compose.py s1 --segments [--jobs N] [--no-concat] [--force]
                                                     every run as its own process in parallel, cached by its inputs (a run whose
@@ -18,6 +19,7 @@ if '--runs' in sys.argv: ONLY = [int(x) for x in sys.argv[sys.argv.index('--runs
 if '--seg-out' in sys.argv: SEG_OUT = sys.argv[sys.argv.index('--seg-out') + 1]
 if CONCAT: ONLY = []
 if '--preview' in sys.argv: PREVIEW = [float(x) for x in sys.argv[sys.argv.index('--preview') + 1].split(',')]
+CLEAN = PREVIEW is not None and '--clean' in sys.argv   # thumbnail candidates: the picture alone
 FPS = 60; Wc, Hc = 1080, 1920
 C = json.load(open('cut.json'))[sk]; S = json.load(open('shorts.json'))[sk]
 CAM = json.load(open(f'{sk}/cam/plan.json'))
@@ -496,13 +498,14 @@ if PREVIEW is None:
     else:
         enc = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{Wc}x{Hc}', '-r', str(FPS), '-i', '-',
                                 '-i', f'{sk}/mix.wav', '-map', '0:v', '-map', '1:a'] + VENC + ['-c:a', 'aac', '-b:a', '320k', '-ar', '48000', '-ac', '2', '-movflags', '+faststart', f'{sk}/final_video.mp4'], stdin=subprocess.PIPE)
-os.makedirs(f'{sk}/preview', exist_ok=True)
+PDIR = f'{sk}/thumb' if CLEAN else f'{sk}/preview'
+os.makedirs(PDIR, exist_ok=True)
 count = 0
 for n, r, img in frames():
     if img is None: continue
     t = n / FPS
     # captions (never on frame 0)
-    if n > 0:
+    if n > 0 and not CLEAN:
         for c, ci in zip(chunks, cap_imgs):
             if c['t0'] <= t + 1e-6 < c['t1']:
                 cy = caption_center_y(r); h, w = ci.shape[:2]
@@ -510,13 +513,13 @@ for n, r, img in frames():
                 sub = img[y0:y0 + h, x0:x0 + w]; a = ci[..., 3:4] / 255.0
                 sub[:] = sub * (1 - a) + ci[..., :3] * a
                 break
-    if r is last:
+    if r is last and not CLEAN:
         ov = cta_render(t - r['T0'], spec)
         if ov is not None: over(img, ov)
-    if n == 0: over(img, COVER)
+    if n == 0 and not CLEAN: over(img, COVER)
     np.add(img, 0.5, out=img); np.clip(img, 0, 255, out=img); out = img.astype(np.uint8)   # in place: same values, no temporaries
     if want is not None:
-        Image.fromarray(out).save(f'{sk}/preview/f_{t:07.3f}.png')
+        Image.fromarray(out).save(f'{PDIR}/f_{t:07.3f}.png')
     else:
         enc.stdin.write(out.tobytes())
     count += 1

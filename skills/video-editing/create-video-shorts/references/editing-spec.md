@@ -16,12 +16,14 @@ INPUTS
 - Camera video: in this project folder
 - Clean audio: in this project folder if there is one; otherwise the video's embedded audio track
 - Cover title (frame 0): from the user's request; if none is given, you come up with one
+- The full video on YouTube (URL or title): from the user's request, otherwise found as section 8b says
 
 DELIVERABLES (in a new folder edit/)
 - final.mp4: 1080x1920, 60 fps, H.264 high quality, AAC 48 kHz stereo
 - stems/voice.wav, stems/sfx.wav, stems/riser.wav, stems/music.wav (all full length, so I can remix)
 - A short report (see the end)
-- edit/PUBLISH.md: an SEO title and a short SEO description, followed by our community links, for every short (section 8b)
+- edit/PUBLISH.md: the publishing package for every short, for YouTube Shorts, TikTok and Instagram Reels (section 8b)
+- thumbnail.jpg next to final.mp4: one clean, eye-catching frame from the short, its thumbnail and cover on all three (section 8c)
 
 1. SYNC AND TRANSCRIBE
 - Cross-correlate the camera audio and the clean audio at 16 kHz mono to find the offset (confirm it with a clear correlation peak). Use only the clean audio from here on; the camera audio is discarded. If there is no separate clean audio, confirm the embedded track's channels line up (zero offset) and report it.
@@ -101,26 +103,108 @@ Synthesize with numpy/scipy, or the Web Audio API rendered offline with OfflineA
 - Cover, captions (highlight words) and CTA keyword.
 - Audio: every SFX event with its time and level, the riser timing, the music (style, mood, key, tempo, seed), and the final loudness and peak.
 - Fact check: each figure I say, with 2+ sources, and any disagreement.
+- The thumbnail: its time and run, what it shows, and why it beat the other candidates.
+- The full video the TikTok and Instagram copy points to, and where its title came from (section 8b).
 - Every judgement call you made.
 
-8b. PUBLISHING COPY (edit/PUBLISH.md)
-One Markdown file for the whole project, with one section per short, in order. If the file already exists from an earlier run, add or update only the sections for the shorts you made; leave the others as they are. Write it after the short is final, from what the short actually says.
-- Title: an SEO title of 60 characters or fewer, so it isn't truncated. Put the main search term first: the tool, model or topic people would type into search (e.g. "Sonnet 5.5 vs Opus 5.5"). It must match what the short actually says, with no claim the short doesn't back up. Every short's title must be different. No emojis, no hashtags.
-- Description: one or two lines (about 200 characters at most). Natural, keyword-rich wording that says what the viewer learns or sees, using the same search terms as the title. It must be accurate against the fact check.
+8b. PUBLISHING PACKAGE (edit/PUBLISH.md)
+Every short goes out on YouTube Shorts, TikTok and Instagram Reels, and each platform gets its own copy. One Markdown file for the whole project, with one section per short, in order. If the file already exists from an earlier run, add or update only the sections for the shorts you made; leave the others as they are. Write it after the short is final, from what the short actually says. On every platform, every claim must be backed by the short and hold against the fact check.
+
+The full video. TikTok and Instagram viewers are sent to the full video on YouTube, and the Short links to it with YouTube's Related video field. Use the URL or title I give. Otherwise, when the shorts are cut from a finished long-form edit, take its title from that edit's publishing copy (a davinci-resolve-pro-edit run writes it to pro-edit-media/PUBLISH.md next to the sources). With neither, point to my channel, Leon van Zyl, without a title. Log which one you used in the report. Never invent a URL or a handle.
+
+YouTube Shorts
+- Title: under 55 characters (54 at most; count them), so it's never truncated. Its job is the click: a stranger scrolling past must want to know more.
+  - At least one power word: Secret, Hidden, Truth, Finally, Never, Stop, Instantly, Free, Proven, Insane, Brutal, Mistake, Beats, Killer, Dead, Exposed, Shocking, or another word with the same pull.
+  - Drive curiosity: open a loop the short closes. A bold statement, a surprising result, a contrarian take, or a question with something at stake. Never give the payoff away in the title.
+  - Name the tool, model or topic people recognise (e.g. "Sonnet 5.5"), so the title still matches what people search for.
+  - Bold, but true: a promise the short doesn't keep loses the viewer in the first second.
+  - Every short's title is different. No emojis, no hashtags (they go in the description).
+  - Examples, for a short where Sonnet 5.5 is half the price per token but cost almost the same as Opus in a real test: "Sonnet 5.5 Is Half the Price? The Truth Surprised Me" (52), "The Hidden Cost of Sonnet 5.5's Half Price" (42). Not "Sonnet 5.5 vs Opus 5.5: Is Sonnet Really Half the Price?" (56 characters, no power word).
+- Description: one or two lines (about 200 characters at most). Natural, keyword-rich wording that says what the viewer learns or sees, using the same search terms as the title.
 - Then a blank line, then these two lines exactly as written, in this order, each followed by a blank line:
   🎁 Get the resources from this video + my free AI builder course: https://skool.com/leonvanzyl
   🚀 Go deeper inside Agentic Labs: AI coding courses, live Q&A, weekly challenges, and direct access to me: https://skool.com/agentic-labs
-- Layout of each section (put the title and the description in fenced code blocks so they copy cleanly):
+- Then the hashtags as the description's last line: exactly three, each about this short's content: the tool or model, its maker, the topic (e.g. #ClaudeCode #Anthropic #AICoding). CamelCase, no spaces or punctuation inside a tag. No filler that says nothing about the video (#shorts, #viral, #fyp, #trending). Different shorts may share a tag, but pick each short's three for its own content.
+- Related video: the full video, to set in YouTube Studio's Related video field. Links in a Short's description aren't clickable (since 2023); this is the one link a Short gets.
+
+TikTok (a video has one caption and no title; TikTok search reads the whole caption)
+- First line: the hook, under 100 characters so it shows before "more". The YouTube title's idea in a conversational voice; it still needs the power word and the open loop.
+- Then one or two lines with the words people type into TikTok search for this topic (the tool, the task, the problem), said naturally. Specifics beat adjectives: the real numbers, names and results from the short.
+- Then the full video, on its own line: 🎬 Full video on YouTube: "<full video title>" (link in bio). With no title: 🎬 Full video on my YouTube channel, Leon van Zyl (link in bio).
+- Then the short's CTA in the speaker's words, if it has one: the keyword and what it gets you (e.g. 💬 Want to try this prompt yourself? Comment PROMPT).
+- Then 3-5 hashtags on the last line: the same subject tags as YouTube, plus one or two TikTok communities that fit (#TechTok, #CodingTok). No #fyp, #foryou or #viral.
+- About 300 characters in all. No URLs: caption links aren't clickable on TikTok.
+
+Instagram Reels
+- First line: the hook, under 125 characters (Instagram cuts the caption there with "more"). Same idea as the YouTube title, written for Instagram; power word and open loop still apply.
+- Then two or three short lines, one idea each, each separated by a blank line: what the viewer learns or sees, with the natural keywords people search for. Instagram search and Google both read captions.
+- Then the full video, on its own line, as on TikTok.
+- Then the short's CTA in the speaker's words, as on TikTok.
+- Then 3-5 hashtags on the last line. Instagram allows at most 5 (enforced since December 2025); more gets the post blocked or trimmed.
+- No URLs: caption links aren't clickable on Instagram.
+
+Layout of each section (every piece of copy in its own fenced code block, so it copies cleanly):
   ## Short NN: <slug>  (file: edit/short-NN_<slug>/final.mp4)
+  **Thumbnail** (short-NN_<slug>/thumbnail.jpg, from <time> s: <what it shows>). The YouTube thumbnail and the Instagram cover; on TikTok, upload it as the cover or pick the frame at <time> s.
+
+  ![Short NN thumbnail](short-NN_<slug>/thumbnail.jpg)
+
+  ### YouTube Shorts
   **Title**
   ```
   <title>
   ```
   **Description**
   ```
-  <1-2 line SEO description>
+  <1-2 line description>
 
   🎁 Get the resources from this video + my free AI builder course: https://skool.com/leonvanzyl
 
   🚀 Go deeper inside Agentic Labs: AI coding courses, live Q&A, weekly challenges, and direct access to me: https://skool.com/agentic-labs
+
+  #Tag1 #Tag2 #Tag3
   ```
+  **Related video:** <full video title or URL, or "the full video, once it's on YouTube">
+
+  ### TikTok
+  **Caption**
+  ```
+  <hook line>
+  <1-2 keyword lines>
+
+  🎬 Full video on YouTube: "<full video title>" (link in bio)
+  💬 <CTA>
+
+  #Tag1 #Tag2 #Tag3 #Tag4
+  ```
+
+  ### Instagram Reels
+  **Caption**
+  ```
+  <hook line>
+
+  <idea 1>
+
+  <idea 2>
+
+  🎬 Full video on YouTube: "<full video title>" (link in bio)
+
+  💬 <CTA>
+
+  #Tag1 #Tag2 #Tag3 #Tag4
+  ```
+
+8c. THUMBNAIL (edit/short-NN_<slug>/thumbnail.jpg)
+One frame from the finished short: the YouTube thumbnail, the Instagram cover and the TikTok cover. The candidates are chosen while the short is built, never by scanning it afterwards.
+- Clean: the picture alone, with no captions, CTA box or cover title. The platforms put the title next to it, and a caption cut off mid-sentence reads as noise.
+- What it shows: what the short is about, recognisable at a glance. The product's official logo, its real UI doing the thing, the number or headline the short is built on, a striking result (the game it built, the chart that jumped). The most eye-catching element the short has, not the most typical frame.
+- Best is a split, where my head pops out above that element: face plus subject. Next best is a full visual with the element large. Not the outro, not a plain full cam (no subject), and not run 0's opening frames, which leave the top 620 px empty for the cover title.
+- The landing state only: the hero fully on screen, sharp and in focus, the camera at rest. No motion blur, no card mid-entrance or half faded, no blurred neighbour in front, nothing cut off by the frame edge.
+- My face, when it shows: eyes into the lens and a subtle expression (relaxed or closed mouth, no blink, no mid-syllable grimace).
+- It must read at feed size (about 180 px wide): one dominant subject, high contrast, nothing that only works full screen. Keep the subject and my eyes inside the centre 1080x1350 (y 285-1635): Instagram's feed shows the centre 4:5 and its profile grid the centre 3:4.
+- How:
+  - While building: every graphics composition marks its eye-catching still moments (`thumb` windows, graphics.md). build_gfx.py clips them to where nothing moves.
+  - finish.sh then renders only those frames, clean, in parallel while it concatenates. Each is placed in the longest word gap of its window, so the mouth is at rest.
+  - LOOK at chk/<sk>_thumbs.png, which shows each frame at full and feed size with the Instagram crop marked, and pick one with `thumbnail.py <sk> --pick <t> NN slug`.
+  - If none is strong, add moments with `thumbnail.py <sk> t1,t2` rather than settling.
+- The file: 1080x1920 JPEG under 2 MB (YouTube's limit for custom thumbnails), in the short's delivery folder next to final.mp4.

@@ -118,9 +118,9 @@ $PY scripts/eyesheet.py s1 &         # 8 eye crops per line -> s1_eyes.png (LOOK
    - the run's brief, from `cut.json` runs plus the plan
    - `references/graphics.md`
    - `SKILL/examples/gfx_s1.py`
-3. Each subagent writes its part of `scripts/gfx_<sk>.py`, builds it, renders a 10 fps draft, checks a contact sheet, fixes, then renders at full quality:
+3. Each subagent writes its part of `scripts/gfx_<sk>.py`, with the `thumb` windows of each composition's eye-catching still moments (graphics.md), builds it, renders a 10 fps draft, checks a contact sheet, fixes, then renders at full quality:
    ```bash
-   $PY scripts/build_gfx.py s1
+   $PY scripts/build_gfx.py s1                 # -> gfx/<r>.html, gfx/sfx_events.json, gfx/thumbs.json (thumb windows clipped to where nothing moves)
    bash scripts/render_draft.sh s1_r0 s1_r3    # 10 fps draft + contact sheet in one call -> gfx/draft/<r>.mp4, chk/<r>_sheet.png (LOOK)
    bash scripts/render_full.sh s1_r0 s1_r3     # 240 fps + motion blur (lossless PNG frames) -> tmix -> gfx/out60/<r>.mp4
    ```
@@ -144,12 +144,14 @@ The split check needs the split runs' graphics in `gfx/out60/`; `prep.sh` skips 
 
 ## 5. Audio and composite
 ```bash
-bash scripts/finish.sh s1 [NN slug]          # audio.py + every segment in parallel (cached) -> concat -> verify_final -> ../edit/short-NN_<slug>/
+bash scripts/finish.sh s1 [NN slug]          # audio.py + every segment in parallel (cached) -> concat + thumbnail candidates -> verify_final -> ../edit/short-NN_<slug>/
 ```
 What it runs:
 ```bash
 $PY scripts/audio.py s1                      # SFX (graphics events + CTA), riser onto the hook join, music bed, mix -> s1/stems/, s1/mix.wav
 $PY scripts/compose.py s1 --segments --no-concat   # one process per run, all at once; skips runs whose inputs are unchanged; checks every segment's frame count
+$PY scripts/thumbnail.py s1 &                # in the background: the gfx/thumbs.json moments as clean frames (no captions, CTA or cover),
+                                             # one compose.py --preview --clean seek each, all at once (~3 s) -> s1/thumb/, chk/s1_thumbs.png
 $PY scripts/compose.py s1 --concat           # -> s1/final_video.mp4 (stream-copied segments + AAC 48 kHz)
 ```
 Run it only after every `render_full.sh` for the short has printed `done`. The old per-run form still works: `$PY scripts/compose.py s1 --runs 3 --seg-out s1/seg/run03.mp4`.
@@ -163,12 +165,21 @@ Run it only after every `render_full.sh` for the short has printed `done`. The o
 ```bash
 $PY scripts/verify_final.py s1/final_video.mp4 chk/s1_final.png   # streams, loudness, 2 s contact sheet (parallel grabs) -> LOOK
 ```
-Otherwise copy `final_video.mp4` to `../edit/short-NN_<slug>/final.mp4`, and `s1/stems/` to `stems/`. Write `report.md` (`editing-spec.md` section 8) and update `../edit/PUBLISH.md` (section 8b).
+Otherwise copy `final_video.mp4` to `../edit/short-NN_<slug>/final.mp4`, and `s1/stems/` to `stems/`.
+
+**Thumbnail** (`editing-spec.md` 8c): LOOK at `chk/s1_thumbs.png`. It shows each candidate at full and Shorts-feed size, with Instagram's 4:5 crop marked, plus its sharpness and whether the mouth is between words. Then:
+```bash
+$PY scripts/thumbnail.py s1 --pick 40.95 01 half-the-price   # -> s1/thumbnail.jpg (1080x1920, <2 MB) + thumbnail.json -> ../edit/short-01_<slug>/thumbnail.jpg
+$PY scripts/thumbnail.py s1 12.4,33.1                        # only if no candidate is strong: these moments too (the marked ones are re-rendered with them)
+```
+
+Write `report.md` (`editing-spec.md` section 8) and update `../edit/PUBLISH.md` (section 8b: the thumbnail, then YouTube Shorts, TikTok and Instagram Reels copy).
 
 `$PY scripts/report_data.py s1` prints the report's numbers in one go:
 - lines with source ranges, runs and END;
 - every SFX event with its absolute time and level, the riser, and the music parameters;
-- the split geometry, the file facts, and the integrated loudness and true peak of `final_video.mp4`.
+- the split geometry, the file facts, and the integrated loudness and true peak of `final_video.mp4`;
+- the picked thumbnail and the candidates it beat.
 
 ## 7. Edits
 Change the smallest thing and re-run only what it touches. `finish.sh` re-renders only the segments whose inputs changed (it prints which), so after any of these the last step is always `bash scripts/finish.sh s1 NN slug`:
@@ -178,4 +189,5 @@ Change the smallest thing and re-run only what it touches. `finish.sh` re-render
 - **One graphic:** edit `gfx_<sk>.py`, rebuild, `render_full.sh` for that run, then `finish.sh` (that run's segment only).
 - **Line timing or line choice:** edit `shorts.json`, then `cut.sh` (align_lines re-transcribes every line; it's fast), `prep.sh` (the camera clips and mattes of the runs that moved; mattes are cached per run file), re-render the graphics whose runs moved, then `finish.sh`.
 - **Music or SFX levels:** `finish.sh` (audio.py + concat, seconds; no segment is touched).
-- **Title or description:** edit `PUBLISH.md` only.
+- **Title, description or captions:** edit `PUBLISH.md` only.
+- **Thumbnail:** `thumbnail.py s1 --pick <t> NN slug` with another candidate, or add moments first (`thumbnail.py s1 t1,t2`); nothing else re-renders. After a graphic changes, `finish.sh` re-renders the candidates by itself.

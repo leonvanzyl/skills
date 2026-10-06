@@ -9,6 +9,7 @@ D = {}   # asset_dims.json plus one asset_dims_<tag>.json per graphics subagent 
 for _f in sorted(_glob.glob('gfx/asset_dims*.json')): D.update(json.load(open(_f)))
 OUT = 'gfx'
 SFX = {}  # run id -> list of events (run-relative)
+THUMBS = {}  # run id -> thumbnail candidates (run-relative): [a, b] = a window where the hero is landed and the camera at rest, or a time
 
 def words(sk, ri):
     r = C[sk]['runs'][ri]
@@ -46,8 +47,43 @@ video.fg{position:absolute;left:0;top:0;transform-origin:0 0;z-index:3}
 .mono{font:500 34px/1.5 'Cascadia Mono','Consolas',monospace}
 """
 
+def still(rid, cfg, marks, pad=0.05):
+    """thumbnail marks clipped to where nothing moves: camera moves (glides excepted), focus changes, inner-camera moves,
+    landings, exits and reveals. A window keeps its longest still stretch; a time moves to the end of the move it falls in."""
+    busy = []
+    for m in cfg.get('moves', []):
+        if m.get('kind') == 'glide': continue
+        busy.append((m['t'], m['t'] + (m.get('out', 0.45) + m.get('in', 0.6) if m.get('kind') == 'whip' else m['dur'])))
+    busy += [(h['t'], h['t'] + 0.5) for h in cfg.get('heroes', []) if h['t'] > 0]
+    busy += [(r['t'], r['t'] + r.get('dur', 0.5)) for r in cfg.get('reveals', [])]
+    for c in cfg.get('cards', []):
+        busy += [(k['t'], k['t'] + k.get('dur', 0.55)) for k in c.get('inner') or []]
+        for key, d in (('land', 0.55), ('exit', 0.35)):
+            if c.get(key): busy.append((c[key]['t'], c[key]['t'] + c[key].get('dur', d)))
+    busy = sorted((a - pad, b + pad) for a, b in busy)
+    out = []
+    for m in marks:
+        if isinstance(m, (list, tuple)):
+            pieces, a = [], m[0]
+            for b0, b1 in busy:
+                if b1 <= a or b0 >= m[1]: continue
+                if b0 > a: pieces.append((a, b0))
+                a = max(a, b1)
+            if a < m[1]: pieces.append((a, m[1]))
+            best = max(pieces, key=lambda p: p[1] - p[0], default=None)
+            if best and best[1] - best[0] >= 1 / 60: out.append([round(best[0], 3), round(best[1], 3)])
+            else: print(f'{rid}: thumb {m} is all movement; dropped')
+        else:
+            t = m
+            for b0, b1 in busy:
+                if b0 < t < b1: t = b1
+            if t < cfg['dur']: out.append(round(t, 3))
+            else: print(f'{rid}: thumb {m} is all movement; dropped')
+    return out
+
 def page(rid, cfg, extra_html='', extra_css='', videos=(), backdrop=None, extra_js=''):
     dur = cfg['dur']
+    THUMBS[rid] = still(rid, cfg, cfg.pop('thumb', []))
     split_mask = ''
     if cfg['mode'] == 'split':
         split_mask = '#viewport{-webkit-mask-image:linear-gradient(to bottom,#000 0,#000 900px,transparent 1060px);mask-image:linear-gradient(to bottom,#000 0,#000 900px,transparent 1060px)}'

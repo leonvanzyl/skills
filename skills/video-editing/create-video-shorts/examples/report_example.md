@@ -4,6 +4,11 @@
 - **Stems:** `stems/voice.wav`, `stems/sfx.wav`, `stems/riser.wav` and `stems/music.wav`. All run the full 52.667 s, 48 kHz, 24-bit.
 - **Cover (frame 0):** "Half the price / of Opus?", written by me from the hook, because no title was given.
 - **CTA keyword:** `PROMPT`, from the line "If you want to try out this **prompt** yourself…".
+- **Thumbnail:** `thumbnail.jpg` from 40.950 s (run 6, split): the two real session cards, $25.95 against $27.89, above your head pop-out, eyes to the lens in a 210 ms word gap. It beat these candidates:
+  - the benchmark table (run 0): a dense table that turns to texture at feed size
+  - the Claude logo (run 3): no face, and it doesn't say what the short is about
+  - the pulled-back cards (run 7): the same story, but without your face
+- **Full video:** you gave no YouTube URL or title, and the source has no pro-edit publishing copy, so the TikTok and Instagram captions point to your channel, Leon van Zyl, and the Related video is left to set once the long-form is live.
 
 ## 1. Inputs and sync
 - **Only one source file:** the project folder holds one file, `original.mov`. It is the finished long-form video: a 4K60 screen recording with your webcam as a picture-in-picture (x 3108–3811, y 30–978).

@@ -34,7 +34,8 @@ def build():
     extra_css = '.band{background:#FBEEE8;transform-origin:0 50%;border-radius:8px;transform:scaleX(0)}'
     cfg = dict(id='s1_r0', dur=r['dur'], mode='split', cam0=dict(x=540, y=470, s=1.0), cards=cards, moves=moves, pushRef=1.03,
                heroes=[dict(t=0, id='logo'), dict(t=t_b + 0.1, id='bench')],
-               reveals=[dict(el='hlb2', t=W(ws, 'agentic') - 0.1, dur=0.5, type='scaleX')], sfx=[])
+               reveals=[dict(el='hlb2', t=W(ws, 'agentic') - 0.1, dur=0.5, type='scaleX')], sfx=[],
+               thumb=[[t_b + 0.5, t_ag]])          # thumbnail candidate: the real benchmark table landed, before the push
     page('s1_r0', cfg, extra_css=extra_css)
 
     # R1 full visual: real claude.com pricing page in the fixed capture frame; inner camera Sonnet -> Opus -> Fable price rows
@@ -58,6 +59,7 @@ def build():
     cfg = dict(id='s1_r3', dur=r['dur'], mode='fv', cam0=dict(x=540, y=720, s=1), cards=cards,
                moves=[dict(t=t_whip, kind='whip', to=dict(x=540, y=720 + 2400, s=1), via=dict(x=540, y=720 + 1200, s=0.85))],
                heroes=[dict(t=0, id='logo'), dict(t=t_whip + 0.45, id='cap')], sfx=[dict(t=round(t_whip + 0.45, 3), type='whoosh')],
+               thumb=[[0, t_whip]],                # the Claude logo, large and centred, before the whip
                menu=dict(rows=MENU_ROWS, t=[[W(ws, 'sonnet') - 0.25, 'sonnet'], [W(ws, 'opus') - 0.25, 'opus'], [W(ws, 'fable') - 0.25, 'fable']], hide=W(ws, 'exact') - 0.45))
     page('s1_r3', cfg, backdrop=('img', 'assets/menu_still.png', fw, fh), extra_js=MENU_JS)
 
@@ -76,7 +78,8 @@ def build():
              dict(id='opu', kind='media', x=540, y=790, w=UW, h=UH, img='assets/usage_opus.png', bg='#141414')]
     cfg = dict(id='s1_r6', dur=r['dur'], mode='split', cam0=dict(x=540, y=470, s=1.0), cards=cards,
                moves=[dict(t=0.2, dur=r['dur'] - 0.2, kind='glide', to=dict(x=540, y=476, s=1.03))], pushRef=1.0,
-               heroes=[dict(t=0, id='son'), dict(t=W(ws, 'opus') - 0.25, id='opu')], sfx=[])
+               heroes=[dict(t=0, id='son'), dict(t=W(ws, 'opus') - 0.25, id='opu')], sfx=[],
+               thumb=[[W(ws, 'opus'), r['dur']]])  # $25.95 vs $27.89 above the head pop-out (build_gfx clips off the focus hand-off)
     page('s1_r6', cfg)
 
     # R7 full visual: same two cards ; push onto Sonnet cost, step to its time, pull back to both
@@ -90,5 +93,6 @@ def build():
              dict(t=W(ws, 'faster') - 0.25, dur=0.5, kind='step', to=dict(x=tim[0] - 150, y=tim[1], s=1.7)),
              dict(t=W(ws, 'costing') - 0.25, dur=1.5, kind='pull', to=dict(x=540, y=722, s=1.0))]
     cfg = dict(id='s1_r7', dur=r['dur'], mode='fv', cam0=dict(x=540, y=722, s=1.0), cards=cards, moves=moves, pushRef=1.04,
-               heroes=[dict(t=0, id='son'), dict(t=W(ws, 'costing') - 0.1, id='none')], sfx=[])
+               heroes=[dict(t=0, id='son'), dict(t=W(ws, 'costing') - 0.1, id='none')], sfx=[],
+               thumb=[[W(ws, 'costing') + 1.25, r['dur']]])   # pulled back: both cards sharp
     page('s1_r7', cfg)

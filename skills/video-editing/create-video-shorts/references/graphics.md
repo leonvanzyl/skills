@@ -92,6 +92,9 @@ Put `sfx` on each CFG, run-relative. `audio.py` reads `gfx/sfx_events.json`, whi
 - **UI sounds:** only for visible real presses, typing and landings.
 - **Camera moves:** nothing on steps, pushes, glides or layout cuts.
 
+## Thumbnail moments
+The short's thumbnail is picked from moments the compositions mark while they're built (editing-spec.md 8c), so nothing has to scan the finished short. Put `thumb` on the CFG, run-relative: a window `[a, b]` where the composition's most eye-catching state is on screen (the official logo large, the real UI doing the thing, the number or result the short is built on), or a single time. `build_gfx.py` writes them to `gfx/thumbs.json` and clips each window to where nothing moves: camera moves (glides excepted), focus hand-offs (0.5 s), inner-camera moves, landings, exits and reveals. A window that is all movement is dropped with a message. On a split, `thumbnail.py` takes the frame from the longest word gap inside the window, so the mouth is at rest. Mark one or two per composition that has something worth a thumbnail, none on the rest.
+
 ## Checking
 Before any full render, check each composition:
 - a 10 fps draft
