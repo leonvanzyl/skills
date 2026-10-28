@@ -10,7 +10,10 @@ import { sh, q } from "../src/box.mjs"
 import { secretPaths } from "../src/agents.mjs"
 
 const config = loadConfig()
-const worker = (await getWorkerStates(config)).find((w) => w.id === process.argv[2])
+const workerId = process.argv[2]
+const states = await getWorkerStates(config)
+if (!states.some((w) => w.id === workerId)) throw new Error(`Unknown worker id: ${workerId}. Known workers: ${states.map((w) => w.id).join(", ")}`)
+const worker = states.find((w) => w.id === workerId)
 if (!worker?.boxId) throw new Error("Usage: release-worker.mjs <worker id> (the worker must have a Box)")
 
 const box = await Box.get(worker.boxId)
