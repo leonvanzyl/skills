@@ -104,6 +104,9 @@ words: a move starts 0.25 s before the word that names its target; a mark lands 
   body, so the speaker never disappears mid-tutorial.
 - `split` (hook only): the graphic on the left, a camera card on the right with the speaker's head and shoulders
   popping out above the card's top edge.
+- `fvc` (camera scenes): the whole frame with the camera in a corner window. With separate webcam + desktop
+  recordings the window is the dynamic camera's (384 px square, 40 px margin, top-right unless the beat's
+  `"dyncam_corner"` says otherwise): brief the graphic to keep that square clear. `fv` hides the camera.
 - Resources: when the speaker cites or mentions something outside the recording (docs, a blog post, a repo, a
   paper, a tweet, a pricing page, an announcement), capture the real page and show it in the capture frame with the
   inner camera moving to the passage and a band on the sentence referenced. When the recording already shows the
@@ -143,6 +146,10 @@ Labs) unless the video names another.
 Layout px are 1920x1080; renders are made at the timeline's resolution (x2 on UHD).
 - **Webcam PiP:** wherever the recording has it (`scenes.py` finds it per source file). Held still in every zoom
   and `fvp` graphic by pasting the same frame's pixels back, so it never jumps on a cut.
+- **Separate webcam + desktop recordings: the dynamic camera** (`dynamic-camera.md`). FULL / CARD (756x936 at
+  1100,72 beside a 1000x562.5 content panel at 64,258) / SMALL (384 px square, 40 px margin, radius 22) / HIDDEN, eased
+  morphs at cuts, top-right by default (YouTube's bottom strip holds the controls, captions and watermark; AI tools keep
+  the prompt and newest output at the bottom), another corner only where the content needs it.
 - **Capture frame** (radius 32, white, shadowed, on its washed, blurred clone): fv x 160, y 72, 1600x936;
   fvp x 64, y 72, 1440x936; split x 64, y 90, 1112x900. The frame never moves; the footage pans inside it.
 - **Split:** squircle card x 1236, y 318, 760x842, radius 120, bleeding off the right and bottom edges. The whole
@@ -189,8 +196,10 @@ licences in its manifest; `sfxlib.py` rotates the recommended picks and lands ea
 whooshes and risers, its peak), synthesized stand-ins only when the library is missing. Clean, modern and premium,
 never cartoony. Levels are baked into the files, because Resolve's scripting API cannot set clip volume. The user
 found synthesized SFX "bland and generic" (2026-10-13).
-- **Voice:** the timeline's own A1, untouched. Levels below are measured against its robust peak (the 99th
-  percentile of 100 ms peaks) and its hook loudness.
+- **Voice:** the timeline's own A1, untouched, with the user's own voice chain (EQ, voice isolation, de-esser,
+  dynamics) on its track - it comes with a duplicated timeline and must be put back on a rebuilt one (section 8).
+  Levels below are measured against the RAW voice (`voice48.wav`): its robust peak (the 99th percentile of 100 ms
+  peaks), its speaking loudness and its hook loudness. The master sets the processed voice back to that reference.
 - **SFX**, one per meaningful visible event: a real click on presses, key ticks on typing (single-key samples, one
   per character), a soft pop when a card lands, a success chime on an answer or confirmation, a marker swish when a
   highlight band or underline sweeps (zoom marks, graphic reveals, the keyword pop's accent line), a soft bell ding
@@ -198,6 +207,11 @@ found synthesized SFX "bland and generic" (2026-10-13).
   one continuous world), a whoosh on the whip midpoint, and a tasteful hit (sting) on hook_end. A highlight or ding
   never stacks within 0.15 s of another event. Nothing on zooms' camera moves, punch-ins, steps, pushes or glides.
   `auto_sfx: false` in the plan turns the derived events off.
+- **No dings, bells or chimes (since 2026-10-20).** After the OpenCode 2.0 edit Leon wrote "The dings / bells / high
+  pitches is a bit much. Swooshes, swipes, pops are fine." `LONGFORM_RULES` now has `exclude_types=('ding', 'chime')`:
+  box marks land silently, success moments have no chime - hook included. Pops, clicks, key ticks, highlight swishes,
+  whooshes, the riser and the hit stay. A plan brings them back with `"sfx_rules": {"exclude_types": []}`. (The rules
+  below still describe how dings/chimes are paced when a plan turns them back on.)
 - **How often (the body).** Leon's pick in an A/B/C test (2026-10-16), after a viewer wrote "the new sound effects get
   annoying fast - ding, scribble, ding, ding, ding". Texture sounds (pops, clicks, keys, soft whooshes) may be
   frequent; accents (ding, chime, hit) are rare and mean something. `sfxlib.select` with LONGFORM_RULES: only the first
@@ -210,9 +224,10 @@ found synthesized SFX "bland and generic" (2026-10-13).
   the same peak a bell or the marker scribble sounds 6-10 dB louder than a click, which had put chimes almost level
   with the voice. Targets in LU under the voice as heard (`sfxlib.LONGFORM_TARGET`, plan `sfx_levels`): hit and chime
   -10, ding and soft whoosh -11, pop and whoosh -12, scribble -14 (its hiss tamed, about -4 dB above 7 kHz), click and
-  keys -16; the hook +3 LU (`sfx_hook_bonus`; the music masks it). Resolve's main bus (compressor + makeup) lifts the
-  quiet layers, measured +4.5 dB on the effects against the voice, so the files are levelled 4.5 dB lower
-  (`sfx_bus_lift`; 0 for a project without a bus compressor).
+  keys -16; the hook +3 LU (`sfx_hook_bonus`; the music masks it). The files carry these levels exactly: the master
+  (section 6, "Final loudness") never sends the layers through Resolve's bus, so `sfx_bus_lift` stays 0. (It was 4.5
+  when the mix went through a bus compressor that lifted the quiet layers; `master.py build` still honours a plan
+  that sets it.)
 - **Riser:** the library's riser (cut right after its peak) or a 2.6 s synthesized swell, landing exactly on
   hook_end, -12 dB. The one sound allowed to rise
   into a cut.
@@ -227,10 +242,22 @@ found synthesized SFX "bland and generic" (2026-10-13).
   called the chillhop one "very boring". Soft intro, the lift lands at the end of the hook's first sentence (`drop`),
   15 LU under the hook's voice (`under_voice_lu`), ducked ~5 dB more under speech, and it **fades out over 2-3 s
   starting at hook_end**. Nothing after that: long-form viewers tire of a bed under a tutorial.
-- **Final loudness** is set on delivery: the added layers are levelled against the voice, so normalising the whole
-  mix to -14 LUFS (YouTube) in Deliver keeps the balance. A compressor on the main bus does NOT: it lifts everything
-  under the voice (measured 3.5-7 dB for sounds 10-20 dB under), which `sfx_bus_lift` accounts for. Check the
-  project's bus, and say in the report what you assumed.
+- **Final loudness - the master and the final file** (pipeline.md section 9). The deliverable is
+  `$M/final/<timeline> - FINAL (-14 LUFS).mp4`, made outside Resolve's mixer:
+  - the user's own tracks rendered by Resolve through their chain and bus (the base stem), set back to the raw
+    voice's speaking loudness; the pro edit's tracks rebuilt from their files at unity, so the balance is exactly
+    the one designed above;
+  - a true-peak limiter (4x oversampled, 1.5 ms look-ahead, 80 ms release) driven to **-14.0 LUFS integrated**
+    with a -1.5 dBTP ceiling, so the AAC encode still lands **under -1 dBTP**; on last-call it worked more than
+    0.5 dB only 6.6% of the time, 5.2 dB at most;
+  - the timeline's picture rendered with the user's own export preset, Resolve's "YouTube - 2160p" (4K, H.264 High,
+    ~11 Mb/s at 4K60, ~2 GB for 25 minutes), its video stream copied, audio AAC 384 kb/s. Not a higher bitrate: the
+    97 Mb/s, 18 GB first delivery took "an incredibly long time to upload";
+  - measured on the DECODED final file: -14 +-0.3 LUFS, true peak <= -1 dBTP (any AAC overshoot gets a 0.5 s dip
+    and a re-mux), sync 0 samples, every SFX type within +-0.5 LU of its target, hook and body loudness, the
+    quietest and loudest 30 s.
+  Never hand over loudness as "normalise in Deliver": on last-call Deliver's normalisation left the upload "very
+  soft", and Resolve's AI Audio Assistant mangled the game music.
 
 ## 7. Captions, chapters, publishing
 - **Captions** are not burned in. `publish.py` writes `captions.srt` from the final word timings (fillers and noise
@@ -248,7 +275,12 @@ found synthesized SFX "bland and generic" (2026-10-13).
 
 ## 8. Assembly in Resolve
 - The pro edit is a **duplicate of the clean cut** named "<clean cut base name> - Pro Edit vN", so everything the
-  editor put on it (transitions, sounds, titles, grades) is kept. The clean cut itself is never modified.
+  editor put on it (transitions, sounds, titles, grades, and the voice chain, track faders and clip volumes) is
+  kept. The clean cut itself is never modified.
+- When a restructure forces a rebuilt timeline (lessons.md, "Restructuring a cut"), tell the user before building
+  that it won't carry their voice effects, track levels or clip volumes, and run the voice-chain check (pipeline.md
+  9a) once it exists: if their timeline's voice is PROCESSED and the new one RAW, they copy their chain onto its A1
+  before anything is levelled or delivered.
 - New tracks go above whatever exists: "PE Graphics" (zoom and graphic clips), "PE Overlays" (alpha: keyword pops,
   CTA cards), "PE Censor" (alpha blur over private details, always topmost, only when the plan has a censor beat),
   "PE SFX", "PE Music", "PE Riser" (stereo).
@@ -262,7 +294,13 @@ found synthesized SFX "bland and generic" (2026-10-13).
 - The body: every beat with its time, what it shows, the sources used, and why it earns its place.
 - Graphics: one line per composition (what it shows, real sources, camera moves, whips).
 - Audio: the music (style, mood, key, tempo, seed, drop, level, fade), the riser, every SFX with its time and level.
+- **The final file** first in the audio part: its path, resolution and bitrate, integrated loudness, true peak, LRA,
+  sync, the voice-chain verdict, the voice gain, each SFX type's offset from its target, hook / body loudness, the
+  quietest and loudest 30 s, any AAC overshoot dipped, and every `fit` flag (what Resolve's own mix does differently
+  - so Resolve playback won't match the file). All of it is in `levels/master_report.json`.
 - Fact check: each figure the speaker says, with 2+ sources, and any disagreement.
-- The Resolve build: timeline name, tracks, clip counts, verification results, anything the user must do (delete
-  the archived duplicate, normalise loudness on delivery).
+- The Resolve build: timeline name, tracks, clip counts, verification results, anything the user must do (upload
+  the final file, not a new export from Resolve; delete the archived duplicate timelines if they like).
+- Disk: what the project uses (the cleanup dry run's total) and that the cleanup runs once the user says the video
+  is uploaded (pipeline.md section 10) - it removes every render, the final file too.
 - Every judgement call.

@@ -39,7 +39,9 @@ def plan(nv, na):
     P = M.program(); PL = M.plan(); fps = C.FPS
     S = json.load(open('scenes.json')) if os.path.exists('scenes.json') else {'items': {}}
     vt = {r: nv + 1 + k for k, (r, _) in enumerate(ROLES_V)}
-    at = {r: na + 1 + k for k, (r, _) in enumerate(ROLES_A)}
+    A0 = json.load(open('audio_clips.json')) if os.path.exists('audio_clips.json') else {'clips': []}
+    roles_a = [(r, n) for r, n in ROLES_A if r != 'music' or any(c['track'] == 'music' for c in A0['clips'])]   # no PE Music without music
+    at = {r: na + 1 + k for k, (r, _) in enumerate(roles_a)}
     clips, punches, missing = [], [], []
     for b in PL['beats']:
         if b['kind'] == 'punch':
@@ -76,10 +78,10 @@ def plan(nv, na):
     markers = [dict(frame=int(round(ch['t'] * fps)), color='Blue', name=ch['title'], note='Chapter', duration=1) for ch in PL.get('chapters', [])]
     if PL.get('hook_end'):
         markers.append(dict(frame=int(round(PL['hook_end'] * fps)), color='Yellow', name='Listen: hook -> content',
-                            note='The riser lands here and the hook music fades out over the next few seconds.', duration=1))
+                            note='The riser lands here' + ('.' if PL.get('music', {}).get('off') else ' and the hook music fades out over the next few seconds.'), duration=1))
     markers = nudge(markers)
     out = dict(source_timeline=PL.get('source_timeline'), new_timeline=PL.get('new_timeline'),
-               tracks=dict(video=[dict(index=vt[r], name=n) for r, n in ROLES_V if r != 'censor' or any(c['role'] == 'censor' for c in clips)], audio=[dict(index=at[r], name=n, audio_type='stereo') for r, n in ROLES_A if r not in ('sfx2', 'sfx3') or any(c['role'] == r for c in clips)]),
+               tracks=dict(video=[dict(index=vt[r], name=n) for r, n in ROLES_V if r != 'censor' or any(c['role'] == 'censor' for c in clips)], audio=[dict(index=at[r], name=n, audio_type='stereo') for r, n in roles_a if r not in ('sfx2', 'sfx3') or any(c['role'] == r for c in clips)]),
                import_files=sorted({c['file'] for c in clips}), clips=clips, punches=punches, markers=markers, problems=missing)
     json.dump(out, open('placement.json', 'w'), indent=1)
     print(f"placement.json: {len(clips)} clips ({sum(c['media_type'] == 1 for c in clips)} video, {sum(c['media_type'] == 2 for c in clips)} audio), "

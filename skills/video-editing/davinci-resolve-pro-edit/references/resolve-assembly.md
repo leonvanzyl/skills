@@ -40,8 +40,21 @@ Every call below was run on Resolve Studio 21.1 with MCP 2.103 on the first proj
   pixels (a 1.15 zoom with Tilt -116 on a UHD timeline moved the eye line from 32% to 34% of the height).
 - **Alpha:** ProRes 4444 written by ffmpeg with straight alpha composites correctly on an upper track with no
   clip-attribute changes (clean strokes, soft shadows, no halos).
-- **Audio levels:** there is no working API for clip volume, fades or track levels - every level is baked into the
-  WAV. WAVs are padded to whole frames so every requested frame range exists.
+- **Audio levels:** there is no working API for fades, track levels, bus or track effects - every level is baked
+  into the WAV. WAVs are padded to whole frames so every requested frame range exists. Clip volume does work on 21.1
+  (`TimelineItem.SetProperty('AudioVolume', dB)` / `GetProperty`), and `master.py` reads it back for the master.
+- **4K exports:** always Resolve's built-in "YouTube - 2160p" preset (`LoadRenderPreset('YouTube - 2160p')`; the
+  user's rule), changing only `SelectAllFrames`/range, `TargetDir` and `CustomName`. It gives H.264 High at ~11 Mb/s
+  for 4K60. `rs_picture.py` does this.
+- **Rendering stems (21.1):** `SetTrackEnable('audio', k, False)` changes nothing (`GetIsTrackEnabled` still reads
+  True and the render plays the track); disabling the clips works (`TimelineItem.SetClipEnabled(False)`, re-enable
+  afterwards - `rs_stem.py`). `LoadRenderPreset('Audio Only')` renders a 24-bit WAV (the "Wave" format itself can't
+  be set by `SetCurrentRenderFormatAndCodec`). `SetRenderSettings` returns False for the whole dict when ONE key is
+  rejected, so set keys one at a time to know which.
+- **What the API can't see in Fairlight:** track and bus effects (EQ, Voice Isolation, De-Esser, dynamics, plugins),
+  fader levels and fader automation. A green fader that snaps back when moved is reading volume automation (on
+  last-call -14 dB on the SFX tracks, there before anyone noticed); a limiter added on Bus 1 never reached the
+  render. Measure what Resolve's mix does instead: render it and `master.py fit` it against the stems.
 - **Replace an edited render:** `media_pool_item replace_clip {clip_id, path}` swaps the media under every
   timeline use of that clip in place. Resolve keeps imported files open, so write edits to a new file name.
 - **Start timecode:** a duplicate keeps the base's start (00:00:00:00 here). Record frames and marker frames are
@@ -66,3 +79,27 @@ Every call below was run on Resolve Studio 21.1 with MCP 2.103 on the first proj
 - `timeline_item` actions address items by `track_type/track_index/item_index` only; `bulk_set_item_properties`
   also accepts `timeline_item_id`.
 - Pass real JSON booleans, never the string "false".
+
+## The dynamic camera's calls (separate recordings; `dynamic-camera.md`)
+Everything runs through `script_plugin run_inline` (`rs_content.py`, `rs_layout.py`), proven on abacus-test (Studio
+21.1.1.10):
+- `Timeline.DuplicateTimeline(name)` copies every track, the voice chain included; the new timeline then gets the
+  layer on its own top track. The source Pro Edit is never touched.
+- A content layer = the Pro Edit rendered with the camera, facecam and overlay CLIPS disabled
+  (`TimelineItem.SetClipEnabled(False)`, re-enabled in a `finally`; the ids are written to a pending file first so an
+  interrupted run is undone by the next). Track enables are not used for renders.
+- `MediaPool.AppendToTimeline([{mediaPoolItem, startFrame, endFrame, recordFrame, trackIndex, mediaType: 1}])` with
+  `recordFrame` = timeline start + offset; `endFrame` is EXCLUSIVE (measured live on 21.1.1.10). `rs_layout.py` still
+  checks the first clip's length (and every clip after it) in case a build differs.
+- **Track enables follow the CURRENT timeline:** `GetIsTrackEnabled` on a timeline object that isn't current returned
+  the current timeline's values (Pro Edit v1 read "all off" while v3 was open; all on once v1 was current). Make the
+  timeline current before reading or setting track enables (the rs_ scripts do).
+- **`GetSourceStartFrame()` can read one frame low:** 2 of 33 webcam items on abacus (60 fps) reported src0 one less
+  than placed, while the picture showed the right frame (v1 and v3 finals matched at lag 0). Fine for clips that start
+  at frame 0 (every skill render); look at the picture before trusting it for a mid-source copy.
+- **Proven live (abacus-test, 2026-11-01):** `rs_content.py` on Pro Edit v1 rendered a content layer pixel-identical
+  to the one v3 was built on (134 clips disabled and re-enabled, 132 s); `rs_layout.py` built a test timeline whose
+  "YouTube - 2160p" render was pixel-identical to Pro Edit v3's picture, to the byte (742,669,565 bytes).
+- Keyframes: TimelineItem has none in the API; OFX parameters (the PiP effect) can't be set; keyframes written into a
+  comp made with `AddFusionComp()` are ignored at render; `ImportFusionComp(<.comp>)` with BezierSpline keyframes is
+  honoured (watch the comp time base: a new empty timeline took the project's 24 fps on a 60 fps source).

@@ -1,0 +1,48 @@
+{
+ "face": [
+  2019,
+  896
+ ],
+ "face_box": [
+  1768,
+  612,
+  504,
+  568
+ ],
+ "webcam": [
+  3840,
+  2160
+ ],
+ "small": 384,
+ "margin": 40,
+ "small_crop": 1800,
+ "small_center": [
+  2019,
+  1163
+ ],
+ "small_radius": 22,
+ "card": [
+  1100,
+  72,
+  756,
+  936
+ ],
+ "card_crop_h": 2101,
+ "card_center": [
+  2019,
+  1110
+ ],
+ "card_radius": 22,
+ "panel": [
+  64,
+  258,
+  1000,
+  562.5
+ ],
+ "panel_radius": 16,
+ "default_corner": "tr",
+ "camera_tracks": [
+  "Camera"
+ ],
+ "_note": "dyncam.py cfg on the abacus webcam (4K, face box 504x568): reproduces the hand-tuned v3 framing"
+}

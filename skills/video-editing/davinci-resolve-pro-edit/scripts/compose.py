@@ -1,6 +1,8 @@
 """Finish gfx beats into V2 clips (timeline resolution, the source's colour), frame-locked to V1:
   fv     the graphic as rendered
   fvp    the graphic + the webcam PiP pasted frame-exactly at its original place, so the face never jumps on the cut
+  fvc    the graphic + the FULL-FRAME camera cropped into the webcam corner (same window, face size and position as the
+         screen recordings' PiP) - for camera items the user wants covered by B-roll with "my camera in the corner"
   split  (hook) the graphic + a squircle camera card on the right (x 1236, y 318, 760x842 layout px, radius 120,
          bleeding off the right and bottom edges) with the speaker's matted head and shoulders popping out above
          the card's top edge. The camera is the full-frame camera or the PiP, whichever V1 shows; the card and the
@@ -201,6 +203,50 @@ def frame_fvp(bg, cam, X, Y, Wo, Ho, pa, psh, box):
     return img
 
 
+def cam_corner(bid, seq):
+    """fvc: where the full-frame camera goes as a corner PiP and which part of it - the same window, the same face size
+    and face position as the webcam PiP of the screen recordings, so the corner looks like the rest of the video.
+    One static crop per beat (no moves on the footage), cached in split/<id>_cc.json (edit it to override)."""
+    gf = f'split/{bid}_cc.json'
+    if os.path.exists(gf): return json.load(open(gf))
+    import faces as FD
+    from collections import Counter
+    sc = scenes(); b = M.beat(bid)
+    wins = [tuple(v['pip']) for v in sc['items'].values() if v.get('scene') == 'screen' and v.get('pip')]
+    win = list(b.get('pip_win') or Counter(wins).most_common(1)[0][0])       # source px of a screen recording
+    px, py, pw, ph = win
+    # the PiP's own face: median over a few screen items
+    prog = M.program()['items']; ref = []
+    scr = [it for it in prog if (sc['items'].get(str(it['v1'])) or {}).get('scene') == 'screen'
+           and tuple((sc['items'].get(str(it['v1'])) or {}).get('pip') or ()) == tuple(win)]
+    for it in scr[::max(1, len(scr) // 8)][:8]:
+        s1 = [(it['file'], it, it['src0'] + (it['rec1'] - it['rec0']) // 2)]
+        fr = next(M.decode(s1, pw, ph, f'crop={pw}:{ph}:{px}:{py}'))
+        d = FD.detect(cv2.cvtColor(fr, cv2.COLOR_RGB2BGR))
+        if d: x, y, w, h, _ = d[0]; ref.append((h, x + w / 2, y + h / 2))
+    if not ref: raise SystemExit(f'{bid}: no face found in the screen recordings\' PiP {win}')
+    fh_p, fx_p, fy_p = np.median(np.array(ref), 0)
+    # the camera's face over the beat
+    sw, sh = M.probe(seq[0][0])['width'], M.probe(seq[0][0])['height']
+    got = []
+    for k in range(0, len(seq), max(1, len(seq) // 10)):
+        fr = M.decode_at(seq, k, sw // 2, sh // 2, f'scale={sw // 2}:{sh // 2}')
+        d = FD.detect(cv2.cvtColor(fr, cv2.COLOR_RGB2BGR))
+        if d: x, y, w, h, _ = d[0]; got.append((h * 2, (x + w / 2) * 2, (y + h / 2) * 2))
+    if not got: raise SystemExit(f'{bid}: no face in the camera footage of this beat')
+    fh_c, fx_c, fy_c = np.median(np.array(got), 0)
+    s = fh_p / fh_c                                             # PiP px per camera px
+    s = max(s, pw / sw, ph / sh)                                # the crop must fit inside the frame
+    cw, ch = pw / s, ph / s
+    cx = min(max(0, fx_c - fx_p / s), sw - cw); cy = min(max(0, fy_c - fy_p / s), sh - ch)
+    cw2, ch2 = int(round(cw)) // 2 * 2, int(round(ch)) // 2 * 2
+    kfit = min(C.TW / sw, C.TH / sh)
+    g = dict(win=win, out=[int(round(v * kfit)) for v in win], crop=[int(round(cx)) // 2 * 2, int(round(cy)) // 2 * 2, cw2, ch2],
+             face_pip=[float(fh_p), float(fx_p), float(fy_p)], face_cam=[float(fh_c), float(fx_c), float(fy_c)], scale=float(s))
+    os.makedirs('split', exist_ok=True); json.dump(g, open(gf, 'w'), indent=1)
+    return g
+
+
 def compose(bid, preview=None, nvenc=None):
     b = M.beat(bid); f0, f1 = M.frames_of(b['t0'], b['t1']); n = f1 - f0
     mode = b.get('layout', 'fv')
@@ -227,9 +273,20 @@ def compose(bid, preview=None, nvenc=None):
     elif mode == 'split':
         region = cam_region(seq); g = geometry(bid, region); sp = Split()
         x, y, w, h = region; crop = f'crop={w}:{h}:{x}:{y}'
+    elif mode == 'fvc':                                          # camera scene: the full-frame camera as a corner PiP
+        cc = cam_corner(bid, seq)
+        X, Y, Wo, Ho = cc['out']; x, y, w, h = cc['crop']
+        crop = f'crop={w}:{h}:{x}:{y}'
+        pa = M.pip_mask(Wo, Ho)[..., None]
+        full = np.zeros((C.TH, C.TW), np.float32); full[Y:Y + Ho, X:X + Wo] = pa[..., 0]
+        psh = (shadow_from(full) * (1 - full))[..., None] * (1 - np.array([24, 24, 32], np.float32) / 255)
+        ys_, xs_ = np.where(psh[..., 0] > 1e-3); box = (ys_.min(), ys_.max() + 1, xs_.min(), xs_.max() + 1)
+        psh = psh[box[0]:box[1], box[2]:box[3]]
+        fvp = (X, Y, Wo, Ho, pa, psh, box)
+        fit = lambda cam: cv2.resize(cam, (Wo, Ho), interpolation=cv2.INTER_AREA)
 
     def make(bg, cam, al):
-        if mode == 'fvp': return frame_fvp(bg, fit(cam), *fvp)
+        if mode in ('fvp', 'fvc'): return frame_fvp(bg, fit(cam), *fvp)
         if mode == 'split': return sp.frame(bg, cam, al, g)
         return bg
 
@@ -237,13 +294,13 @@ def compose(bid, preview=None, nvenc=None):
         for k in want:
             if not 0 <= k < n: continue
             bg = next(reader(src_g, start=k, count=1))
-            cam = M.decode_at(seq, k, w, h, crop) if mode in ('fvp', 'split') else None
+            cam = M.decode_at(seq, k, w, h, crop) if mode in ('fvp', 'split', 'fvc') else None
             al = next(reader(f'split/{bid}_matte.mov', 'rgba', 4, start=k, count=1))[..., 3] if mode == 'split' else None
             cv2.imwrite(f'preview/{bid}_{k / C.FPS:06.2f}.png', cv2.cvtColor(make(bg, cam, al), cv2.COLOR_RGB2BGR))
         print(f'{bid}: previews in preview/{bid}_*.png'); return
     enc = M.encoder(out, C.TW, C.TH, seq[0][0], nvenc=nvenc)
     gfx = reader(src_g)
-    cams = M.decode(seq, w, h, crop) if mode in ('fvp', 'split') else None
+    cams = M.decode(seq, w, h, crop) if mode in ('fvp', 'split', 'fvc') else None
     mattes = reader(f'split/{bid}_matte.mov', 'rgba', 4) if mode == 'split' else None
     for k in range(n):
         bg = next(gfx)

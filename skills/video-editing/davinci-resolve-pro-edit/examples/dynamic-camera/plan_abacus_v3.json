@@ -1,0 +1,185 @@
+{
+ "start": {
+  "to": "SMALL",
+  "corner": "br"
+ },
+ "keys": [
+  {
+   "t": 10.65,
+   "dur": 0.3,
+   "to": "HIDDEN",
+   "corner": "br",
+   "why": "the models graphic is full-frame"
+  },
+  {
+   "t": 14.883333333333333,
+   "dur": 0,
+   "to": "FULL",
+   "why": "cut to the face on \"push the limits\""
+  },
+  {
+   "t": 19.016666666666666,
+   "dur": 0.4,
+   "to": "SMALL",
+   "corner": "br",
+   "why": "shrinks away as the game B-roll takes over"
+  },
+  {
+   "t": 39.63333333333333,
+   "dur": 0.5,
+   "to": "FULL",
+   "hold": true,
+   "why": "\"I'll leave a link...\""
+  },
+  {
+   "t": 43.766666666666666,
+   "dur": 0.5,
+   "to": "CARD",
+   "content": "image:captures/abacus_supercomputer_landing_hero_2x.png",
+   "why": "sponsor line beside the real Supercomputer page"
+  },
+  {
+   "t": 51.083333333333336,
+   "dur": 0.45,
+   "to": "SMALL",
+   "corner": "br",
+   "content": "stem",
+   "why": "the Claude Code / Codex graphic grows out of the panel"
+  },
+  {
+   "t": 60.4,
+   "dur": 0.5,
+   "to": "FULL",
+   "hold": true,
+   "why": "\"but you would still have to...\""
+  },
+  {
+   "t": 67.75,
+   "dur": 0.4,
+   "to": "SMALL",
+   "corner": "br",
+   "why": "model picker; stays small into the demo (no 2 s flash)"
+  },
+  {
+   "t": 93.11666666666666,
+   "dur": 0.3,
+   "to": "SMALL",
+   "corner": "bl",
+   "why": "the prompt: keep its text and the send button clear"
+  },
+  {
+   "t": 113.0,
+   "dur": 0,
+   "to": "SMALL",
+   "corner": "br",
+   "why": "chapter: Fable 5.1 + GPT 6 Astra (graphics corner)"
+  },
+  {
+   "t": 148.88333333333333,
+   "dur": 0.3,
+   "to": "SMALL",
+   "corner": "bl",
+   "why": "timelapse, then the spotlight on the right-hand pane"
+  },
+  {
+   "t": 155.31666666666666,
+   "dur": 0.3,
+   "to": "SMALL",
+   "corner": "tr",
+   "why": "the code view"
+  },
+  {
+   "t": 169.81666666666666,
+   "dur": 0.3,
+   "to": "SMALL",
+   "corner": "bl",
+   "why": "timelapse, files/terminal/PC icons sit top-right"
+  },
+  {
+   "t": 193.0,
+   "dur": 0.5,
+   "to": "CARD",
+   "why": "\"these agents get access to an actual virtual PC\""
+  },
+  {
+   "t": 204.9,
+   "dur": 0.45,
+   "to": "SMALL",
+   "corner": "bl"
+  },
+  {
+   "t": 255.71666666666667,
+   "dur": 0,
+   "to": "SMALL",
+   "corner": "tr",
+   "why": "chapter: the agent testing its own game"
+  },
+  {
+   "t": 308.7,
+   "dur": 0.5,
+   "to": "CARD",
+   "why": "\"this little character over here, this scout\""
+  },
+  {
+   "t": 317.4,
+   "dur": 0.45,
+   "to": "SMALL",
+   "corner": "br"
+  },
+  {
+   "t": 353.56666666666666,
+   "dur": 0.5,
+   "to": "FULL",
+   "hold": true,
+   "why": "\"blazingly fast\""
+  },
+  {
+   "t": 362.56666666666666,
+   "dur": 0,
+   "to": "SMALL",
+   "corner": "tr",
+   "why": "chapter: the finished build (cut)"
+  },
+  {
+   "t": 425.01666666666665,
+   "dur": 0.5,
+   "to": "FULL",
+   "hold": true,
+   "why": "\"really impressive ... crazy impressive\""
+  },
+  {
+   "t": 435.65,
+   "dur": 0,
+   "to": "SMALL",
+   "corner": "tr",
+   "why": "chapter: GitHub export (cut)"
+  },
+  {
+   "t": 469.65,
+   "dur": 0.3,
+   "to": "SMALL",
+   "corner": "br",
+   "why": "the Domains buttons sit top-right"
+  },
+  {
+   "t": 490.0833333333333,
+   "dur": 0,
+   "to": "FULL",
+   "why": "\"really impressed\" (cut: the card follows 1.7 s later)"
+  },
+  {
+   "t": 491.76666666666665,
+   "dur": 0,
+   "to": "CARD",
+   "why": "chapter: pricing (cut)"
+  },
+  {
+   "t": 513.05,
+   "dur": 0.5,
+   "to": "FULL",
+   "hold": true,
+   "why": "outro to camera"
+  }
+ ],
+ "_note": "Pro Edit v3 of abacus-test (8:43, 4K60), the plan the user approved on 2026-11-01. t = programme seconds, exact frame times (frame / 60). The hook graphics were designed around a bottom-right bubble, so the hook stays br."
+}

@@ -130,6 +130,12 @@ footage. Dark UI is fine inside the white frame.
 - Check one full-resolution frame: the whole face (hair to chin) inside the card, hair ~96 px above its edge,
   the head never torn from the body on fast moves.
 
+## The camera window (separate webcam + desktop recordings)
+With separate recordings the camera is the dynamic camera's window, composited later (`dynamic-camera.md`), so a
+graphic only keeps its square clear: `fvc` = a 384 px square, 40 px from the edges, in the beat's `"dyncam_corner"`
+(top-right when unset); `fv` = no camera (it hides). Put the corner in the brief and on the beat before the agents
+start; the camera plan then holds that corner for the beat. No PiP is pasted (`compose.py` is skipped for these).
+
 ## SFX events
 Put `sfx` on each CFG, beat-relative. `build_gfx.py` writes `gfx/sfx_events.json` and `audio.py` places them:
 whooshes only on whips, UI sounds only for visible presses, typing and landings, nothing on steps, pushes, glides.

@@ -98,7 +98,7 @@ class Library:
 # get annoying fast - ding, scribble, ding, ding, ding". Variant C was his pick: "not too distracting, not too dense".
 # Levels go by LOUDNESS (the loudest 400 ms, K-weighted like LUFS) against the voice's speaking loudness, never by peak:
 # at the same peak a bell or a marker scribble sounds 6-10 dB louder than a click. Targets are LU below the voice as the
-# viewer hears it (long-form: after Resolve's main bus, which pulled the effects ~4.5 dB closer to the voice).
+# viewer hears it (long-form: master.py mixes the files against the voice outside Resolve's bus, so these are final).
 LONGFORM_TARGET = {'sting': -10, 'chime': -10, 'ding': -11, 'notification': -12, 'whoosh': -12, 'whoosh_soft': -11,
                    'pop': -12, 'highlight': -14, 'glitch': -14, 'click': -16, 'key': -16, 'tick': -16}
 SHORTS_TARGET = {'whoosh': -12, 'chime': -12, 'ding': -12, 'notification': -12, 'pop': -14, 'highlight': -14,
@@ -108,8 +108,12 @@ PRIORITY = {'riser': 0, 'sting': 0, 'chime': 1, 'whoosh': 2, 'whoosh_soft': 2, '
             'notification': 3, 'ding': 4, 'glitch': 5, 'highlight': 5, 'pop': 6}
 FAMILY = {'chime': 'accent', 'ding': 'accent', 'sting': 'accent', 'whoosh_soft': 'whoosh', 'tick': 'key'}
 # long-form body (variant C): bells and scribbles only where they mean something, every animation still audible
+# exclude_types: never played, hook included. Leon (opencode-2.0, 2026-10-20): "The dings / bells / high pitches is a bit
+# much. Swooshes, swipes, pops are fine." - box marks and success moments stay silent; a plan can bring them back
+# with "sfx_rules": {"exclude_types": []}.
 LONGFORM_RULES = dict(first_per_src=('ding', 'highlight'), pop_max=5, pop_gap=0.6,
-                      family_gap={'accent': 15.0, 'highlight': 4.0}, min_sep=0.35, density=(7, 15.0))
+                      family_gap={'accent': 15.0, 'highlight': 4.0}, min_sep=0.35, density=(7, 15.0),
+                      exclude_types=('ding', 'chime'))
 # shorts: music runs under them and the format is busier - a safety net only: the approved Harness Engineering shorts
 # peaked at 10 sounds in 10 s with accents 11 s+ apart, so nothing they did is dropped
 SHORTS_RULES = dict(first_per_src=(), pop_max=None, pop_gap=0.0, family_gap={'accent': 8.0}, min_sep=0.25, density=(10, 10.0))
@@ -176,12 +180,15 @@ def select(ev, rules, start=0.0):
       family_gap     the same family not again within N s (accents = chime / ding / sting)
       min_sep        never two sounds on top of each other (the more important one stays)
       density        at most n sounds in any w seconds (the least important go first)
-    Returns (kept events, dropped events with a 'why')."""
-    ev = sorted(ev, key=lambda e: e['t'])
+    Returns (kept events, dropped events with a 'why').
+      exclude_types  types that never play, the hook and keep=True events included (first, before everything else)"""
+    excl = set(rules.get('exclude_types', ()))
+    gone = [dict(e, why='excluded type ' + e['type']) for e in ev if e['type'] in excl]
+    ev = sorted([e for e in ev if e['type'] not in excl], key=lambda e: e['t'])
     units = _units(ev)
     fixed = [u for u in units if u['t'] < start or u['keep']]
     cand = [u for u in units if not (u['t'] < start or u['keep'])]
-    dropped = []
+    dropped = list(gone)
     def drop(u, why):
         for e in u['ev']: dropped.append(dict(e, why=why))
     keep, firsts, pops = [], set(), {}

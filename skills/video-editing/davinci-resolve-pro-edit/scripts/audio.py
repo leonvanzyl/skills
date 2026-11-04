@@ -6,9 +6,10 @@ separate clips for three new audio tracks - Resolve's API cannot set clip volume
          Which ones play in the body: sfxlib.select with LONGFORM_RULES (plan "sfx_rules" overrides) - only the first
          ding / scribble of a zoom or graphic, at most 5 pops per animation, accents 15 s apart, scribbles 4 s apart,
          at most 7 sounds in any 15 s; the hook, CTA cards and keyword pops always play.
-         How loud: by LOUDNESS against the voice's speaking loudness (sfxlib.LONGFORM_TARGET, plan "sfx_levels"),
-         e.g. chime -10, ding -11, pop -12, scribble -14 (hiss tamed), click and keys -16 LU, as heard after Resolve's
-         main bus ("sfx_bus_lift", 4.5 dB) - the hook +3 LU ("sfx_hook_bonus"), music masks it.
+         How loud: by LOUDNESS against the RAW voice's speaking loudness (sfxlib.LONGFORM_TARGET, plan "sfx_levels"),
+         e.g. chime -10, ding -11, pop -12, scribble -14 (hiss tamed), click and keys -16 LU, exactly as master.py
+         plays them (it sets the user's processed voice back to that reference; "sfx_bus_lift" 0) - the hook +3 LU
+         ("sfx_hook_bonus"), music masks it.
          (Leon's A/B/C test, 2026-10-16: peak-based levels made bells and scribbles the loudest sounds in the edit.)
   Music  the HOOK ONLY: a seeded track in the plan's style and mood, filtered intro, beat drops at plan.music.drop,
          about 18 LU under the hook's voice, ducked ~5 dB under speech, fading out over plan.music.fade_out seconds
@@ -111,7 +112,7 @@ RISER_DB = -12                    # the riser's peak against the voice's peak (t
 HOOK_END = float(PL.get('hook_end') or 0.0)
 RULES = dict(sfxlib.LONGFORM_RULES, **PL.get('sfx_rules', {}))
 TARGET = dict(sfxlib.LONGFORM_TARGET, **PL.get('sfx_levels', {}))
-BUS_LIFT = float(PL.get('sfx_bus_lift', 4.5))          # measured on Harness Engineering: Resolve's main bus lifted SFX ~4.5 dB
+BUS_LIFT = float(PL.get('sfx_bus_lift', 0.0))          # 0: master.py mixes outside Resolve's bus (it was 4.5 when a bus compressor lifted the SFX)
 HOOK_BONUS = float(PL.get('sfx_hook_bonus', 3.0))
 VSPEECH = sfxlib.speech_loudness(voice)
 
@@ -293,9 +294,12 @@ def main():
     venv = np.abs(voice[:len(mus)].mean(1)); venv = signal.filtfilt(*signal.butter(1, 6 / (SR / 2)), venv)
     duck = 1 - 0.45 * np.clip(venv / (np.percentile(venv, 90) + 1e-9), 0, 1)
     mus *= duck[:, None]
-    write(f'{C.MEDIA}/music_hook{TAG}.wav', mus)
-    mus_mix[:len(mus)] += mus.astype(np.float32)
-    clips.append(dict(track='music', file=os.path.abspath(f'{C.MEDIA}/music_hook{TAG}.wav'), record_frame=0, start_frame=0, end_frame=frames(len(mus))))
+    if mp.get('off'):                       # no hook music (plan music.off): the riser and the sting stay
+        params['style'] = 'off'
+    else:
+        write(f'{C.MEDIA}/music_hook{TAG}.wav', mus)
+        mus_mix[:len(mus)] += mus.astype(np.float32)
+        clips.append(dict(track='music', file=os.path.abspath(f'{C.MEDIA}/music_hook{TAG}.wav'), record_frame=0, start_frame=0, end_frame=frames(len(mus))))
     params.update(level_lufs=round(target, 1), hook_voice_lufs=round(hook_lufs, 1), fade_out=fade_out, hook_end=hook_end)
     sfx_info = dict(rules=RULES, levels_lu=TARGET, bus_lift_db=BUS_LIFT, hook_bonus_lu=HOOK_BONUS,
                     voice_speech_lufs=round(VSPEECH, 1), body=sfx_audit, events=len(ev_all), dropped=len(dropped),
