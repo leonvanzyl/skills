@@ -115,8 +115,8 @@ if not fit_ix:
             if not any(a - 1 <= t <= b + 1 for a, b, *_ in EXC): fit_ix.append((t, o))
     print(f'fit on all synced audio outside fit_exclude {EXC} ({len(fit_ix)} s): the patches cover everything')
 fit_ix = fit_ix[::max(1, len(fit_ix) // 400)]
-ex = np.concatenate([xm[int(t * SR):int((t + 1) * SR)] for t, o in fit_ix])
-cl = np.concatenate([vm[int((t + o) * SR):int((t + o + 1) * SR)] for t, o in fit_ix])
+ex = np.concatenate([xm[int(round(t * SR)):int(round(t * SR)) + SR] for t, o in fit_ix])
+cl = np.concatenate([vm[int(round((t + o) * SR)):int(round((t + o) * SR)) + SR] for t, o in fit_ix])
 f, px = signal.welch(ex, SR, nperseg=8192); f, pc = signal.welch(cl, SR, nperseg=8192)
 ratio = np.sqrt(px / (pc + 1e-20)); sm = np.empty_like(ratio)
 for i, fi in enumerate(f):                                    # 1/3-octave smoothing in the log domain
@@ -126,10 +126,10 @@ band = (f > 60) & (f < 16000); sm[f < 60] = sm[band][0]; sm[f > 16000] = sm[band
 TAPS = 4095
 fir = signal.firwin2(TAPS, f / (SR / 2), sm / sm[np.argmin(abs(f - 1000))])
 vq = np.stack([signal.fftconvolve(v[:, c], fir)[TAPS // 2:TAPS // 2 + len(v)] for c in range(2)], 1).astype(np.float32)
-vqm = vq.mean(1); cq = np.concatenate([vqm[int((t + o) * SR):int((t + o + 1) * SR)] for t, o in fit_ix])
+vqm = vq.mean(1); cq = np.concatenate([vqm[int(round((t + o) * SR)):int(round((t + o) * SR)) + SR] for t, o in fit_ix])
 re_, rc_ = r_db(ex, SR // 10), r_db(cq, SR // 10); sp = (re_ > -40) & (rc_ > -60)
 vq *= 10 ** ((np.median(re_[sp]) - np.median(rc_[sp])) / 20)
-vqm = vq.mean(1); cq = np.concatenate([vqm[int((t + o) * SR):int((t + o + 1) * SR)] for t, o in fit_ix])
+vqm = vq.mean(1); cq = np.concatenate([vqm[int(round((t + o) * SR)):int(round((t + o) * SR)) + SR] for t, o in fit_ix])
 le, lc = r_db(ex, SR // 50), r_db(cq, SR // 50)
 bins = np.arange(-60, -2, 2.0); curve = []
 for b0 in bins:
@@ -139,7 +139,7 @@ gdb = np.interp(r_db(vqm, SR // 50), bins + 1, curve)
 k = np.exp(-np.arange(0, 8) / 2.5); gdb = np.convolve(gdb, k / k.sum(), mode='same')
 env = np.repeat(10 ** (gdb / 20), SR // 50); env = np.pad(env, (0, max(0, len(vq) - len(env))), mode='edge')[:len(vq)]
 vq *= uniform_filter1d(env, SR // 100)[:, None].astype(np.float32)
-vqm = vq.mean(1); chk = np.concatenate([vqm[int((t + o) * SR):int((t + o + 1) * SR)] for t, o in fit_ix])
+vqm = vq.mean(1); chk = np.concatenate([vqm[int(round((t + o) * SR)):int(round((t + o) * SR)) + SR] for t, o in fit_ix])
 f, p1 = signal.welch(ex, SR, nperseg=4096); f, p2 = signal.welch(chk, SR, nperseg=4096)
 MATCH = {f'{lo}-{hi}': round(float(10 * np.log10(p1[(f >= lo) & (f < hi)].mean() / p2[(f >= lo) & (f < hi)].mean())), 1)
          for lo, hi in [(100, 400), (400, 1600), (1600, 6400), (6400, 12000)]}

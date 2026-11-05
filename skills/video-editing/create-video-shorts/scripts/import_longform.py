@@ -10,6 +10,8 @@
 OPTIONAL. setup.sh runs it with --auto for every work folder, so a fresh session finds the long-form run without knowing
 about it. With none found it says so and the shorts are made standalone, exactly as before (the research subagent, graphics
 from the source video); it never fails setup.
+No work folder on this machine, but the raw recordings next to the video: it says so, and build_raw_map.py (after
+analyze.sh) rebuilds longform_program.json and a clean voice stem from them by audio matching (Last Call, 2026-10-19).
 usage (in work-<stem>/):
   $PY scripts/import_longform.py --auto                     what setup.sh runs: import if a matching run exists, else note it
   $PY scripts/import_longform.py [<pro-edit work folder>]   found under %LOCALAPPDATA%/video-pro-edit/ when omitted
@@ -71,6 +73,25 @@ def find_work(cfg, auto=False):
     return hits[0]
 
 
+VIDEO_EXT = ('.mov', '.mp4', '.mkv', '.m4v', '.mxf')
+
+
+def raw_recordings(cfg):
+    """the other videos next to the source: the long-form edit's raw recordings when its pro-edit work folder is gone
+    (build_raw_map.py). In the single-file form (the source hard-linked into <folder>/shorts/) that is <folder>; never the
+    source itself or its copy."""
+    src = os.path.abspath(os.path.join(HERE, cfg['source'])); d = os.path.dirname(src)
+    size = os.path.getsize(src) if os.path.exists(src) else -1
+    dirs = [d, os.path.dirname(d)] if os.path.basename(d).lower() == 'shorts' else [d]
+    out = []
+    for dd in dirs:
+        for f in sorted(os.listdir(dd)):
+            p = os.path.join(dd, f)
+            if os.path.isfile(p) and f.lower().endswith(VIDEO_EXT) and not (f == os.path.basename(src) and os.path.getsize(p) == size):
+                out.append(p)
+    return out
+
+
 def media_folder(cfg):
     src_dir = os.path.dirname(os.path.join(HERE, cfg['source']))
     for d in (src_dir, os.path.join(src_dir, '..')):
@@ -94,6 +115,12 @@ def main(work, auto=False):
                   'report (fact check, music and SFX windows); everything else is made standalone')
         else:
             print('long-form: no davinci-resolve-pro-edit run found for this video - the shorts are made standalone')
+        raws = raw_recordings(cfg)
+        single = os.path.basename(os.path.dirname(os.path.abspath(os.path.join(HERE, cfg['source'])))).lower() == 'shorts'
+        if raws and (m or single):   # a finished edit with its raw recordings next to it: they can stand in for the work folder
+            print(f'long-form: {len(raws)} other recording(s) next to the video ({", ".join(os.path.basename(r) for r in raws[:8])}).',
+                  'If they are its raw recordings, run build_raw_map.py after analyze.sh: a clean voice stem and the',
+                  'final -> raw map, as if the work folder were here (pipeline.md 1c)')
         return
     print('pro-edit work folder:', W)
     shutil.copy(os.path.join(W, 'program.json'), 'longform_program.json')

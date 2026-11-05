@@ -31,10 +31,16 @@ constantly showing real examples. Work autonomously; make every judgement call y
 - <Finished edit made with davinci-resolve-pro-edit (`import_longform.py` ran): "Clean, unzoomed screen footage: the RAW
   recordings `<folder>\{<files>}`. `$PY scripts/import_longform.py --at <final-video s>` gives the raw file + time (and an
   ffmpeg still command); `--range <a> <b>` lists the raw pieces of a stretch. Key stretches (final-video time -> raw):
-  <the article/post ~m:ss, the CLI demo ~m:ss, the app footage ~m:ss>.">
+  <the article/post ~m:ss, the CLI demo ~m:ss, the app footage ~m:ss>." (The same holds when `build_raw_map.py` rebuilt
+  `longform_program.json` from the raw recordings because the work folder was gone.)>
+- `$PY scripts/rawsheet.py <name> <final s> [...]` makes a labelled contact sheet of the raw frames at those final-video
+  times (`chk/<name>.png`): use it to see what the clean footage shows before choosing a crop. <Paste the sheets you made
+  for the brief: chk/raw_s1.png ...>
 - The raw recordings show the webcam picture-in-picture at x <..>, y <..>, <w>x<h> (source px): never show it in a graphic.
   Crop UI away from it. LOOK at a frame before choosing a crop: `ffmpeg -ss <t-1> -i <raw> -ss 1 -frames:v 1 x.png`. Keep
   crops even-sized; re-encode clips with dense keyframes (`-g 12`) for HyperFrames.
+- <When the video builds something (an app, a game) and its project folder is on this machine: point at it READ-ONLY - its
+  real pages, the docs the agent wrote, test or debug captures, review files. It is usually the richest real material.>
 - Real pages: `captures/` (`captures/index.json`: file -> url, what it shows; `captures/facts.json`: the fact check). Reuse
   them; don't re-capture. Logos / avatars / thumbnails already cut out: `longform_assets/` <and captures/logos/>. Copy what
   you use into `gfx/assets/` with YOUR tag prefix.

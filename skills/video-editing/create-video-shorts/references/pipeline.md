@@ -80,6 +80,15 @@ $PY scripts/import_longform.py --range 545 552 # the raw pieces under a final-vi
 - **`clean_stem.voice`** = its `voice48.wav` (and `clean_audio` back to null if setup paired a copy of the stem); then §1b. Its `report.md` (Audio section) gives the hook-music window for `clean_stem.fit_exclude`.
 - **`project.json` `longform`:** the paths of its report and `PUBLISH.md`. The full video's title for the CTA lines is the one it went LIVE with (spec 8b).
 
+**No work folder, but the raw recordings are next to the video** (the long-form was edited on another machine or cleaned up; `setup.sh`'s `long-form:` line names the other recordings it found). Rebuild what the work folder would have given, after `analyze.sh`:
+```bash
+$PY scripts/build_raw_map.py                 # the recordings next to the video; or name them: build_raw_map.py 1.mkv 2.mkv ...
+$PY scripts/clean_from_stem.py --scan        # the stem is on the export's own timeline: offset ~0 wherever it matched
+```
+- **`build_raw_map.py`** matches every 0.5 s of the export's audio against all the raw tracks (GPU FFT cross-correlation; 25 s for a 25 min export against an hour of raw). It writes `longform_program.json` (so `import_longform.py --at`, `rawsheet.py` and the graphics brief work as after a real import), `raw/stem48.wav` (the raw mic at its final-video time) and `clean_stem.voice`.
+- **Patch only the voiced stretches you keep.** A raw recording that caught game or demo audio through the speakers also matches the export's montage or playthrough, so `--scan` reports sync there too. Set `clean_stem.sync` and `clean_stem.patches` by hand to the talk (e.g. `[[0, 42.2, 0], [114.3, 928, 0]]`), with boundaries in quiet gaps. Set `fit_exclude` on any patch with music under the voice (an intro over gameplay). Stretches outside the patches keep the export's audio; a line of the game's own dialogue can come from there.
+- `--build`, then check the EQ match it prints (Last Call: within 0.6 dB per band).
+
 Meanwhile, spawn a research subagent (after §1c: only for claims `captures/facts.json` doesn't cover). It fact-checks every figure the speaker says against 2+ sources. It also captures source pages, logos and pricing tables as 2x PNGs into `W/captures/` using a local Playwright, and writes `captures/facts.json`.
 
 ## 2. Plan
@@ -88,7 +97,10 @@ Meanwhile, spawn a research subagent (after §1c: only for claims `captures/fact
    ```bash
    $PY scripts/eyesheet.py --window 122.4,127.0 --step 0.2
    ```
-   Use `--step 0.1` around a head turn.
+   Use `--step 0.1` around a head turn. Its crops show the whole face small. Before you lock the layouts, look at full-resolution eye crops of every candidate camera line. This matters most when the webcam sits just above the screen, where reading shows only as a lowered gaze:
+   ```bash
+   $PY scripts/eyecrop.py e_L4 347.4:354.0:0.3   # -> chk/e_L4.png, tight crops round the eyes at ~0.75x
+   ```
 3. Write `shorts.json`, using `SKILL/examples/harness-engineering/shorts.json` as the model (`plan_example_shorts.json` is a smaller one). Per short:
    - `title` and `cover` (one or two lines). The outro card is "Watch the full video" by default (`cta_mode: 'full_video'`, optional `cta_text`); `cta_mode: 'comment'` + `cta_keyword` only on request
    - `highlights`: meaningful caption words or phrases, longest first
@@ -121,6 +133,8 @@ $PY scripts/eyesheet.py s1 &         # 8 eye crops per line -> s1_eyes.png (LOOK
 ```
 - **Switch points:** a switch snaps to the nearest aligned word start. To place one precisely, check `cut.json` → `lines[].words` and the RMS dips.
 - **Missing word:** if Whisper drops a word, add it by hand at the end of `align_lines.py`. There's a commented example there.
+- **A last word missing from the proof** ("Last Call" without "98", "realistic" without "look"): the line's window ends at the first 120 ms of silence after `b + 0.25`. The full transcript's word starts run up to 0.4 s early, so a word after a short pause falls outside the window. Set `b` about 0.4 s later and re-cut.
+- **A previous word kept at the start** ("Now, Claude cannot..."): when the window's transcript lacks the short word before the line, the onset search has no previous word and keeps it. Hand-fix it in `align_lines.py`: insert that word (its RMS start and end) before `fi`, so the onset is cut in the dip between the two words. The same fix works for a line whose window starts inside the previous line's last word (heard as a stray "Hey").
 - **Re-running:** `cut2.py` takes seconds, so iterate freely.
 
 ## 4. Fan out

@@ -10,6 +10,7 @@
 **Eye contact and source quirks**
 - **Detecting reading:** looking at a screen shows up as a head pitch/yaw shift. `gaze.py` clusters it; confirm with eye crops (`eyesheet.py`), and use 100 ms steps around turns.
 - **Glances vs turns:** blinks and eye glances under about 0.3 s are not "looking away".
+- **Webcam just above the screen (Last Call, 2026-10-19):** the two pose clusters (yaw -3 / +11) and the look-down blendshape did not separate reading from on-lens. Reading the screen there is a lowered gaze with the head nearly frontal. `eyesheet.py`'s small crops misled too, and three runs had to be re-laid out after the fact. Full-resolution crops round the eyes (`eyecrop.py`, 0.3 s steps) showed it plainly. Check every candidate camera line that way before the plan is locked. Expect a lot of reading while he walks through his own prompt pages or a demo, so pick short lines he says to the lens for the camera runs. The outro may end on a glance down; it stays full cam (Leon's rule).
 - **Odd camera windows:** ffmpeg's `crop` rounds an odd width or height down on yuv420p, so a raw-frame reader sized from the window (e.g. 325 px from a 650 px window at proxy scale) reads misaligned garbage and never errors. `zoomscan.py` and `gaze.py` round their proxy crop to even sizes. Any new reader must do the same.
 - **Slicing the analysis:** `gaze.py` and `zoomscan.py` run as 8 parallel time slices (9 min -> under a minute on a 15 min master). The zoom rows are identical to a sequential pass; the gaze rows match on every face/no-face flag, two thirds are bit-identical and the rest are within 0.15 deg of pose and 0.4 px of eye position (the VIDEO-mode landmarker warms up on the second before each slice). The clusters are 10+ degrees apart, so nothing downstream moves.
 - **Snapping switches:** a camera switch snaps to a word boundary. The switch goes before the turn when you look away, and after the turn when you look back.
@@ -136,6 +137,29 @@
 - **A music take Leon rejects:** don't regenerate blindly; offer the other takes and the long-form hook track
   (`music_lib/cand_N.wav`). In `shorts.json` a `music.file` + `file_offset` plays a given track instead of a take; set the
   offset so its lift lands on the hook join. He called s1's take 2 "terrible", and s1 used the long-form cand_3.
+
+**A finished edit whose work folder is gone (Last Call, 2026-10-19: 4 shorts from a 24.5 min 4K export)**
+- **The raw recordings can stand in for the work folder.** The pro-edit run had been cleaned up: no `voice48.wav`, no
+  `program.json`, only `pro-edit-media/` (report and publishing copy). The export had the game playing under the intro and
+  ~130 library SFX under the talk. The raw recordings (1-5.mkv) were next to the export, so `build_raw_map.py` rebuilt
+  both by audio matching: 213 pieces in ~25 s on the GPU. `clean_from_stem.py` then matched the raw mic to his voice chain
+  within 0.6 dB in every band. The same map gave the graphics clean, unzoomed footage (`rawsheet.py`, `import_longform.py --at`).
+- **Raw tracks that caught the speakers match the wrong stretches.** His screen recordings had the game's voice samples
+  playing through the speakers, so the export's montage and playthrough matched them. Limit `clean_stem.sync` and
+  `.patches` to the talk by hand; outside the patches the export keeps its own audio.
+- **`clean_from_stem.py` near-zero offsets:** a sync offset of -2e-05 s made the 1 s fit slices 47,999 vs 48,000
+  samples and the level fit crashed. The slices now round their start and take exactly SR samples.
+- **The game's own dialogue as a line.** A line of the montage ("Eight years, four vans, one fire." / "Small fire.") cut
+  and aligned like any other, with the export's audio (game music under it) and the montage's own frames synced in the
+  graphic. Showing the voice acting beat naming it.
+- **A camera placed by the long-form:** its intro put his full-frame camera in the webcam's spot and size. Detection
+  treats it as the PiP, but the face is bigger, so that short's split scale came out 1.21 (the webcam shorts 1.41-1.44).
+  One scale per short keeps it consistent.
+- **A music pick with a negative score** (lift 1.8 s before the join, the other takes with no lift): generate a new batch
+  (`music.seed` + `takes: 4` in `shorts.json`, move the old `<sk>/music/` aside, `music_takes.py <sk> --force`). The second
+  batch landed its lift on the join.
+- **The game's own project folder is the richest source** when the video builds something: the real style pages, the
+  docs the agent wrote, the debug tool's contact sheets and the critic agents' review files. Point the graphics brief at it.
 
 **Environment**
 - **Face detection:** OpenCV 5 removed the old Haar face cascades. `faces.py` uses the bundled YuNet model (`face_detection_yunet_2023mar.onnx`), which also finds small webcam-window faces.
