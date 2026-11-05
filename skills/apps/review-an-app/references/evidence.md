@@ -141,6 +141,14 @@ pnpm audit --prod 2>&1 | tail -30
 
 Read it rather than pasting it. A transitive advisory with no path from this app's code is `worth knowing`, not `broken`, and the lens needs to be told which.
 
+The rest of the supply chain is two more cheap reads — which lockfile is committed, which packages may run install scripts, and what the CI workflows pull in:
+
+```bash
+git ls-files | grep -E '(^|/)(pnpm-lock\.yaml|package-lock\.json|yarn\.lock|bun\.lockb?)$'
+grep -n -A10 'onlyBuiltDependencies' package.json pnpm-workspace.yaml 2>/dev/null
+grep -rn 'uses:' .github/workflows/ 2>/dev/null
+```
+
 ## Stop what you started
 
 Stop only the server this file started, and go by what owns the port — `pnpm` spawns `next`, which spawns `node`, so killing the `pnpm` process orphans the server still holding 3000. Confirm nothing is listening before the lenses are dispatched.
@@ -154,7 +162,8 @@ Hand every lens the same thing:
 3. The build route table, or the build failure.
 4. Which branches the app has, from Step 1.
 5. `package.json`, the schema files, and the `"use server"` file list.
-6. The discoverability capture, or the static files where the app didn't run.
-7. **Which mode this review ran in** — served and probed, or read only. Every lens has to know how much its own evidence is worth.
+6. The audit summary, the committed lockfile, the install-script allowlist and the workflow `uses:` lines.
+7. The discoverability capture, or the static files where the app didn't run.
+8. **Which mode this review ran in** — served and probed, or read only. Every lens has to know how much its own evidence is worth.
 
 And tell each lens plainly what is *not* in the pack, so it reports the gap instead of assuming it away.

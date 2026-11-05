@@ -1,6 +1,6 @@
 ---
 name: review-an-app
-description: Review a web app that already exists and report what is actually wrong with it — security holes checked against the OWASP Top 10, search and AI discoverability that has drifted out of date, and anything the app claims that it no longer does. Use when the user asks to review, audit, or check over an app, wants a security review or vulnerability check of a whole codebase rather than a diff, asks whether their sitemap, robots.txt or llms.txt are still correct, or suspects their landing page, docs or privacy policy have fallen behind the product. Reviews the app as it stands today, not a pull request and not a build sheet, so it catches what was already wrong before the current branch. Read-only by default; gathers evidence once, runs independent lenses over it in parallel, re-checks anything uncertain with a command, and names every check it could not perform rather than implying it passed.
+description: Review a web app that already exists and report what is actually wrong with it — security holes checked against the OWASP Top 10:2025, search and AI discoverability that has drifted out of date, and anything the app claims that it no longer does. Use when the user asks to review, audit, or check over an app, wants a security review or vulnerability check of a whole codebase rather than a diff, asks whether their sitemap, robots.txt or llms.txt are still correct, or suspects their landing page, docs or privacy policy have fallen behind the product. Reviews the app as it stands today, not a pull request and not a build sheet, so it catches what was already wrong before the current branch. Read-only by default; gathers evidence once, runs independent lenses over it in parallel, re-checks anything uncertain with a command, and names every check it could not perform rather than implying it passed.
 ---
 
 # Review an App
@@ -46,7 +46,7 @@ Then say in two lines what you're about to review and which lenses will run. If 
 
 | Lens | Reference | Covers |
 | --- | --- | --- |
-| Security | `references/security.md` | OWASP Top 10, grounded in what this stack actually gets wrong |
+| Security | `references/security.md` | OWASP Top 10:2025, grounded in what this stack actually gets wrong |
 | Discoverability | `references/seo.md` | sitemap, `robots.txt`, `llms.txt`, metadata — correct and current, or not |
 | Drift | `references/drift.md` | what the app claims, against what it does |
 
