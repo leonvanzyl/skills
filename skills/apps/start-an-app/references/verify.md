@@ -229,6 +229,8 @@ Stop the server the gate started, and only that one. `pnpm` spawns `next`, which
 
 The gate stops at what a status code can answer. The rest needs a browser, a provider round trip, or a human, and it is where most of the app's actual behaviour lives. If a browser tool is available, use it: load `/` and the main page, capture light and dark, capture one narrow viewport, and read the console on each.
 
+If the project already uses agent-qa, or the user selected it for these checks, read [browser-flow evidence with agent-qa](agent-qa.md). Use it for the selected flows from the agreed build sheet. Its results join the evidence capture; they do not replace the gate, the remaining browser checks, or the fresh-eyes review. Do not add a test framework merely because this reference exists.
+
 Then **name every check still not performed.** Do not omit them and do not claim them:
 
 - The app in dark mode, and at a phone-width viewport.

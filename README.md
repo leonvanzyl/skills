@@ -24,6 +24,8 @@ Always your first step. Describe the app you want to build in plain language. Th
 
 > Use the start-an-app skill. I want to build...
 
+For projects using [agent-qa](https://github.com/vostride/agent-qa), the verification step includes an [optional browser-flow reference](skills/apps/start-an-app/references/agent-qa.md). It connects natural-language tests, advanced memidex memory, and self-improvement to evidence for the flows you agreed to build. It uses an initialized project and its configured browser and model provider; live runs can change test data and incur provider costs.
+
 ### 2. Review an app
 
 Once the app exists, have it checked. This skill reviews the whole app as it stands today and reports on three things: security against the OWASP Top 10, SEO and AI discoverability (is your sitemap, robots.txt, and llms.txt still true?), and drift, meaning anything your landing page, docs, or privacy policy claim that the app no longer does. Read-only by default, and it re-checks anything uncertain with a command instead of guessing.
