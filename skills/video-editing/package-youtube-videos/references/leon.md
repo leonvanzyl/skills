@@ -7,10 +7,9 @@ Every line below says where it comes from, because an earlier version of this fi
 something he said himself" and was not. There are three kinds:
 - **[said 2026-11-22]** his words in the session that built this skill, quoted exactly.
 - **[earlier, date]** his words as recorded, with that date, in the notes of the older thumbnail skill, which this
-  skill replaced on 2026-11-22 (its notes are archived on his machine at
-  `~/.claude/skill-backups/design-youtube-thumbnails-retired-2026-11-22/references/leon.md`). Only the quotes are
-  carried, not the rules that skill built on them. He did not repeat these on 2026-11-22; if one looks wrong for a
-  video, ask him.
+  skill replaced on 2026-11-22. That skill is gone; its dated log of his feedback is the one file kept, privately, at
+  `~/.yt-packaging/earlier-feedback-log.md`. Only the quotes are carried here, not the rules that skill built on
+  them. He did not repeat these on 2026-11-22; if one looks wrong for a video, ask him.
 - **[our choice]** not his words: a working default, to be dropped the moment he says otherwise.
 When he gives new feedback, add it with the date and his exact words. Never add a rule inferred from his analytics, a
 report, an earlier run's output, or what one run's checks happened to find.
