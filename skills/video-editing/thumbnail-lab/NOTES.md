@@ -1,5 +1,10 @@
 # Thumbnail lab
 
+**Retired 2026-11-22.** The `create-youtube-thumbnails` skill this bench tested was removed from the repo on that date
+and replaced by `../package-youtube-videos/`, which keeps each video's work in a folder next to the video instead of
+here. The notes below describe the old skill and are kept for the record; its files are in the git history
+(`git log -- skills/video-editing/create-youtube-thumbnails`). The local `runs/` folder is untouched.
+
 The test bench for the `create-youtube-thumbnails` skill (`../create-youtube-thumbnails/`). The scripts, spec and lessons all live in the skill now; this folder only holds test runs. `runs/` is git-ignored (it's about 130 MB of renders and competitor thumbnails).
 
 - `avatar/leon.jpg`: the reference photo. The skill reads its copy in `~/.youtube-thumbnails/avatar/`.

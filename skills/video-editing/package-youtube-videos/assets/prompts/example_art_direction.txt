@@ -1,0 +1,15 @@
+Design a finished, professional YouTube thumbnail (16:9), the kind a top thumbnail designer makes for a large tech channel. It must be understood in one second at phone size.
+
+CONCEPT: an AI coding assistant cheerfully claims the bug is fixed, but the app is still broken.
+
+LAYOUT (three elements only, nothing else):
+1. RIGHT ~42% of the frame: the man from Image 1 and Image 2 (the same person: Image 1 is his smile portrait, Image 2 his serious portrait). He must be unmistakably this exact man: same round full face, white swept-up hair, grey-white goatee and moustache, fair skin, mid-forties. Chest-up, facing the camera, eyes into the lens, with the serious look of Image 2 (lips closed, exactly the look of Image 2, no stronger). His head is large: the face is about half the frame height and the whole head is inside the frame. Navy crew-neck T-shirt. Real photograph, natural skin texture, soft key light from the left.
+2. LEFT-CENTRE: one large chat-message card floating at a slight tilt (about 4 degrees): a warm cream card (#F4EFE6) with rounded corners and a soft drop shadow. On it, at the left, the orange Claude spark logo from Image 3 (exact shape, flat orange #D97757), then very large bold near-black text: "Fixed!" followed by a green check mark. The card is about half the frame width.
+3. Slapped diagonally across the lower half of the card: a bold red label like a rubber stamp or warning tape reading "STILL BROKEN" in heavy condensed uppercase white letters on saturated red (#E5252A), rotated about -8 degrees, a little larger than the card's text. This is the loudest thing in the frame.
+
+BACKGROUND: near-black charcoal (#0E0F12) with a faint dark red glow behind the red label only. Clean. No code, no extra icons, no clutter.
+
+TEXT: exactly two pieces of text and nothing else: "Fixed!" and "STILL BROKEN". Spelled exactly as written. No other words, letters, numbers, UI text or watermarks anywhere.
+
+STYLE: crisp, bright, saturated, very high contrast. Real depth: a soft shadow under the card, the red label casting a small shadow on the card. The man is lit by the same light as the scene. No glow outline or halo around the man, no neon bloom, no lens flare, no plastic or airbrushed skin.
+Keep the bottom-right corner (the last 12% of the width and 14% of the height) free of anything important.
