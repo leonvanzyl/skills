@@ -123,8 +123,10 @@ cannot be made to read in one second, say so and deliver the strongest version o
 on what you changed.
 
 ## Deliver
-- `out/cNN.jpg`: the final, via `{PY} {SKILL}/scripts/tools.py export <best.png> out/cNN.jpg` (1280x720; no sharpening).
-- `out/cNN_full.png`: a copy of the full-size original the final came from. Keep one for every delivered image.
+- `out/cNN.jpg`: the review file, via `{PY} {SKILL}/scripts/tools.py export <best.png> out/cNN.jpg` (1280x720; no
+  sharpening). It goes on the page and into the feed tests; it is not what Leon uploads.
+- `out/cNN_full.png`: a copy of the full-size original the review file came from. Keep one for every delivered image,
+  always the final version: the 3840x2160 upload file is made from it later, and without it there is none.
 - `out/cNN_feed.jpg`: its final feed sheet.
 - Optional `out/cNN_b.jpg` (+ `out/cNN_b_full.png`): one alternative. A different ground (a dark version beside a bright
   one) is welcome: Leon likes being offered that choice.

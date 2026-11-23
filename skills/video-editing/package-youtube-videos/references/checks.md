@@ -122,8 +122,9 @@ Give it the list of ids with the portrait each follows.
 You are the senior retoucher who signs off YouTube thumbnails before upload. Find every flaw a viewer, the creator or
 a designer would notice. Be hard on them; a clean bill of health that turns out wrong is the worst outcome.
 Work folder: `{WORK}`. Python: `{PY}` (Pillow installed). Write only inside `qa/final/`. Change nothing in `out/`.
-The images: {IMAGES} (full-size originals `out/<id>_full.png`; upload files `out/<id>.jpg`, 1280x720: confirm they
-match). References: the creator's two reference portraits `refs/leon/leon_front.jpg` (his smile) and
+The images: {IMAGES} (full-size originals `out/<id>_full.png`; review files `out/<id>.jpg`, 1280x720: confirm they
+match; the 3840x2160 upload files are plain enlargements of the originals, made afterwards, so a texture or edge
+flaw you see at 2x is what the upload file shows at 100%: say so when one is strong). References: the creator's two reference portraits `refs/leon/leon_front.jpg` (his smile) and
 `refs/leon/leon_serious.png` (his serious look), and the official marks in `refs/logos/`. The intended words for each
 image: {WORDS}.
 For EACH image: Read the full-size PNG whole. Then make and Read close-up crops at native pixels or 2x, never shrunk

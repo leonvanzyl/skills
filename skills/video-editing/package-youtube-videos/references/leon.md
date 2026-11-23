@@ -87,6 +87,9 @@ report, an earlier run's output, or what one run's checks happened to find.
   strategy" (how to use YouTube's A/B tests for thumbnails and titles); "If you think that that is a good strategy,
   you're welcome to push back."
 - "I should be able to ask for 3 variants and find 3 extremely strong thumbnails."
+- **4K upload files, every time** [said 2026-11-23]: asked whether the thumbnails were "at the highest possible
+  resolution for YouTube" and told they were 1280x720, he said: "you need to add that rule to the skill then. We need
+  the 4K versions of the thumbnails every time, please." The upload folder is 3840x2160 (`report.md`).
 
 ## Models [said 2026-11-22]
 - "Opus 5.5 on extra high should be used for all subagents."

@@ -13,8 +13,12 @@
                                                 pixels of <img>; the logo is fitted inside the box, centred. --clear
                                                 first removes the drawn mark (a logo on open ground only), so the
                                                 official one goes in at the same size with no fringe of the old colour
-  export <img> <out.jpg>                        final 1280x720 JPEG (centre-cropped to 16:9, plain downscale, no sharpening)
-  finals <report/data.json> [final]             the upload folder: only the files on the page, named by concept, plus
+  export <img> <out.jpg>                        the 1280x720 REVIEW file (centre-cropped to 16:9, plain downscale, no
+                                                sharpening): what goes on the page and into the feed tests. Not for upload.
+  upload <full.png> <out.jpg>                   one 3840x2160 UPLOAD file from a full-size original (plain enlargement)
+  finals <report/data.json> [final] [--originals out]
+                                                the upload folder, every time: each image on the page, named by concept,
+                                                at 3840x2160 (made from its full-size original in out/), plus
                                                 TEST_ORDER.txt (which to upload first, with each title)
 
 Nothing here may touch Leon himself: `logo` is the only command that alters pixels, and only for a logo.
@@ -143,18 +147,44 @@ def export(img, out):
     im = fit169(Image.open(img).convert("RGB")).resize((1280, 720), Image.LANCZOS)   # no sharpening: it made skin look crunchy
     im.save(out, quality=93, subsampling=0); print(out, im.size, "%d KB" % (os.path.getsize(out) // 1024))
 
-def finals(data, out):
-    """The upload folder: only the current files, named by concept, with the test order written down. Built from the
-    page's own data, so what he uploads is what he reviewed. Clears what it wrote before."""
-    import json, re, shutil
+UPLOAD = (3840, 2160)   # YouTube's recommended thumbnail size. Leon, 2026-11-23: "We need the 4K versions ... every time"
+def upload(img, out):
+    """The upload file: 3840x2160, a plain enlargement of the full-size original. No sharpening and no AI upscaler (an
+    upscaler redraws his face). Kept under 2 MB, the limit for uploading from a phone."""
+    im = fit169(Image.open(img).convert("RGB"))
+    if im.width < 1600: print(f"WARNING: {img} is only {im.width} px wide. Pass the full-size original, not the 1280 export.")
+    big = im.resize(UPLOAD, Image.LANCZOS); q = 92
+    while True:
+        big.save(out, quality=q, subsampling=0)
+        if os.path.getsize(out) <= 1_950_000 or q <= 76: break
+        q -= 4
+    print(out, "%dx%d" % big.size, "%.2f MB" % (os.path.getsize(out) / 1e6), f"(enlarged from {im.width}x{im.height}, quality {q})")
+
+def finals(data, out, originals="out"):
+    """The upload folder: only the current files, named by concept, at 3840x2160, with the test order written down.
+    Built from the page's own data, so what he uploads is what he reviewed: each image on the page is matched, byte for
+    byte, to its export in out/, and the upload file is made from that export's full-size original. Stops if any page
+    image has no original, so a 4K file is never silently missing. Clears what it wrote before."""
+    import json, re, hashlib
     D = json.load(open(data, encoding="utf-8")); src = os.path.dirname(os.path.abspath(data)); os.makedirs(out, exist_ok=True)
     for f in glob.glob(os.path.join(out, "*.jpg")) + glob.glob(os.path.join(out, "TEST_ORDER.txt")): os.remove(f)
+    def md5(p): return hashlib.md5(open(p, "rb").read()).hexdigest()
+    exports = {md5(f): f[:-4] + "_full.png" for f in glob.glob(os.path.join(originals, "*.jpg"))}
+    def full_of(page_img):
+        k = exports.get(md5(os.path.join(src, page_img)))
+        if not k or not os.path.exists(k):
+            sys.exit(f"finals: {page_img} on the page is not an unchanged copy of an export in {originals}/ with its full-size "
+                     f"original ({originals}/<id>_full.png) beside it. Every delivered image needs that original: the 3840x2160 "
+                     "upload file is made from it. Nothing was written.")
+        return k
     def slug(s): return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")[:40]
-    names = {}
-    for c in D["concepts"]:
-        names[c["n"]] = f'{c["n"]}_{slug(c["name"])}.jpg'; shutil.copyfile(os.path.join(src, c["img"]), os.path.join(out, names[c["n"]]))
-        if c.get("alt_img"): shutil.copyfile(os.path.join(src, c["alt_img"]), os.path.join(out, f'{c["n"]}_{slug(c["name"])}_alt.jpg'))
-    lines = ["Test & Compare: upload in this order. With no clear winner, YouTube keeps the FIRST one.", ""]
+    names = {}; jobs = []
+    for c in D["concepts"]:                                   # resolve every original first: all or nothing
+        names[c["n"]] = f'{c["n"]}_{slug(c["name"])}.jpg'; jobs.append((full_of(c["img"]), names[c["n"]]))
+        if c.get("alt_img"): jobs.append((full_of(c["alt_img"]), f'{c["n"]}_{slug(c["name"])}_alt.jpg'))
+    for full, name in jobs: upload(full, os.path.join(out, name))
+    lines = ["Every file here is 3840x2160, YouTube's recommended thumbnail size.", "",
+             "Test & Compare: upload in this order. With no clear winner, YouTube keeps the FIRST one.", ""]
     titles = [t["title"] for t in D.get("trio", [])]
     if len(set(titles)) < len(titles): print("WARNING: two packages in the trio share a title; a combined test needs a different title for each")
     for k, t in enumerate(D.get("trio", [])):
@@ -169,5 +199,6 @@ if __name__ == "__main__":
     elif c == "face": face(sys.argv[2], sys.argv[3], opt("--ref", "both"))
     elif c == "logo": logo(sys.argv[2], sys.argv[3])
     elif c == "export": export(sys.argv[2], sys.argv[3])
-    elif c == "finals": finals(sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else "final")
+    elif c == "upload": upload(sys.argv[2], sys.argv[3])
+    elif c == "finals": finals(sys.argv[2], sys.argv[3] if len(sys.argv) > 3 and not sys.argv[3].startswith("--") else "final", opt("--originals", "out"))
     else: print(__doc__)

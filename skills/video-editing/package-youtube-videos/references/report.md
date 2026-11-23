@@ -63,7 +63,17 @@ says what it is.
 - Tell him what changed each time you republish.
 
 ## The upload folder
-`python SKILL/scripts/tools.py finals report/data.json final` copies exactly the images on the page into `final/`,
-named by concept (`03_the-specimen.jpg`, `03_the-specimen_alt.jpg`), and writes `TEST_ORDER.txt` with the three
-packages in upload order and the title for each. It warns if two packages in the trio share a title. Tell him to
+`python SKILL/scripts/tools.py finals report/data.json final` writes the upload files into `final/`: exactly the
+images on the page, named by concept (`03_the-specimen.jpg`, `03_the-specimen_alt.jpg`), **each at 3840x2160**, plus
+`TEST_ORDER.txt` with the three packages in upload order and the title for each. Leon wants the 4K files every time,
+and it is YouTube's recommended size. How it works, and what it needs from you:
+- It matches every image on the page, byte for byte, to its export in `out/` and enlarges that export's full-size
+  original (`out/<id>_full.png`). So copy `out/<id>.jpg` into `report/img/` unchanged, and never deliver an image
+  without its original. If one is missing it stops and writes nothing; fix that rather than uploading 720p files.
+- The enlargement is plain: no sharpening, no AI upscaler. The image model renders about 1,672 px wide, so 3840x2160
+  is the same picture made bigger. Zoomed to 100% the skin shows the model's texture and letter edges are soft; at
+  any size a thumbnail is shown it is scaled back down. Say this on the page in one sentence, so he knows what the
+  4K files are.
+- Files stay under 2 MB (the limit for uploading from a phone; on a computer it is 50 MB).
+After running it, check the folder: every file 3840x2160, one per image on the page. It warns if two packages in the trio share a title. Tell him to
 upload from `final/` only: `out/` also holds superseded versions under similar names.

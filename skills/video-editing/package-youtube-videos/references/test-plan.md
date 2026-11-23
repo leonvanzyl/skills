@@ -14,7 +14,8 @@ re-read it each run, the feature changes, and quote it rather than this file if 
   title or thumbnail is changed during the test, the test will automatically stop."**
 - "Testing titles and thumbnails that are too similar to each other can cause tests to run for longer."
 - **Resolution:** "If the resolution of any thumbnail is lower than 720p (1280 x 720), all experiment thumbnails will
-  be downscaled to 480p (854 x 480)." Upload files of 1280x720 or larger, all three.
+  be downscaled to 480p (854 x 480)." YouTube's recommended thumbnail size is 3840 x 2160 ("as large as possible"; up
+  to 50 MB on a computer, 2 MB from a phone). The skill's upload files in `final/` are 3840x2160, all of them.
 - **Where and who:** only on a computer in YouTube Studio, and only with advanced features enabled.
 - **Not eligible:** private videos, videos made for kids or for mature audiences, Shorts, scheduled lives, and
   Premieres until they have ended. The help page does not say whether a test can be attached to a video that is

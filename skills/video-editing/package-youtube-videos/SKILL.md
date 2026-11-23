@@ -42,6 +42,11 @@ every run.
   script allowed to alter pixels of a delivered image is `tools.py logo`, and only on a logo.
 - **Nothing with his face reaches a page before the likeness pass, an independent inspection of the final files, and
   your own look at each one at native size.** He was shown broken faces once because a page was published first.
+- **The upload files are 3840x2160, every time.** Leon: "We need the 4K versions of the thumbnails every time." It is
+  YouTube's recommended thumbnail size. `tools.py finals` makes them from each image's full-size original, so every
+  delivered image must have its `out/<id>_full.png`. The image model renders about 1,672 px wide, so the upload file
+  is a plain enlargement, not extra detail: say that on the page, and never run an AI upscaler on a thumbnail (it
+  redraws his face). The 1280x720 files in `out/` are for the review page and the feed tests, not for upload.
 - **Claim only what ran on the final files.** A check that ran on an earlier version of an image is not a check of the
   image he will upload. If an image changes after a check, the check is void for that image until it runs again. Never
   write "I looked at" or "passed" for something done at reduced size or on an earlier file.
@@ -81,7 +86,8 @@ every run.
    background, the control study that tries to falsify whatever your strategy claims about formats.
 4. **Calibrate, then design** (`references/designer.md`): run one concept yourself (two takes) so the tools are proven
    and the designers have a working example; then one designer agent per concept, all in parallel. Each delivers a
-   finished 1280x720 thumbnail, its full-size original, usually a ground variant, and its own doubts.
+   finished thumbnail as a 1280x720 review file plus its full-size original (the upload file is made from the
+   original in step 9), usually a ground variant, and its own doubts.
 5. **Check the designs** (`references/checks.md`), each by a fresh agent that has not read the strategy: the promise
    check against the transcript and the blind read test. Act on them: fix overclaims in the words, drop or flag what
    the hook does not confirm, send each fix to that concept's own designer (image-model edits only). **Every reworded
@@ -98,7 +104,7 @@ every run.
 9. **Build the page and the upload folder, then publish** (`references/report.md`): the angle and who it is for at the
    top, the trio, the test plan, every concept with its reasoning and checks beside it and its variants, what the
    checks found and the reasons to doubt them, what the research did and did not show, the titles, and the decisions
-   that are his. `tools.py finals` writes `final/` with only the current files, named by concept, so nothing withdrawn
+   that are his. `tools.py finals` writes `final/` with only the current files, named by concept, at 3840x2160, so nothing withdrawn
    can be uploaded by mistake. This is the first time he sees the images. If he asks to see work sooner, show it with
    a plain banner: faces not yet corrected or inspected. Tell him the link, the three, and anything not done or not
    verified.
@@ -158,6 +164,8 @@ end to end. That is the cost of not showing him unchecked work.
   new pose needs a new reference from him, not a generated one.
 - **Words that outrun the video.** "NEW", "3 HIDDEN BUGS" and "Biggest" all went onto thumbnails or titles unbacked
   and were caught only by the promise check. Check every word against the transcript.
+- **Delivering 720p.** The first run's upload folder held 1280x720 files while YouTube recommends 3840x2160; he had to
+  ask whether they were the highest resolution. `finals` now writes 3840x2160 and stops if an original is missing.
 - **A folder full of withdrawn files.** `out/` held superseded versions under the plain concept names. Upload only
   from `final/`.
 - **Windows:** write scripts and JSON with the file tools rather than shell heredocs (quotes and backslashes break
@@ -165,7 +173,7 @@ end to end. That is the cost of not showing him unchecked work.
 
 ## Files
 - `scripts/`: `setup.py` (work folder and ledger); `gen.py` (Codex image generation with a shared queue; takes,
-  reference images, edits); `tools.py` (`sheet`, `feed`, `face`, `logo`, `export`, `finals`); `fetch.py` (research
+  reference images, edits); `tools.py` (`sheet`, `feed`, `face`, `logo`, `export`, `upload`, `finals`); `fetch.py` (research
   thumbnails); `sheet.py` (captioned contact sheets); `panel.py` and `tally.py` (the blind read test); `report.py`
   (the review page).
 - `references/`: `leon.md` (what he has said, with sources), `strategy.md`, `research.md` (evidence rules, VidIQ traps,
