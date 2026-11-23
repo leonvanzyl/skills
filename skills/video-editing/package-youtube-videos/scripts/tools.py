@@ -17,9 +17,10 @@
                                                 sharpening): what goes on the page and into the feed tests. Not for upload.
   upload <full.png> <out.jpg>                   one 3840x2160 UPLOAD file from a full-size original (plain enlargement)
   finals <report/data.json> [final] [--originals out]
-                                                the upload folder, every time: each image on the page, named by concept,
-                                                at 3840x2160 (made from its full-size original in out/), plus
-                                                TEST_ORDER.txt (which to upload first, with each title)
+                                                the upload folder, every time: each image on the page at 3840x2160 (made
+                                                from its full-size original in out/), named by concept number and the
+                                                title it is paired with (03-<title-in-hyphens>.jpg, ...-alt.jpg), plus
+                                                TEST_ORDER.txt (which to upload first, each title, and every file's concept)
 
 Nothing here may touch Leon himself: `logo` is the only command that alters pixels, and only for a logo.
 """
@@ -161,7 +162,7 @@ def upload(img, out):
     print(out, "%dx%d" % big.size, "%.2f MB" % (os.path.getsize(out) / 1e6), f"(enlarged from {im.width}x{im.height}, quality {q})")
 
 def finals(data, out, originals="out"):
-    """The upload folder: only the current files, named by concept, at 3840x2160, with the test order written down.
+    """The upload folder: only the current files, at 3840x2160, named by number and paired title, with the test order.
     Built from the page's own data, so what he uploads is what he reviewed: each image on the page is matched, byte for
     byte, to its export in out/, and the upload file is made from that export's full-size original. Stops if any page
     image has no original, so a 4K file is never silently missing. Clears what it wrote before."""
@@ -177,11 +178,22 @@ def finals(data, out, originals="out"):
                      f"original ({originals}/<id>_full.png) beside it. Every delivered image needs that original: the 3840x2160 "
                      "upload file is made from it. Nothing was written.")
         return k
-    def slug(s): return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")[:40]
-    names = {}; jobs = []
+    def slug(s, n=80):                                        # "It's "Fixed"" -> its-fixed: lower case, hyphens, ASCII only
+        import unicodedata
+        s = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode().lower().replace("&", " and ")
+        s = re.sub(r"[^a-z0-9]+", "-", re.sub(r"['\"`]", "", s)).strip("-")
+        return s if len(s) <= n else s[:n].rsplit("-", 1)[0]
+    # File names carry the number and the TITLE the thumbnail is paired with (Leon, 2026-11-23: "The file names for the
+    # thumbnails need to include the video's title ... you can keep the number, like 01"). A thumbnail in the test trio
+    # takes the title the test plan pairs it with; the others take their concept's own title.
+    trio_title = {t["n"]: t["title"] for t in D.get("trio", [])}
+    names = {}; jobs = []; index = []
     for c in D["concepts"]:                                   # resolve every original first: all or nothing
-        names[c["n"]] = f'{c["n"]}_{slug(c["name"])}.jpg'; jobs.append((full_of(c["img"]), names[c["n"]]))
-        if c.get("alt_img"): jobs.append((full_of(c["alt_img"]), f'{c["n"]}_{slug(c["name"])}_alt.jpg'))
+        title = trio_title.get(c["n"]) or c["title"]; base = f'{c["n"]}-{slug(title)}'
+        names[c["n"]] = base + ".jpg"; jobs.append((full_of(c["img"]), names[c["n"]])); index.append((names[c["n"]], c["name"], title))
+        if c.get("alt_img"):
+            jobs.append((full_of(c["alt_img"]), base + "-alt.jpg")); index.append((base + "-alt.jpg", c["name"] + " (alternative version)", title))
+    if len({n for _, n in jobs}) < len(jobs): sys.exit("finals: two upload files would get the same name; give the concepts different numbers. Nothing was written.")
     for full, name in jobs: upload(full, os.path.join(out, name))
     lines = ["Every file here is 3840x2160, YouTube's recommended thumbnail size.", "",
              "Test & Compare: upload in this order. With no clear winner, YouTube keeps the FIRST one.", ""]
@@ -189,6 +201,8 @@ def finals(data, out, originals="out"):
     if len(set(titles)) < len(titles): print("WARNING: two packages in the trio share a title; a combined test needs a different title for each")
     for k, t in enumerate(D.get("trio", [])):
         lines += [f'{"ABC"[k] if k < 3 else k + 1}. {names.get(t["n"], "?")}', f'   Title: {t["title"]}', ""]
+    lines += ["", "Every file, by concept (the file name is the concept's number, then the title it is paired with):", ""]
+    for name, concept, title in index: lines += [f"{name}", f"   {concept}  |  {title}", ""]
     open(os.path.join(out, "TEST_ORDER.txt"), "w", encoding="utf-8", newline="\n").write("\n".join(lines))
     print(out, sorted(os.listdir(out)))
 

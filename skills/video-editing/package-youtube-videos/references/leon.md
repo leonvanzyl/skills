@@ -90,6 +90,11 @@ report, an earlier run's output, or what one run's checks happened to find.
 - **4K upload files, every time** [said 2026-11-23]: asked whether the thumbnails were "at the highest possible
   resolution for YouTube" and told they were 1280x720, he said: "you need to add that rule to the skill then. We need
   the 4K versions of the thumbnails every time, please." The upload folder is 3840x2160 (`report.md`).
+- **The title in the file name** [said 2026-11-23]: "The file names for the thumbnails need to include the video's
+  title. Apparently, YouTube actually wants that... you can keep the number, like 01. Maybe with Alt, you can have
+  that, but use maybe the recommended title from your list in the file names for the thumbnail files." (YouTube's
+  help page on custom thumbnails says nothing about file names, so treat this as his preference, not a ranking
+  fact, and do not tell him it helps discovery.)
 
 ## Models [said 2026-11-22]
 - "Opus 5.5 on extra high should be used for all subagents."

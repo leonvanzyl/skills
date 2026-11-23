@@ -104,7 +104,8 @@ every run.
 9. **Build the page and the upload folder, then publish** (`references/report.md`): the angle and who it is for at the
    top, the trio, the test plan, every concept with its reasoning and checks beside it and its variants, what the
    checks found and the reasons to doubt them, what the research did and did not show, the titles, and the decisions
-   that are his. `tools.py finals` writes `final/` with only the current files, named by concept, at 3840x2160, so nothing withdrawn
+   that are his. `tools.py finals` writes `final/` with only the current files, at 3840x2160, each named by its concept number and
+   the title it is paired with (`03-why-claude-code-says-fixed-when-its-still-broken.jpg`), so nothing withdrawn
    can be uploaded by mistake. This is the first time he sees the images. If he asks to see work sooner, show it with
    a plain banner: faces not yet corrected or inspected. Tell him the link, the three, and anything not done or not
    verified.

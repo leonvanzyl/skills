@@ -64,8 +64,17 @@ says what it is.
 
 ## The upload folder
 `python SKILL/scripts/tools.py finals report/data.json final` writes the upload files into `final/`: exactly the
-images on the page, named by concept (`03_the-specimen.jpg`, `03_the-specimen_alt.jpg`), **each at 3840x2160**, plus
-`TEST_ORDER.txt` with the three packages in upload order and the title for each. Leon wants the 4K files every time,
+images on the page, **each at 3840x2160**, plus `TEST_ORDER.txt` with the three packages in upload order, the title
+for each, and a list of every file with its concept.
+
+**File names carry the title.** Each file is named by its concept number, then the title that thumbnail is paired
+with, in lower case with hyphens, and `-alt` for the alternative version:
+`03-why-claude-code-says-fixed-when-its-still-broken.jpg`, `03-why-claude-code-says-fixed-when-its-still-broken-alt.jpg`.
+Leon asked for this (2026-11-23): "The file names for the thumbnails need to include the video's title... you can
+keep the number, like 01... use maybe the recommended title from your list." A thumbnail in the test trio takes the
+title the test plan pairs it with (`trio[].title`); every other one takes its concept's `title`. So make sure each
+concept's `title` on the page is the title you actually recommend for it, and that the trio's three titles differ.
+If a title changes after the folder is built, run `finals` again: it clears and rewrites the folder. Leon wants the 4K files every time,
 and it is YouTube's recommended size. How it works, and what it needs from you:
 - It matches every image on the page, byte for byte, to its export in `out/` and enlarges that export's full-size
   original (`out/<id>_full.png`). So copy `out/<id>.jpg` into `report/img/` unchanged, and never deliver an image
