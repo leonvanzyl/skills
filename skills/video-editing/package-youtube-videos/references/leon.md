@@ -96,5 +96,41 @@ report, an earlier run's output, or what one run's checks happened to find.
   help page on custom thumbnails says nothing about file names, so treat this as his preference, not a ranking
   fact, and do not tell him it helps discovery.)
 
+## Re-packaging a published video [said 2026-11-23]
+- "You can ignore the existing packaging for this video. It's not really working, so let's go in with a fresh
+  perspective." **[our choice]** Look at the old package once, to know what not to repeat and what a stranger takes
+  from it, and build nothing on it.
+
+## Keeping the skill current [said 2026-11-23]
+- Asked, during a run that hit rate limits: "I would appreciate it if you could add the lessons learned, like the
+  rate limit issues, to the global skill as well." **[our choice]** At the end of every run, write what went wrong
+  and what was learned into this skill (the "Mistakes already made once" list in `SKILL.md` and the reference it
+  belongs to), dated, with findings labelled as one run's findings. Nothing about an unpublished video, a sponsor's
+  terms or his channel's numbers.
+
+## Progress during a run [observed 2026-11-23, not his words]
+- He asked where things stood three times in one long run, and once what model and effort the subagents were
+  using. **[our choice]** Tell him where
+  things stand at each stage boundary, and at once when an obstacle changes the time estimate, in a few lines: what
+  is done, what is running, what is left, and the new estimate.
+
+## At the end of a run [said 2026-11-23]
+- **Put the thumbnails in front of him.** After the page had been published and linked, he asked: "Can I view the
+  thumbnails?" **[our choice]** When the page is published, open it for him and attach the images themselves (the
+  three to test first), as well as giving the link and the folder.
+- **Name one title.** With three packages and a list of titles on the page, he asked: "What title would you
+  recommend?" **[our choice]** Say in the closing message, and beside the trio, which single title and thumbnail you
+  would pick if he ran no test, and why, in a few lines.
+- **Clean up once he has uploaded.** "I've uploaded the thumbnails... Once you're done, please can you remove all of
+  the files that you created? The thumbnails I've uploaded, so we no longer need these." **[our choice]** That was
+  his request for that run, not a standing order to delete. When he says the thumbnails are uploaded: add the run's
+  lessons to the skill, note the upload in the ledger, then offer to clean up, saying what would go and how big it
+  is (the work folder holds the only full-size originals outside YouTube). Delete the work folder and scratch files
+  only when he says yes for this run, after moving out anything the skill or the ledger still needs. Keep the
+  ledger and the skill. Ask separately before deleting the published review page, and before clearing what the
+  image tool left in its own folder (see `SKILL.md`, "What a run leaves behind").
+- Asked that day whether to clear the 2.3 GB the run had left in the image tool's folder, he answered: "Yes, clear
+  them". That was for that run; ask again each time, with the size.
+
 ## Models [said 2026-11-22]
 - "Opus 5.5 on extra high should be used for all subagents."

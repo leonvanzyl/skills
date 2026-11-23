@@ -61,6 +61,11 @@ says what it is.
 - Never claim a format is proven. `evidence` says where an idea was seen and whether the control study supported it.
 - Before publishing, look at the page once at desktop and phone width, with lazy loading off so every image shows.
 - Tell him what changed each time you republish.
+- **When you hand it over** (2026-11-23: he asked "Can I view the thumbnails?" and "What title would you recommend?"
+  after the first hand-over): open the published page for him, attach the images themselves with the three to test
+  first, link the upload folder, and name the one title and thumbnail you would pick if he ran no test. If you could
+  not look at the published page yourself (a browser that is not signed in), confirm the publish from the
+  artifact's file list and say that the rendered page was not seen.
 
 ## The upload folder
 `python SKILL/scripts/tools.py finals report/data.json final` writes the upload files into `final/`: exactly the

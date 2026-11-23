@@ -71,6 +71,23 @@ Put the designers' own doubts in {DOUBTS} for the checker to weigh. Then act on 
 the designer the exact change), mark LATE concepts as out of contention for the test trio, drop a MISMATCH. Only
 CONFIRMED concepts (or a late payoff the hook explicitly promises) are eligible for the trio.
 
+**Give the checker the pictures of the video, not only its words** (learned 2026-11-23). The brief above checks a
+thumbnail against the transcript, and a thumbnail also makes promises with its picture. A checker with the transcript
+alone could not tell whether a pictured scene was in the video at all and said so; a second checker that sampled
+frames from the video file settled it and dated a pictured figure to 22:34 of a 24:30 video. So add to the brief:
+"The video's picture is at `video/<file>` (sample frames with ffmpeg) or as time-stamped frame sheets in
+`research/frames/`. For each thumbnail, say when the video first SHOWS the main thing the picture shows, and whether
+the opening shows it." Four patterns that check has now caught, to cull for in words before any render:
+- **A tick, an arrow or a list item claims the viewer will see the thing.** "ENDING ✓" was said in the opening and
+  true of the product; the video stopped before the ending. Said and shown are different tests; apply both.
+- **A hero that arrives late.** The words were confirmed at 0:16 and the pictured figure appeared 92% of the way
+  through. That is a late payoff the opening does not promise: out of the trio, and say it on the page.
+- **A bonus sold as the subject.** A download the video offers and never shows working is a MISMATCH.
+- **One sentence in, finished thing out.** An arrow from a prompt to a result says "one prompt made this". Putting
+  the real count on the arrow fixed it.
+Take an "optional, safer wording" from the checker seriously even at MINOR (here, "NOT A DEVELOPER?" beside "NO
+CODING NEEDED"): put it on the page as his choice.
+
 **Run it again on everything that was reworded.** Any thumbnail or title whose words changed after this check, and any
 title added later, goes to a fresh promise checker (new `ours_v2.tsv`, new output files, not shown the first result)
 before it can be offered or enter the trio. On the first run "3 APP KILLERS", "MCP SETUP" and four rewritten titles
@@ -95,6 +112,16 @@ time against 12 to 15% for real videos on the same sheets. So:
   were tapped. **If ours are tapped at more than about twice the real rate, the viewers probably spotted the test
   items: discard the taps and keep only the reads.** Say so on the page.
 - Simulated viewers reward what is easy to read, and they are not his audience. Say that on the page too.
+- **Ours tapped far BELOW the real rate is a finding too, about the subject** (2026-11-23). On a video outside the
+  channel's usual subject, the four viewers read every one of ours correctly and tapped none in 44 viewings, against
+  11 to 18% for the real videos on the same sheets. The segments describe the channel's core audience by design, so
+  they pass on a subject that audience does not come for. Say that plainly at the top of the page (who the package
+  is really for, and that this audience was not in the panel), keep it out of the trio's reasons, and do not use it
+  to rank concepts: every concept scored the same zero.
+- When renders or time are short, `--appear 1` (one viewing per viewer per thumbnail, two viewer agents per segment)
+  still gives the reads, which are the point. Say on the page how many viewings each thumbnail had.
+- If a thumbnail's title changes after the panel (a title the promise check rejected), say on that concept that the
+  viewers saw the earlier pairing.
 
 <!-- BEGIN VIEWER -->
 # Feed test: you are one YouTube viewer
@@ -159,13 +186,26 @@ Write `qa/final/qa_final.json`: `{"<id>": {"likeness_read": "...", "differs": ["
 most.
 <!-- END INSPECT -->
 
+Two additions to that brief, learned 2026-11-23:
+- **Tell the inspector what is real.** Add the real frames of whatever the thumbnail pictures (`refs/ui/`) to its
+  references, with the line "features that match these frames are faithful, not flaws". Without them an inspector
+  graded a character's own curls a blocker for looking like letters.
+- **Inspect only files that will not change.** If an image is replaced while an inspection of it is running, that
+  read describes nobody knows which version: discard it for that image and inspect the replacement on its own.
+Inspectors will disagree with each other and with you (three read versions of one face three ways that day, and
+the orchestrator thought close a face the first inspector graded a blocker). That is why the page shows reads
+and why his eye decides; it is not a reason to skip the inspection, which also caught a route with eleven stops
+under "10 STEPS" and a label too small to read at 168 px.
+
 Then act on it and look yourself:
 - A BLOCKER or MAJOR on a logo: paste the official mark (`tools.py logo ... --clear`), look at it at 3x with its
   neighbours, and re-export. Then prove the rest of the image is untouched (compare the new file with the inspected
   one: no pixel outside the logo box may differ) and say on the page that the logo was replaced after the inspection.
   That is the one change that does not need the inspection run again.
-- A BLOCKER on his face or expression: one more likeness round for that image with the inspector's notes written into
-  the prompt, then this inspection again on the new file, by a fresh agent that is not shown the earlier verdict.
+- A BLOCKER on his face or expression: do not run a second likeness round on it (the image model keeps most of a
+  face it has already drawn; `likeness.md` has the record). Send it back to that concept's designer for a fresh
+  render with the fault written out in words, then one likeness take on the new render, then this inspection again
+  on the new file, by a fresh agent that is not shown the earlier verdict.
 - Anything else: an image-model edit by the concept's designer, then the likeness pass and this inspection again.
 - The inspector's "would reject" list is a reason to look harder and to tell Leon, not a reason to drop a concept.
 - Open every `out/<id>_full.png` whole, and its native face sheet, yourself. Write down what you see that differs from

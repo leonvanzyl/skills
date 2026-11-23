@@ -58,6 +58,27 @@ thumbnail did it. Leon's own first idea was thumbnails for 24 hours, then titles
 time, at the cost of a second test on decayed traffic, and a test needs days to resolve, not 24 hours (check the
 snapshot for how long his take). If he prefers his order, give the thumbnail test days.
 
+## Re-packaging a video that is already published
+A different case from a launch, first met on 2026-11-23 (a five-week-old video). What YouTube's help page says about
+it (same page, read that day; re-read it each run):
+- Tests on existing videos are allowed: "Test an existing video: From the left menu, click Content." It adds: "we
+  recommend testing older videos first to reduce the impact to your channel's overall views."
+- How long a test runs depends partly on "how recently your video was published".
+- Low traffic can mean no result: "It may be that your videos are not generating a sufficient amount of
+  impressions." "If your video receives a higher number of views, then the more likely a "Winner" will be declared."
+- A small share of traffic may be held back as a control group that sees only the default title and thumbnail.
+- It does not say whether the same video can be tested again, how often, or give a minimum number of impressions.
+The plan that follows from it (argue for another when the video calls for it):
+1. Have him note the before: impressions, click-through rate and views per day for the last 14 days.
+2. One combined test of three NEW packages, the one he would keep uploaded first, because "no winner" is the likely
+   outcome on thin traffic and the first one uploaded is what stays.
+3. Leave the old package out of the test: he already knows it is not working, and a third of thin traffic is too
+   much to spend confirming it. The before-and-after covers it.
+4. Run the full two weeks, then compare 14 days after with 14 days before. If nothing moved, the packaging was not
+   the ceiling, and that is worth telling him before the next video on the same subject.
+Say on the page what is not known: the help page does not say that new packaging earns an old video new impressions.
+What a better package can do is convert more of the impressions the video still gets.
+
 ## The results ledger: `~/.yt-packaging/ledger.md`
 The one kind of data from his own channel that separates packaging from topic. `setup.py` creates it empty. Read it at
 the start of every run, and ask him for the outcome of the previous video's test if it is missing. One entry per test:

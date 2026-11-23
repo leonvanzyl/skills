@@ -1,8 +1,32 @@
 # The designers: one per concept, in parallel
 
-Start one designer agent per concept, all at once, each on **Opus 5.5 at extra-high effort** (`model: "opus"`,
+Start one designer agent per concept, each on **Opus 5.5 at extra-high effort** (`model: "opus"`,
 `effort: "xhigh"`). Each owns its concept from the first prompt to the finished image and stays on it: later fixes go
 back to the same agent (SendMessage), never to a fresh one.
+
+**Start them in waves of three or four, a few minutes apart, not all ten together.** The image service rate-limits
+the whole account. On 2026-11-23 ten designers started at once, each asking for three takes; the service answered
+"429 Too Many Requests", every agent re-ran its failed call at once, and that kept the limit saturated: 3 renders in
+4 failed for half an hour and six concepts had no image. What was established that day:
+- It is account-wide, not about images: a tiny text-only `codex exec` was refused during a block. The weekly
+  allowance was not the cause: the Codex session rollouts in `~/.codex/sessions/` carry a `rate_limits` block, and
+  it was nowhere near its limit. Look there first when 429s appear, to tell a burst limit from a used-up plan.
+- Renders came through in bursts of about four, then nothing for several minutes, at 8, 5 and 3 at a time alike.
+- `gen.py` now spaces starts machine-wide and, on a 429, sets a machine-wide cooldown and retries by itself. So the
+  cure is fewer simultaneous askers and no manual re-runs, not a smaller queue.
+While they work, watch the queue rather than the agents: count the `*.png` and `*.log.jsonl` files in `build/cNN/`
+and read a short log (about 1 KB means a 429). If renders are failing:
+1. Tell every designer at once (SendMessage): one `gen.py` call at a time, `--takes 2`, wait for it, never re-run a
+   waiting call, failed takes do not count against the budget.
+2. Ration: designers that already have a deliverable stop rendering; the call each has queued is its last; those
+   with one take or none get one more. No B variant unless it is already finished. Ask each to write the fixes it
+   would still make into its caveats as exact instructions, so they can be folded into the likeness render.
+3. If everything is being refused, write a cooldown ten minutes ahead into `~/.yt-packaging/_gen_cooldown` (epoch
+   seconds) and use the quiet for the checks that need no renders.
+4. Never kill a `gen.py` that is mid-generation: its slot file stays for twenty minutes. A call still waiting its
+   turn can be stopped safely.
+5. To lower the number rendering at once without editing the script, hold slot files: keep `slot3` to `slot7` in
+   `~/.yt-packaging/_gen_slots/` freshly touched and only three generations run.
 
 Send each designer a short message: which concept it owns (number, click reason, exact words, the picture, the title it
 pairs with, why it should win, the hook line that confirms it, any risk to manage, any reference thumbnails worth
@@ -68,14 +92,21 @@ thumbnail, type included. `briefs/example_art_direction.txt` is a prompt that pr
 read it for the level of precision.
 ```
 cd "{WORK}"
-{PY} {SKILL}/scripts/gen.py --prompt build/cNN/p1.txt --out build/cNN/a.png --takes 3 \
+{PY} {SKILL}/scripts/gen.py --prompt build/cNN/p1.txt --out build/cNN/a.png --takes 2 \
    --ref "PORTRAIT of the man (his smile)=refs/leon/leon_front.jpg" \
    --ref "PORTRAIT 2 of the same man (his serious look)=refs/leon/leon_serious.png" \
    --ref "LOGO: the official mark=refs/logos/claude_spark.png"
 ```
 - `gen.py` exits with an error code and prints `ERROR` when a take fails; check its output before using a file.
-- Takes come back as `a_1.png`, `a_2.png`, `a_3.png`, one to four minutes a round (all designers share one queue).
-  Give the Bash call a 600000 ms timeout. At most 5 reference images a call.
+- Takes come back as `a_1.png`, `a_2.png`, one to four minutes a round when the service is answering freely (all
+  designers share one queue). Give the Bash call a 600000 ms timeout. At most 5 reference images a call.
+- **Run ONE `gen.py` call at a time, with `--takes 2`, and wait for it.** The image service rate-limits the whole
+  account. `gen.py` handles that itself: starts are spaced across all designers, and a take that is refused waits
+  out a shared cooldown and tries again on its own, so a single call can take ten to twenty minutes. If the Bash
+  call times out and moves to the background, wait for its completion notice. Never start a second call or re-run
+  one that is waiting: on 2026-11-23 exactly that kept the limit saturated and starved six concepts of any image.
+  A take that fails on the rate limit does not count against your budget. If you are told renders are rationed,
+  plan to finish in about 6 successful generations and skip the alternative version.
 - **To edit** instead of starting over, attach the image first:
   `--ref "BASE (the image to edit; keep everything identical except what the prompt lists)=build/cNN/a_2.png"` and
   write the prompt as "Keep this image exactly as it is. Change only: 1. ... 2. ...". Attach his portraits whenever
@@ -97,11 +128,20 @@ cd "{WORK}"
   idea truly needs the mark on a 3D object, say so in your caveats: it will be the model's drawing, not the official
   mark, and Leon should know.
 - Budget: about 12 generations.
+- **Frames of the real thing.** When the video shows something real (an app, a game, a result), attach the frame as
+  a reference and say "reproduce this faithfully", so the model draws that thing and not a generic one. Frames
+  taken from the video may carry his webcam in a corner or a tool panel: use a cropped copy that shows only the
+  subject (cropping a frame of the subject is fine; it is not a picture of him to be altered). Say in your caveats
+  that the picture is the model's redrawing, not a screenshot.
+- **If the briefed words do not carry at 168 px, change them and say so plainly** in your reply and your JSON, with
+  the reason. Every changed word goes back through the promise check, so it must not happen silently.
+- **Anything you would still fix but cannot render** goes in the caveats as an exact instruction ("move the words
+  about 3% left so the G ends before his shoulder; change nothing else"): it can be folded into the likeness render.
 
 ## Look, judge, fix (this is the job)
 After every round, LOOK at each take at full size (Read the PNG), then where it will live:
 ```
-{PY} {SKILL}/scripts/tools.py sheet build/cNN/sheet1.jpg build/cNN/a_1.png build/cNN/a_2.png build/cNN/a_3.png
+{PY} {SKILL}/scripts/tools.py sheet build/cNN/sheet1.jpg build/cNN/a_1.png build/cNN/a_2.png
 {PY} {SKILL}/scripts/tools.py feed  build/cNN/a_2.png build/cNN/feed.jpg --title "<the paired title>"
 {PY} {SKILL}/scripts/tools.py face  build/cNN/a_2.png build/cNN/face.jpg
 ```

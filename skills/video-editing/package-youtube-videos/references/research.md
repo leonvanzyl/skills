@@ -24,6 +24,32 @@ up; and the news word is tangled up with news topics, which were themselves more
 news word, a marker or any layout "works". Run the control again for the video in hand if the strategy leans on any
 of it.
 
+**A second run, 2026-11-23, in a different niche (channels where an AI coding tool builds a video game; six
+channels, 109 top-third against 109 bottom-third videos, thumbnails coded blind) knocked format down again.** Shares
+are among game videos. Same status as the table above: one run's finding, a hypothesis, not a rule.
+
+| Claim read off winners | Top third | Bottom third | Verdict |
+|---|---|---|---|
+| The subject's own picture fills the frame | 88% | 85% | weak |
+| A large, readable AI name or logo | 63% | 60% | no difference: the category's entry ticket |
+| A visible change (before and after, prompt and result) | 21% | 35% | reversed |
+| A time, effort or cost number in the title | 19% | 6% | weak, most of it one channel |
+| First-person titles beat how-to titles | 30% of first-person titles | 62% of how-to titles | reversed |
+| Naming a genre or a known product | 51% | 55% | no difference |
+| A human face | 26% | 33% | no difference: a channel habit |
+
+What separated the thirds was again the subject: whether the video was in the channel's niche at all (videos outside
+it were 13% of top thirds and 24% of bottom thirds), a model named in the title (71% against 51%, possibly release
+timing), and a contest ("vs", 30% against 13%). Identical packaging on one channel spread 5x to 68x. Its limits: one
+coder, 119 comparisons with nothing surviving correction, thumbnails as served today.
+
+Two things worth carrying forward as questions, not answers:
+- **The category's entry ticket.** In both niches the topic marker and the subject's picture sat on about two thirds
+  of the flops too. They do not win, but a thumbnail without them (the game's own name as the headline, the AI mark
+  30 px wide) reads as something else. Check a re-package for a missing ticket before anything cleverer.
+- **A video outside the channel's usual subject.** The audience for it is mostly outside the subscribers. Say so on
+  the page; the blind viewers, written as the core audience, will pass on it however clear the thumbnails are.
+
 ## Evidence that separates packaging from topic
 1. **Winners and flops from the same channels** (the control study below).
 2. **Controlled tests:** YouTube Test & Compare results, on this channel (`vidiq_youtube_ab_test_list`) and the
@@ -52,6 +78,29 @@ Load the tools with ToolSearch (query `vidiq`). Most calls cost 5 credits; `vidi
 - A private or scheduled video cannot be fetched (`vidiq_video_transcript` fails): use the captions file.
 Download thumbnails with `scripts/fetch.py` and LOOK at them (`scripts/sheet.py` builds captioned contact sheets).
 Describe thumbnails from looking, never from titles.
+
+## When VidIQ is not connected
+It is configured per project, so a session started from a video folder may not have it (2026-11-23: ToolSearch found
+nothing and the session's connector list did not show it). Check before planning, tell Leon early, and carry on with
+yt-dlp, which is on PATH. What it gives, and the commands that worked:
+- **Same-topic videos, hits and flops alike:** `yt-dlp --flat-playlist -J "ytsearch40:<query>"` for a dozen or more
+  phrasings of the subject. Each entry has `id`, `title`, `view_count`, `duration`, `channel`, `channel_id`. Dedupe,
+  drop anything under four minutes, keep every on-topic video and not the top dozen. Search results lean to videos
+  that are already popular and carry no dates: say so wherever the numbers are used.
+- **A channel's recent uploads with views:** `yt-dlp --flat-playlist -J --playlist-end 70 --extractor-args
+  "youtubetab:approximate_date" https://www.youtube.com/channel/<id>/videos` (or `/@handle/videos`). Entries come
+  newest first with `view_count` and an approximate date; the playlist carries `channel_follower_count`. Some
+  channels hide views on some rows: drop those rows.
+- **A score that does not need VidIQ:** views divided by the median views of the 10 uploads nearest in the list.
+  That is the control study's score, so the analyst can work from these files (`research/channels/*.tsv`) instead
+  of `vidiq_channel_videos`. Adapt the control brief: point it at the files and tell it there is no VidIQ.
+- **The transcript and frames of a public video:** `yt-dlp --skip-download --write-auto-subs --sub-format json3`
+  gives timed captions (turn them into `[m:ss] text` lines); a 1080p picture-only download plus ffmpeg gives
+  time-stamped contact sheets and full-size frames for the designers and the promise checker.
+- **What people type:** `https://suggestqueries.google.com/complete/search?client=firefox&ds=yt&q=<query>` returns
+  YouTube's search suggestions. Phrases, not volumes.
+What it cannot give: search volumes (say on the page that there are none), and his saved Test & Compare history (use
+the dated snapshot in the ledger and say how old it is).
 
 ## The pool for the blind test
 `research/pool.tsv` (one video per line: the video id first, the title last, tab-separated; other columns between

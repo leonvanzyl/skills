@@ -25,9 +25,13 @@ What the independent inspection then found, and what a second round did (same da
   nothing.
 - Six images went through the pass again with the inspector's notes written into the prompt. The three smiling faces
   came back clearly closer; one serious face improved; two hardly moved in four takes. **The image model keeps most
-  of a face it has already drawn.** One more round is worth doing for an expression fault; if a face is still wrong
-  after it, re-render the thumbnail from the designer's prompt or swap the concept rather than correcting a
-  correction again.
+  of a face it has already drawn.** The record on second rounds is mixed. On this first
+  run, at re-inspection none of the six still had a blocker (the grin, the squint and the uneven eye were gone),
+  though two of the faces had barely changed. On the next run three flagged faces had a second round and none moved,
+  and the one then rendered afresh from its designer's prompt, with the expression written out, came back right in
+  one call. A second round that fails costs two renders and then needs the fresh render anyway, so the default is
+  the fresh render: a face the inspection flags goes back to its designer ("When renders are scarce", below), or the
+  concept is swapped.
 - **The pass re-renders the whole frame, not just his face.** Text survived every time; logos did not (a spark came
   back in the wrong orange). Always re-paste the recorded logos afterwards and look at the result at 3x.
 
@@ -114,6 +118,37 @@ Write `build/likeness/result_<your letter>.json`: a list of
 You are not signing these off: another agent inspects the delivered files and Leon judges the likeness. Do not write
 "clearly him" or "pass"; write what differs. Reply in six lines at most: one line per image, and which you trust least.
 <!-- END LIKENESS -->
+
+## When renders are scarce (learned 2026-11-23)
+The image service can rate-limit the whole account to a few images every ten minutes (`designer.md`). The pass then
+sets the length of the run, so:
+- **Run it only on images that will be delivered.** Act on the promise check first; a concept it cut should never
+  reach this pass.
+- **Each agent runs one `gen.py` call at a time** (`--takes 2`), waits for it, and never re-runs a waiting call.
+- **One take is enough for an alternative version or a concept that will not be in the trio**, kept only if it is
+  closer than the source and nothing else changed. Two takes for the likely trio.
+- **Fold small fixes into the same render** instead of a separate edit: copy the likeness prompt and append "ALSO
+  CHANGE, and nothing else: ...". What survived being folded in: removing a stray artefact; changing one word on a
+  chip (ENDING to MUSIC, letter-perfect in both takes); replacing numbered dots with plain ones; a few pixels more
+  clearance above his hair. What did not: moving text by a stated distance. Asked for 25 px it moved 34; asked to
+  move words left and shrink them 6% it shrank them 11% to 19% and did not move them; asked for 40 px it gave 20 to
+  30. Where a position has to be exact, send the fix to the designer as its own edit.
+- **A folded-in word change is a rewording:** the image goes back through a fresh promise check.
+- **When you resume an agent** (after a server error, or with a changed budget), say what is left and that it hands
+  back only when every image is delivered. One agent, resumed and reminded to "reply in six lines", reported and
+  stopped with two images unrendered.
+- **For an expression fault, re-render instead of a second likeness round.** Three faces the inspection flagged
+  (a grin about 10% too wide, a lopsided smirk, one arched brow) each had a second round with the inspector's notes
+  written into the prompt, two takes each. None moved. The designer of one then rendered the thumbnail afresh from
+  its own prompt with the expression written out ("a small, gentle smile: the mouth is narrow, its corners end just
+  inside the ends of his moustache, a short shallow row of upper teeth only; the cheeks are not pushed up; the eyes
+  are relaxed and open, not squeezed; brows level; dark brown irises") and one of two takes was right. One likeness
+  take on that fresh render then evened the skin tone without widening the smile. So: an expression fault goes back
+  to the designer for a fresh render with the expression in words, then one likeness take, then its own inspection.
+- On nine images that day the text came back letter-perfect every time, and the agents that ran the pass reported
+  each face slightly closer than its source (their own read, so a filter and not a verdict). The drift left was the
+  same as before: eyes a little narrower than the smile portrait, a faint crease between the brows, a longer and
+  whiter goatee, a smile a little wide.
 
 ## After the pass
 1. Run the final inspection (`checks.md`, section 3) on every delivered file.
