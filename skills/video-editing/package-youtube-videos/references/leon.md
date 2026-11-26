@@ -34,6 +34,27 @@ report, an earlier run's output, or what one run's checks happened to find.
 - **He was surprised that broken faces reached him at all** [said 2026-11-22]: "I was surprised by that mistake", and
   he asked for an independent review of the process "for such issues". Nothing with his face goes on a page before the
   likeness pass, the final inspection and a native-size look (SKILL.md).
+- **"Close" is not good enough, and the checks must catch it** [said 2026-11-24]: shown ten concepts whose faces had
+  been through the likeness pass, five inspections and the orchestrator's own native-size look, and which the closing
+  message called "recognisably you", he answered: "those faces do not look good enough at all. The critics should
+  have picked that up, and it should have been fixed." Two inspectors had graded faces as blockers that day and the
+  orchestrator argued both away with a face-width measurement. Side by side with the portrait the faces were a
+  similar man: narrower jaw, greyer hair that flared at the sides, lighter and more squinted eyes, a thinner
+  moustache, a wider smile. **[our choice]** A face is delivered only when a stranger shown the crop beside the
+  portrait would say "the same photograph of the same man, placed in a new frame"; anything that reads "a similar
+  man" is re-rendered before he sees it, and a face blocker from any inspector is acted on, never argued away
+  (`likeness.md`, `checks.md` section 3).
+- **His portrait goes to Codex as a reference; it is never placed by code** [said 2026-11-26, at the start of the
+  next run, answering the question the 2026-11-24 run left open]: "For my avatar and likeness, you can pass
+  reference images to Codex when you generate the thumbnails. Simply pass my image to Codex when generating the
+  thumbnail. That will sort it out. Do not place the image programmatically." So the route "place his actual
+  photograph in the frame by script and let the model render the rest" is closed: do not offer it again.
+- **He is not to be asked how his face gets in** [said 2026-11-26, in the session that maintains this skill, about
+  that same question]: being asked "tells me something is wrong". "As part of the image generation process, obviously, you're just passing assets like my avatar image to Codex, and then Codex will generate the image, which then includes my reference."
+  "I don't know why the agent says this." And: "The face should not be placed using code. You can pass reference images to Codex, and that will add the image to the thumbnail."
+  **[our choice]** What to do when a rendered face falls short (render again, then the serious portrait, then
+  withdraw; never an empty page, never a question to him) is in `likeness.md`. He has been asked three times for a
+  larger portrait and has not taken it up: do not ask again.
 - **Eyes into the lens, and no exaggerated faces** [earlier, 2026-10-01, from his saved feedback]: he always looks
   straight into the camera; no look-aways, gasps or open-mouthed shock. At that time a subtle smirk or slightly raised
   brow was acceptable to him. Later [earlier, 2026-11-13] he asked to "fix the goofie face" and "the goofie expression"
@@ -83,6 +104,20 @@ report, an earlier run's output, or what one run's checks happened to find.
 - "I really do like the report that you give, where you show these different thumbnails along with the motivation at
   the top on what the angle is and who it's for... that needs to be consistent across our future runs as well."
 - "I really do like the variants that you gave as well, like a potential dark mode variant."
+- **A dark variant of every concept, always** [said 2026-11-24]: "One issue I have is with the bright backgrounds.
+  You should always give me a variant with a dark background as well, please. Even if it's not 100% black, it could
+  be dark charcoal, whatever, but there should always be a dark variant." That day seven of ten concepts had a dark
+  alternative and three had a second bright ground instead (one designer argued his navy T-shirt would sink into a
+  dark ground). And a few minutes later, asking for it to go into this skill: "I always need the dark versions as
+  well. I'm personally not a fan of bright backgrounds. I'm okay with them being in the mix, as long as they're
+  based on best practises and what's working in the industry, but I always need the dark versions as well."
+  So: **the dark version (charcoal or near-black) is the main version of every concept**, never optional and never
+  the afterthought; a designer who thinks dark is wrong for a concept still makes it and says why in the caveats.
+  A bright ground is an extra, offered only where this run's own research gives a reason for it (what the current
+  thumbnails in the niche actually use, hits and flops alike), and the page says what that reason is. "It pops" is
+  not a reason. The earlier line in the designer brief, "Bright, clear, vibrant", was our wording, not his: what he
+  said was that grey, bland gradients look unprofessional and that vibrancy and brightness must be right for
+  YouTube, which a dark ground with clean, saturated type and marks satisfies.
 - The packaging strategy on the page: "What I also want your artefact or this final report to include is the packaging
   strategy" (how to use YouTube's A/B tests for thumbnails and titles); "If you think that that is a good strategy,
   you're welcome to push back."

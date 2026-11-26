@@ -1,0 +1,17 @@
+Image 1 is a studio photograph of a man on a black background. Images 2 and 3 are official logos.
+
+Make one 16:9 YouTube thumbnail. Treat this as a photo edit of Image 1, not as a new picture of the man.
+
+THE MAN (the most important part of this job). Use the man from Image 1 exactly as he was photographed, as if his cut-out had been lifted out of Image 1 and set into the frame. He is NOT redrawn. Every part of him is the photograph: the shape and width of his head; the exact shape, height and clean bright-white colour of his hair, combed up and back, short and tight at the sides; his forehead; his brows; his small dark-brown eyes and how far they are open; his short broad nose; his full round cheeks; his mouth and the exact small smile with the same short row of upper teeth; his dense dark-grey moustache; his short grey goatee; his soft full jaw and thick neck; his skin tone, freckles and pores; and the navy crew-neck T-shirt. Do not beautify, smooth, slim, lengthen, sharpen the jaw, age, re-light or restyle him. Do not widen the smile or narrow the eyes. He looks straight into the lens exactly as in Image 1.
+Keep him at the same scale as in Image 1 (hairline to chin about 47% of the frame height). Only slide him sideways: his nose sits at 77% of the frame width, the top of his hair about 6% below the top edge, his shoulders run off the bottom edge as in Image 1 and his far shoulder runs off the right edge.
+
+THE GROUND. Replace the black behind him with a deep charcoal, #17191E, flat and even, a touch lighter (#262A32) in a wide soft area behind his head and shoulders so that his white hair and his navy T-shirt both stand clear of it. No coloured glow, no halo, no outline or rim light on him, no vignette, no texture.
+
+THE LEFT HALF is a stack in reading order:
+1. Top-left: the product's app tile from Image 2, reproduced exactly (say what it looks like in words: its shape, its colours, each mark on it and where), flat and facing the camera, about 36% of the frame height, its left edge at 6% of the width and its top at 6% of the height. No drop shadow under it.
+2. To the right of the tile, vertically centred on it: a white pill-shaped chip holding the maker's logo from Image 3 exactly (say what it is made of: the mark and the letters). The chip is about 27% of the frame width and 16% of the frame height. No drop shadow.
+3. Under the tile: the product's name, in quotes and letter for letter, in very heavy white geometric sans-serif capitals, about 17% of the frame height, left-aligned with the tile.
+4. Under that: a bright yellow (#FFE100) label with rounded corners, tilted about 3 degrees anticlockwise, holding "FULL SETUP" in very heavy condensed black capitals. The label spans from 3% to 55% of the width and from 63% to 93% of the height; it may lap a little over the front of his shoulder.
+No other text anywhere. Keep the bottom-right corner clear.
+
+Finish: crisp, clean and professional, with real photographic sharpness and real skin on him.

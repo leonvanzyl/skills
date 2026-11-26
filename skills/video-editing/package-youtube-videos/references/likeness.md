@@ -1,4 +1,107 @@
-# The likeness pass
+# His likeness
+
+## Read this first: the correction pass below did not produce his likeness (2026-11-24)
+On the third run, all ten concepts were drawn by the image model from his two portraits, corrected by the pass
+described further down, inspected by five agents and looked at by the orchestrator at native size. The closing
+message called them "recognisably you". His answer: "those faces do not look good enough at all. The critics
+should have picked that up, and it should have been fixed."
+
+Put beside the portrait, every one was a similar man: a jaw that tapered where his is broad and soft, hair that
+was greyer and flared at the sides where his is clean white and tight at the sides, lighter and more squinted
+eyes, a thinner moustache, a wider smile. The pass had made each face "closer than its source", which was true and
+beside the point: a face the model has drawn stays the face it drew.
+
+**What replaced it, the same day: his photograph is the base image, and the thumbnail is built around it.** Image 1
+of every generation is the one portrait that matches the expression; the prompt says "treat this as a photo edit of
+Image 1, not as a new picture of the man"; he stays at the photograph's scale and is only slid sideways; the ground
+replaces the black behind him; the layout is described in words. `designer.md` has the method and
+`assets/prompts/photo_base_smile.txt`, `photo_base_serious.txt` and `example_photo_base.txt` the wording. In the
+first seven test takes the hair silhouette and colour, the head shape, the eye colour and the moustache came back
+as photographed, which none of the ten rejected faces had managed. What was still off in some takes: a head tilted
+about 2 degrees, a slightly wider smile, a longer goatee, and with the serious portrait a narrower face.
+**It was better, and it still did not pass.** Three inspectors, each shown six of the rejected faces before
+anything else, then read the eleven new files. The strictest graded all five it saw "a similar man"; the second
+graded all six it saw "the same man, visibly changed" and would have rejected four; the third graded two "visibly
+changed" and three "a similar man". On the four faces two of them both read, they were one grade apart every
+time. What all three described is one pattern, the same one the rejected faces had, only milder: **the head is too
+big for the features** (lined up on eyes, nose and mouth, the hair stands 15 to 40 px taller and the head is 5 to
+13% wider than the portrait), the smile-squint is lost (eyes more open, lighter irises), more teeth show and the
+goatee is longer and wirier. One inspector's registration score put the new faces at 0.989 to 0.995 against 0.958
+to 0.977 for the rejected ones: closer, and not the photograph. The serious face that was left where it sits in
+the portrait came closest ("the features are the portrait's own"; the outline still about 6% bigger).
+So, as this is written, the image model has not produced a face of his that a strict inspector passes, by either
+method. The page went to him with a banner saying likeness was not signed off, every face shown beside his
+portrait, and three ways forward: place his actual photograph in the frame and let the model render only the
+ground, type and marks (the one route that gives exactly his photograph, and code touching his image, so it needs
+his word); a larger smile portrait; or his acceptance of faces as they are. **His answer, 2026-11-26** (unprompted, at the start of the next run): "For my
+avatar and likeness, you can pass reference images to Codex when you generate the thumbnails. Simply pass my image
+to Codex when generating the thumbnail. That will sort it out. Do not place the image programmatically." So the
+first route is closed for good: his portrait is passed to Codex as the reference of every generation and nothing
+places it by code. He did not say he accepts faces as they are, so the gate in `checks.md` section 3 still runs and
+what differs is still stated beside each image.
+
+He said it a second time that day, about being asked at all. The session's question ("how should your face get
+into these thumbnails?", with placing his photograph recommended) "tells me something is wrong": "As part of the image generation process, obviously, you're just passing assets like my avatar image to Codex, and then Codex will generate the image, which then includes my reference."
+And: "The face should not be placed using code. You can pass reference images to Codex, and that will add the image to the thumbnail." So, beyond closing that route:
+- **How his face gets in is not a question for him.** Do not open a run, or interrupt one, by asking him to choose
+  a method, to accept faces in advance, or to send another portrait. Anything an earlier run wrote about his face
+  (in the ledger, on a page, in this file) is history, not a decision waiting on him. And never present a
+  forbidden route as an option "with his OK".
+- **When a face falls short, the remedy is inside this method, in this order, and the run goes on:**
+  1. Render again from the portrait with the fault written into the prompt, one or two more takes.
+  2. If a smiling face still reads as a similar man, render the concept from the serious portrait, left where he
+     sits (the arrangement that has come closest so far), unless the idea truly needs the smile.
+  3. If it still reads as a similar man, withdraw that concept and say so on the page.
+  A face graded "visibly changed" after step 1 goes on the page with what differs stated first (`checks.md`).
+- **The run never ends in an empty page or in a question.** If the gate would leave fewer than three concepts,
+  the three closest go on the page anyway, each with its verdict and what differs stated first, and one plain line
+  that the inspectors did not pass them. He judges his own likeness; the page gives him what he needs to do it.
+- **The larger portrait.** He has been asked for one three times (2026-11-22, 2026-11-24, 2026-11-26) and has not
+  taken it up. Do not ask again and never make it a condition. It may appear once, as one line under "Still open"
+  on the page. If he ever sends a larger or cleaner portrait, use it.
+Build from his portrait as the base image, leave him where he sits, expect "visibly changed" at best from the
+smile portrait, and say so on the page.
+
+What the full re-render of ten concepts then showed (same day, about 75 takes):
+- **Leave him where he sits in the photograph.** With the serious portrait, ten takes that moved him down to make
+  room for a headline above his head all failed their designer's own check: brows lifted and pinched into a
+  questioning look, amber eyes, a narrower jaw. Two takes that kept him exactly where and as large as he sits in
+  the photograph, extended the frame only to the left and right, and put the headline beside him came back as the
+  photograph, the closest faces of the run. Build the layout round where he already is. Do not move him up or
+  down and do not resize him; words go beside him, not above him.
+- **The size of the portrait sets the floor.** The serious portrait has his face 548 px tall and a thumbnail shrinks
+  it; the smile portrait has it 364 px tall and every thumbnail enlarges it to 410 to 450 px, so the model invents
+  detail. Every smiling take kept the hair, head shape and expression of the photograph and still came back with a
+  slightly wider smile showing more teeth, a longer goatee and eyes a shade lighter or more open, whether he was
+  slid to one side or left centred, and no prompt wording moved it (the designers tried about a dozen). Asking for
+  him smaller did not work either: asked for 39% of the frame height, the model gave 45%. A smile portrait with his
+  face at least 600 px tall would help more than any prompt, but do not ask him for one (his answer above): say
+  plainly on the page that the smiling faces carry that difference.
+- **A bright ground costs likeness.** On lemon yellow all four takes came back with a wider, pinker face, and
+  "not wider, not pinker" in the prompt changed nothing; the serious face on blue failed the same way. One of
+  three bright alternates survived its designer's check. So a bright alternate is a risk to his face as well as
+  against his taste (`leon.md`).
+- **The head tilts.** About half of all smiling takes came back with his head rolled about 2 degrees. Saying it
+  twice in the prompt ("perfectly upright", "the line through his two pupils is exactly horizontal") cut that to
+  roughly one in four. Measure every take with the face detector's eye points and reject on tilt.
+- **Designers told what failure looks like report honestly.** Shown two rejected faces and told "a similar man is
+  a failure", the designers listed what still differed, wrote `passed_own_check: false` on three images and said
+  which feature they trusted least. Two of those three were withdrawn and one was re-rendered.
+
+Three things that method depends on:
+- **One portrait, and nothing else with him in it.** A test that attached the old thumbnail "for its layout only"
+  came back with that thumbnail's lighter eyes and narrower face.
+- **Never larger than the photograph.** Asked for a face at 52% of the frame height against the portrait's 47%, the
+  model widened and flattened his head. The smile portrait is small (his face is 364 px tall), so a thumbnail
+  already enlarges it about 1.2 times; a larger or camera-original portrait from him would help more than any
+  prompt.
+- **A hard gate before he sees it** (`checks.md`, section 3): the inspector is shown faces he has rejected and
+  gives one of three verdicts, and "a similar man" is a blocker that is acted on, not argued with.
+
+The correction pass is kept below as a record and as a last resort for an image that cannot be re-rendered. Do not
+plan a run around it.
+
+## The correction pass (the old method)
 
 Every finished thumbnail goes back through the image model once more, to correct Leon's face and nothing else. This is
 his own instruction ("it's just a matter of sending the reference image of myself to Codex, along with the generated

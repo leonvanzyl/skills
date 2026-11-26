@@ -191,8 +191,9 @@ def finals(data, out, originals="out"):
     for c in D["concepts"]:                                   # resolve every original first: all or nothing
         title = trio_title.get(c["n"]) or c["title"]; base = f'{c["n"]}-{slug(title)}'
         names[c["n"]] = base + ".jpg"; jobs.append((full_of(c["img"]), names[c["n"]])); index.append((names[c["n"]], c["name"], title))
-        if c.get("alt_img"):
-            jobs.append((full_of(c["alt_img"]), base + "-alt.jpg")); index.append((base + "-alt.jpg", c["name"] + " (alternative version)", title))
+        if c.get("alt_img"):                                  # "alt_suffix": "bright" names the file -bright.jpg (the main file is the dark one)
+            suf = slug(c.get("alt_suffix") or "alt", 20) or "alt"; label = c.get("alt_label") or "alternative version"
+            jobs.append((full_of(c["alt_img"]), f"{base}-{suf}.jpg")); index.append((f"{base}-{suf}.jpg", c["name"] + f" ({label.lower()})", title))
     if len({n for _, n in jobs}) < len(jobs): sys.exit("finals: two upload files would get the same name; give the concepts different numbers. Nothing was written.")
     for full, name in jobs: upload(full, os.path.join(out, name))
     lines = ["Every file here is 3840x2160, YouTube's recommended thumbnail size.", "",

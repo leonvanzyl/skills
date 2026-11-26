@@ -141,9 +141,35 @@ Write `{OUT}`:
 <!-- END VIEWER -->
 
 ## 3. The final inspection (is it fit to upload?)
-One fresh agent, every image that will be delivered, **after the likeness pass and after the logos were re-pasted**:
+One fresh agent, every image that will be delivered, **after the last render and after the logos were pasted**:
 the files he will upload, not an earlier version. Nothing is called inspected before this has run on the final files.
 Give it the list of ids with the portrait each follows.
+
+**The likeness part of this inspection failed on 2026-11-24, and this is what changed.** Five inspectors wrote
+careful feature lists on ten faces and graded most of them close; two graded a face a blocker and the orchestrator
+talked itself out of both with a face-width measurement. Leon rejected all ten ("The critics should have picked
+that up, and it should have been fixed"). So:
+- **Calibrate the inspector on faces he has rejected.** Before it opens anything it is inspecting, it reads his
+  portraits and a set of rejected faces, each beside the portrait at native size, and writes down what makes each
+  a different man. `~/.yt-packaging/likeness_rejects/` holds such a set from 2026-11-24 (face sheets made with
+  `tools.py face`); add any face he rejects in a later run. A face no closer than those fails.
+- **It gives a verdict, one of three:** `SAME PHOTOGRAPH`, `SAME MAN, VISIBLY CHANGED` (a major) or `SIMILAR MAN`
+  (a blocker), and the harsher one when unsure. A feature list with no verdict is how "narrower jaw, greyer hair,
+  lighter eyes, wider smile" ended up summarised as "close".
+- **A face blocker or major from any inspector is acted on.** `SIMILAR MAN`: the image is re-rendered from his
+  photograph with the fault written into the prompt and inspected again, or it is withdrawn; it never goes on the
+  page. `SAME MAN, VISIBLY CHANGED`: one more render with the fault named; if the fault survives (with the small
+  smile portrait some do, `likeness.md`), the image may go on the page with that fault stated first, in plain
+  words, beside it. Neither is weighed against another agent's kinder read, and a measurement can only confirm a
+  fault, never clear one (the rejected faces had the portrait's proportions to within a few percent).
+- **The gate never ends in a question to him or in an empty page** (his answer of 2026-11-26, `likeness.md`). The
+  remedies are applied in the order given there: render again with the fault named, then the serious portrait left
+  where he sits, then withdraw the concept. If that would leave fewer than three concepts, the three closest go on
+  the page anyway, each with its verdict and what differs stated first, and a plain line that the inspectors did
+  not pass them. Nobody suggests placing his photograph by code, and nobody asks him for another portrait.
+- Split the images across two or three inspectors, each with its own scratch folder, and give at least the three
+  test candidates to two of them.
+The brief below is the general one; `likeness.md` and the list above say what the likeness section must add.
 
 <!-- BEGIN INSPECT -->
 You are the senior retoucher who signs off YouTube thumbnails before upload. Find every flaw a viewer, the creator or
@@ -160,11 +186,17 @@ and shoulders against the ground; every block of text; every logo beside a same-
 object; the bottom-right 18% x 16% corner. `{PY} {SKILL}/scripts/tools.py face out/<id>_full.png qa/final/face_<id>.jpg
 --ref smile|serious` puts his face at native pixels beside the matching portrait. Report only what you can see in a
 crop, and say where:
-- LIKENESS, as a careful read and not a verdict (the creator is the judge, and an earlier inspector passed faces he
-  rejected): feature by feature against the matching portrait: face shape and width, lower-face length, eye shape and
-  openness, lids, brows (position, angle, furrow), nose, mouth and smile size, teeth, moustache and goatee, skin tone,
-  apparent age. Say which features differ and by how much. Rank the set from closest to furthest and name the ones
-  you think he would reject.
+- LIKENESS, as a gate. First read the creator's two portraits and every face sheet in {REJECTS} (faces he has
+  rejected, each beside the portrait): write down what makes each rejected face a different man. That is your
+  scale. Then, for each image: would a stranger shown the two crops say they are the same photograph of the same
+  man, set on a new ground? Write "same" or exactly how it differs for each of: hair silhouette, height and colour;
+  sides of the hair; head shape and width; jaw and chin; eye colour; how far each eye is open; brows; nose; mouth
+  width and teeth; moustache; goatee length; skin tone and texture; head tilt; apparent age and weight. Then ONE
+  verdict: SAME PHOTOGRAPH (differs only at 2x), SAME MAN, VISIBLY CHANGED (someone who knows him would notice at
+  normal size: a MAJOR) or SIMILAR MAN (hair silhouette, head shape, jaw, eye colour or mouth differs the way the
+  rejected faces differ: a BLOCKER). If unsure between two, give the harsher. Say whether it is closer to the
+  portrait than every rejected face. The creator is still the judge; your job is that he never again sees a face
+  you could have stopped.
 - EXPRESSION AND EYE-LINE: eyes into the lens; only the smile or the serious look of the portraits, no stronger.
 - SKIN AND EDGES: plastic, waxy, painted, swirled or crackled texture; over-sharpening; a halo, cut-out line, glow, rim
   or colour wash on him; stray specks in the hair.

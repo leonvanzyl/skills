@@ -35,7 +35,13 @@ def concept(c):
     if c.get("qa"): rows.append(row("Inspection of the final file", chip("info", c["qa"].get("label", "Inspector's read")) + " " + e(c["qa"]["text"])))
     if c.get("likeness"): rows.append(row("Likeness (your call)", chip("info", c["likeness"]["label"]) + " " + e(c["likeness"]["text"])))
     if c.get("caveat"): rows.append(row("Watch for", e(c["caveat"])))
-    alt = f'<div class="alt"><img src="{c["alt_img"]}" alt="Alternative version of concept {c["n"]}" loading="lazy"><p><b>Alternative.</b> {e(c.get("alt_note", ""))}</p></div>' if c.get("alt_img") else ""
+    # The main image is the dark version (Leon, 2026-11-24). An alternate is labelled by what it is: pass "alt_label"
+    # ("Bright alternate") so the page never calls a bright ground just "Alternative".
+    alt_label = c.get("alt_label") or "Alternative"
+    alt = f'<div class="alt"><img src="{c["alt_img"]}" alt="{e(alt_label)} of concept {c["n"]}" loading="lazy"><p><b>{e(alt_label)}.</b> {e(c.get("alt_note", ""))}</p></div>' if c.get("alt_img") else ""
+    # Likeness is his call, so he gets the evidence, not only a read of it: "face_img" is the native-size face sheet
+    # from `tools.py face` (the face in this thumbnail beside his reference portrait), shown whole and unscaled-up.
+    face = f'<figure class="facecmp"><img src="{c["face_img"]}" alt="The face in concept {c["n"]} at full size, beside the reference portrait" loading="lazy"><figcaption><b>Your face at full size, beside your reference portrait.</b> {e(c.get("face_note", ""))}</figcaption></figure>' if c.get("face_img") else ""
     return f'''
 <article class="concept" id="c{c["n"]}">
   <header><span class="num">{c["n"]}</span><div><h3>{e(c["name"])}</h3><p class="reason">{e(c["reason"])}</p></div></header>
@@ -43,7 +49,7 @@ def concept(c):
     <div class="art"><img class="main" src="{c["img"]}" alt="Thumbnail concept {c["n"]}: {e(c["words"])}">
       <div class="feed" aria-label="How it looks at feed sizes">{yt(c["title"], c["img"], 246)}{yt(c["title"], c["img"], 168)}<span class="sz">phone feed 246 px · list 168 px</span></div></div>
     <dl class="notes">{"".join(rows)}</dl>
-  </div>{alt}
+  </div>{face}{alt}
 </article>'''
 
 S = []
@@ -125,6 +131,8 @@ dt { font:600 11.5px/1.2 var(--text); letter-spacing:.08em; text-transform:upper
 .banner { background:var(--warn-soft); color:var(--warn); border-radius:12px; padding:12px 16px; font-weight:600; }
 .alt { display:grid; grid-template-columns:minmax(0,300px) minmax(0,1fr); gap:16px; align-items:center; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:12px; }
 .alt img { width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:8px; display:block; } .alt p { font-size:14.5px; color:var(--muted); }
+.facecmp { margin:0 0 12px; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:12px; }
+.facecmp img { width:100%; max-width:1120px; height:auto; border-radius:8px; display:block; margin:0 auto; } .facecmp figcaption { font-size:14.5px; color:var(--muted); margin-top:8px; }
 .tablewrap { overflow-x:auto; } table { border-collapse:collapse; width:100%; font-size:14.5px; min-width:560px; }
 th,td { text-align:left; padding:9px 12px 9px 0; border-bottom:1px solid var(--line); vertical-align:top; }
 th { font:600 11.5px/1.2 var(--text); letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }

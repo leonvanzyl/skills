@@ -27,7 +27,12 @@ says what it is.
    `test-plan.md`.
 4. **The concepts:** `concepts`, each with `n`, `name`, `reason` (the click reason and who it is for), `words`, `title`,
    `title_alt`, `one_second`, `why`, `evidence` (where the idea comes from, stated without claiming it is proven),
-   `img`, optional `alt_img` + `alt_note` (a ground variant, an expression variant), and what the checks found:
+   `img` (**the dark version: it is the main image of every concept**, `leon.md`), optional `alt_img` + `alt_note`
+   with `alt_label` (what the alternate is, shown in bold: "Bright alternate") and `alt_suffix` (its upload file's
+   ending: "bright" gives `...-bright.jpg`; without it `-alt`), `face_img` + `face_note` (**the native-size face
+   sheet from `tools.py face`, made from the final file**: his face in this thumbnail beside his reference
+   portrait, so he judges likeness from the evidence and not from an agent's sentence; add it to every concept),
+   and what the checks found:
    `reads` (what blind viewers expected), `panel` (`picked`, `shown`, `by_viewer`, optional `note`), `promise` (`cls`:
    ok | late | bad, `label`, `text`), `qa` (`label`, `text`), `likeness` (`label`, `text`), `caveat`.
 5. **The checks:** `checks` (`note`, `viewers` (column heads), `findings`, `doubts`). Each concept's `seg` list fills
@@ -73,8 +78,9 @@ images on the page, **each at 3840x2160**, plus `TEST_ORDER.txt` with the three 
 for each, and a list of every file with its concept.
 
 **File names carry the title.** Each file is named by its concept number, then the title that thumbnail is paired
-with, in lower case with hyphens, and `-alt` for the alternative version:
+with, in lower case with hyphens, and `-alt` (or the concept's `alt_suffix`, such as `-bright`) for the alternate:
 `03-why-claude-code-says-fixed-when-its-still-broken.jpg`, `03-why-claude-code-says-fixed-when-its-still-broken-alt.jpg`.
+The file without a suffix is the dark version, the one he asked to have every time.
 Leon asked for this (2026-11-23): "The file names for the thumbnails need to include the video's title... you can
 keep the number, like 01... use maybe the recommended title from your list." A thumbnail in the test trio takes the
 title the test plan pairs it with (`trio[].title`); every other one takes its concept's `title`. So make sure each

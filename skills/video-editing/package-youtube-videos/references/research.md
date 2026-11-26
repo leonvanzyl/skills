@@ -43,6 +43,32 @@ it were 13% of top thirds and 24% of bottom thirds), a model named in the title 
 timing), and a contest ("vs", 30% against 13%). Identical packaging on one channel spread 5x to 68x. Its limits: one
 coder, 119 comparisons with nothing surviving correction, thumbnails as served today.
 
+**A third run, 2026-11-24, on channels about AI assistants and automation tools (six channels, 87 top-third against
+87 bottom-third videos, thumbnails coded blind).** Same status: one run's finding, a hypothesis, not a rule.
+
+| Claim read off winners | Top third | Bottom third | Verdict |
+|---|---|---|---|
+| The product's icon, shown large, is the entry ticket | 48% | 51% | no difference, and no ticket: half the hits have none |
+| Naming a brand the audience already follows (thumbnail or title) | 91% | 70% | holds, as a choice of subject |
+| ...and its logo on the thumbnail when the title already names it | 91% | 88% | adds nothing |
+| A comparison frame beats a tutorial frame | 53% of comparison videos | 50% of tutorial videos | no difference |
+| FREE on the thumbnail or in the title | 9% | 2% | weak, one channel |
+| An outcome phrase on the thumbnail beats the name alone | 8% | 33% | reversed, on all six channels |
+| A tutorial title does no worse than a news title | 50% | 58% | holds within noise |
+| A human face | 76% | 69% | no difference |
+
+The subject separated the thirds again: news of a release from a platform the audience already uses (33% against
+14%), against reviews of one sponsored or niche tool (9% against 22%) and generic tips (14% against 29%). Part of the
+outcome-phrase reversal is the sponsored-tool format, which leans on outcome phrases. Three method lessons from it:
+- **Check a channel's like rate before using it.** One channel named for the study had a median like rate of 0.04%
+  where the others ran 0.3 to 2.1%, and its views sat flat whatever the topic: paid views. Its thirds would have
+  ranked ad spend. The analyst swapped it out and dropped four paid-view videos elsewhere; brief the analyst to do so.
+- **A same-topic search returns the popular end.** Fifty results for a new product held 4 videos under 1,000 views;
+  three date-ordered searches found 42 more long-form videos, 31 of them under 1,000. Search by date as well.
+- **Views divided by subscribers falls with channel size** whatever the packaging, so "big channels flopped on it"
+  is an artefact. Compare each video with its own channel's norm. And publish order explained most of the spread:
+  launch-week videos had a median more than a hundred times that of videos a week later.
+
 Two things worth carrying forward as questions, not answers:
 - **The category's entry ticket.** In both niches the topic marker and the subject's picture sat on about two thirds
   of the flops too. They do not win, but a thumbnail without them (the game's own name as the headline, the AI mark
@@ -143,3 +169,16 @@ deserves next to topic), the sheets, and a reply of 15 lines at most.
 
 When it reports, rewrite the page's research section around what survived, and remove or soften anything in the
 strategy and the concept notes that did not.
+
+### Dark ground or bright ground: count it on the control set, every run
+Leon wants a dark version of every concept and accepts bright grounds only "as long as they're based on best
+practises and what's working in the industry" (`leon.md`, 2026-11-24). So before any concept is given a bright
+alternate, measure the control study's own thumbnails. It takes a minute and needs no agent: for each thumbnail in
+`research/control/joined.tsv`, resize to 320x180, take the median brightness (luma) of a band along the top and
+both sides (the outer 12%), and class it dark under 70, bright over 140, otherwise mid; then compare the shares in
+the top and bottom thirds, pooled and per channel. It is a script reading a border band, not an eye, so a subject
+that fills the frame is misread: say that on the page.
+One run's finding (2026-11-24, 174 thumbnails on six channels in the AI-builder niche): dark 63% of top thirds
+and 69% of bottom thirds, bright 17% and 21%, mid 20% and 10%. Dark is the niche's norm and brightness did not
+separate hits from flops on any channel. That is not evidence that dark wins; it is the absence of any evidence
+for bright. A hypothesis for the next run, not a rule.

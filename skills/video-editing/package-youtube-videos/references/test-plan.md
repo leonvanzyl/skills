@@ -81,7 +81,10 @@ What a better package can do is convert more of the impressions the video still 
 
 ## The results ledger: `~/.yt-packaging/ledger.md`
 The one kind of data from his own channel that separates packaging from topic. `setup.py` creates it empty. Read it at
-the start of every run, and ask him for the outcome of the previous video's test if it is missing. One entry per test:
+the start of every run, and ask him for the outcome of the previous video's test if it is missing. It records tests
+and their results and nothing else: never park an open question about method in it (how his face is rendered, which
+portrait to use), because the next session reads it as something to settle with him before it starts, and one did
+(2026-11-26). One entry per test:
 ```
 ## 2026-11-24 · <video title> · <video id>
 Test: combined, 3 packages, started at publish

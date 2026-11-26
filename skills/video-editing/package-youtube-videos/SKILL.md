@@ -1,6 +1,6 @@
 ---
 name: package-youtube-videos
-description: Package a YouTube video for Leon van Zyl's channel the way a packaging strategist would - the idea, the titles, finished thumbnails with variants, and the plan for testing them - and deliver it as a review page. Starts from the viewer and the video's own hook rather than from a design, researches what separates hits from flops on the same channels (never winners only), has one designer agent per concept art-direct Codex image generation to render each whole thumbnail from Leon's reference portraits, corrects his likeness through Codex, then tries to knock the results down with a promise check against the transcript, a blind read test and an independent inspection of the final files at native size. Use this whenever the user wants a thumbnail, thumbnail concepts or variants, a title or title options, "packaging" for a video, A/B or Test & Compare variants, or a better thumbnail or title for an existing video - even if they only mention one of those and never name a skill.
+description: Package a YouTube video for Leon van Zyl's channel the way a packaging strategist would - the idea, the titles, finished thumbnails with variants, and the plan for testing them - and deliver it as a review page. Starts from the viewer and the video's own hook rather than from a design, researches what separates hits from flops on the same channels (never winners only), has one designer agent per concept art-direct Codex image generation to render each whole thumbnail as a photo edit of Leon's reference portrait on a dark ground, then tries to knock the results down with a promise check against the transcript, a blind read test and an independent inspection of the final files at native size. Use this whenever the user wants a thumbnail, thumbnail concepts or variants, a title or title options, "packaging" for a video, A/B or Test & Compare variants, or a better thumbnail or title for an existing video - even if they only mention one of those and never name a skill.
 ---
 
 # package-youtube-videos
@@ -22,9 +22,12 @@ things were learned replacing it (2026-11-22, on a sponsored product video), and
    breakout score was missing for 77 of 88 flops.
 3. **A thumbnail's job is narrower and still worth doing well:** be instantly clear to the people the topic is for,
    keep the promise the first 30 seconds make, carry the topic marker, and look like a professional made it.
-4. **Let the image model render the whole thumbnail.** One designer per concept writes art direction and Codex image
-   generation produces the complete image, type included, from Leon's two reference portraits, in about a minute a
-   take. No HTML collage, no pasted cut-out.
+4. **Let the image model render the whole thumbnail, as a photo edit of his portrait.** One designer per concept
+   writes art direction and Codex image generation produces the complete image, type included, in about a minute a
+   take. No HTML collage, no pasted cut-out. Since 2026-11-24 his portrait is the BASE image of every generation
+   and the thumbnail is built around it, with him left where he sits in the photograph: the earlier way (attach
+   both portraits as references, let the model draw him into a scene, then "correct" the face) produced a similar
+   man ten times out of ten, and he rejected all ten (`references/likeness.md`).
 5. **Try to knock the work down before he sees it, and believe him over the checks.** Separate agents that never saw
    the strategy test the promise against the transcript, the read in a feed, and the finish at native size. They
    caught real faults. They also passed faces he called terrible. His eye is the standard.
@@ -36,12 +39,31 @@ every run.
 - **Every subagent runs on Opus 5.5 at extra-high effort:** pass `model: "opus"` and `effort: "xhigh"` on every Agent
   call (designers, likeness, checkers, the control analyst). Leon's instruction.
 - **No code touches him.** Not his face, hair, neck or body: no paste, blend, warp, scale, move, matte, heal, clone,
-  sharpen or retouch by script, by you or by any agent. His likeness is corrected by sending the finished thumbnail
-  and his reference portraits to Codex. A scripted face blend was tried and he rejected it outright ("It should
+  sharpen or retouch by script, by you or by any agent. His likeness comes from the image model, working from his
+  portrait as the base image. A scripted face blend was tried and he rejected it outright ("It should
   definitely not be a scripted faceplate. Why on earth would you do that if you've got access to Codex?"). The only
   script allowed to alter pixels of a delivered image is `tools.py logo`, and only on a logo.
-- **Nothing with his face reaches a page before the likeness pass, an independent inspection of the final files, and
-  your own look at each one at native size.** He was shown broken faces once because a page was published first.
+- **How he gets into a thumbnail is settled, and is never a question for him.** His reference portrait is passed to
+  Codex with every generation and Codex renders the thumbnail with him in it. Leon, 2026-11-26: "The face should not be placed using code. You can pass reference images to Codex, and that will add the image to the thumbnail."
+  Never offer to place, paste or composite his photograph, with or without "his OK". Never open or interrupt a run
+  by asking him to choose a method, accept faces in advance or send another portrait. When a face falls short the
+  remedies are the skill's to apply, in the order `references/likeness.md` gives, and the run goes on.
+- **"A similar man" is never delivered.** A face goes to him only when, put beside the portrait at native size, it
+  reads as the same photograph of the same man on a new ground. Designers judge every take that way, an inspector
+  calibrated on faces he has rejected (`~/.yt-packaging/likeness_rejects/`) gives each final file one of three
+  verdicts, and a face blocker from any inspector is acted on, never argued away (`references/checks.md`,
+  section 3). What still differs from the portrait is written beside the image on the page, first, in plain words.
+  The one floor under this rule: a run never ends with an empty page or a question to him. If the gate would leave
+  fewer than three concepts, the three closest go on the page with their verdicts and differences stated first
+  (`references/likeness.md`).
+- **Nothing with his face reaches a page before that inspection of the final files and your own look at each one at
+  native size.** He was shown broken faces once because a page was published first, and ten faces he rejected
+  outright a second time because the checks graded them close.
+- **Every concept is delivered on a dark ground, and the dark version is the main one.** Leon (2026-11-24): "I
+  always need the dark versions as well. I'm personally not a fan of bright backgrounds. I'm okay with them being
+  in the mix, as long as they're based on best practises and what's working in the industry." Charcoal or
+  near-black, never a grey bland gradient. A bright ground is an alternate, made only where this run's research
+  gives a reason, and the page states the reason with its numbers (`references/designer.md`).
 - **The upload files are 3840x2160, every time.** Leon: "We need the 4K versions of the thumbnails every time." It is
   YouTube's recommended thumbnail size. `tools.py finals` makes them from each image's full-size original, so every
   delivered image must have its `out/<id>_full.png`. The image model renders about 1,672 px wide, so the upload file
@@ -74,7 +96,8 @@ every run.
   existing videos (`references/test-plan.md`).
 - **The work folder:** next to the video (`<video folder>/packaging-<slug>/`), never inside a code or skills repository.
 - Ask before starting only for what cannot be found: the sponsor's requirements, and the last video's test result if
-  the ledger lacks it. Otherwise work through to the page, then iterate with him.
+  the ledger lacks it. Otherwise work through to the page, then iterate with him. A note an earlier run left about
+  his face, his portrait or the method is not something to ask him about: the method is settled (rules above).
 
 ## Workflow
 `SKILL` is this folder. Run scripts from the work folder with the Python `setup.py` reports.
@@ -94,20 +117,23 @@ every run.
    and the designers have a working example; then one designer agent per concept, started in waves of three or four
    a few minutes apart, never all ten at once: the image service rate-limits the whole account. Each delivers a
    finished thumbnail as a 1280x720 review file plus its full-size original (the upload file is made from the
-   original in step 9), usually a ground variant, and its own doubts. Tell him where things stand at every stage
+   original in step 9) on a dark ground, a bright alternate only where you asked for one, and its own doubts. Tell him where things stand at every stage
    boundary and whenever an obstacle changes the estimate; do not leave him to ask.
 5. **Check the designs** (`references/checks.md`), each by a fresh agent that has not read the strategy: the promise
    check against the transcript and the blind read test. Act on them: fix overclaims in the words, drop or flag what
    the hook does not confirm, send each fix to that concept's own designer (image-model edits only). **Every reworded
    thumbnail or title goes back through the promise check** before it can be offered.
-6. **Correct likeness through Codex** (`references/likeness.md`) on every image that will be delivered, after all the
-   fixes, and re-paste the official logos the designer recorded. When renders are scarce, a small fix that is not
-   about his face (a changed word, a removed artefact) can be folded into the same render; `likeness.md` says which
-   kinds of fix survive that and which do not.
-7. **Inspect the final files** (`references/checks.md`, section 3): a fresh agent, every final image, at native
-   pixels: likeness against his reference, text, logos against the official mark, artefacts. Then look yourself: open
-   each `out/<id>_full.png` whole, and its native-size face sheet. If anything changes after this step, steps 6 and 7
-   run again for that image before it is shown.
+6. **Make every fix as a fresh render from his portrait** (`references/likeness.md`, `references/designer.md`): a
+   changed word, a moved element or a face fault all go into the prompt, and the image is rendered again with the
+   portrait as its base, then the official logos are pasted. There is no separate likeness pass any more: the old
+   one ("reproduce this thumbnail, correct only his face") kept the face the model had already drawn, and is
+   documented in `likeness.md` only as a last resort.
+7. **Inspect the final files** (`references/checks.md`, section 3): fresh agents, calibrated on faces he has
+   rejected, every final image at native pixels: a likeness verdict against his portrait, text, logos against the
+   official mark, artefacts, the dark ground. Then look yourself: open each `out/<id>_full.png` whole, and its
+   native-size face sheet. A face graded "similar man" is re-rendered or withdrawn; one graded "visibly changed"
+   gets one more render with the fault named and, if the fault survives, goes on the page with that fault stated
+   first. If anything changes after this step, the inspection runs again for that image before it is shown.
 8. **Choose the three to test and write the test plan** (`references/test-plan.md`): three different reasons to click,
    each confirmed by the hook in its current wording, each with its own title, the one he would keep anyway uploaded
    first. Explain the trade-offs; push back on a plan the evidence does not support, with the numbers.
@@ -253,8 +279,86 @@ cut dropped before the likeness pass, not after. Tell him the new estimate when 
   plainly that the rendered page was not seen.
 - **Leaving him to ask for progress.** He asked three times during a run that overran. Say where things stand at
   each stage boundary, and at once when an obstacle changes the estimate.
+- **Naming the subject's neighbour to the segment writer** (2026-11-24). The channel line given to the agent that
+  writes the viewer profiles named a platform closely tied to the video's subject, so three of four profiles had
+  that platform in their week, and those three tapped ours 50 to 90% of the time against 7 to 14% for real videos,
+  with one of ours per sheet. The taps were discarded again. Describe the channel in general terms, and expect a
+  new product that only our tiles cover to be spotted anyway: plan to use the reads only.
+- **A maker's logo, an arrow and a product** (2026-11-24). "[Maker's logo] → [product] MADE AN ..." was read by every
+  blind viewer as a tutorial on building the thing with the maker's tool. An arrow says "turns into". Say "by the
+  ... team" in words when the point is who made it.
+- **Designers left to choose a ground all chose the same one** (2026-11-24). Told only to get away from the field's
+  dark look, six of ten independently picked blue, and seven of ten kept him on one side with words on the other.
+  Assign each concept its ground and where he stands in its own brief, in words, before anything is rendered.
+- **A softer wording that was still an overclaim** (2026-11-24). A concept graded late was reworded to the opening's
+  own gist ("NO TECH SKILLS NEEDED" for "not technical at all") and the second promise check graded it moderate:
+  the steps on screen still asked for skills. A third wording passed. The re-check rule earned its keep twice.
+- **Ten faces he rejected, after every check had run** (2026-11-24). All ten concepts were drawn from both portraits
+  as references, corrected by the likeness pass, read by five inspectors and looked at by the orchestrator at
+  native size, and the hand-over said "recognisably you". He answered: "those faces do not look good enough at
+  all. The critics should have picked that up, and it should have been fixed." Three things went wrong at once.
+  The method drew a similar man every time. The inspectors listed real differences (narrower jaw, greyer hair,
+  lighter eyes, wider smile) and then summarised them as close, because nothing asked them for a verdict or showed
+  them a face he had rejected. And when two inspectors did grade a face a blocker, the orchestrator measured the
+  face box, found it within 9% of the portrait and level with faces nobody had flagged, and delivered it: the
+  measurement was true and cleared nothing, since every rejected face had the portrait's proportions. The fixes
+  are the photograph-as-base method (`references/likeness.md`), the calibrated three-verdict gate
+  (`references/checks.md`, section 3), and this rule: a face blocker is acted on, and a measurement may only
+  confirm a fault.
+- **Moving him to make room for the words** (2026-11-24). Ten takes that slid the serious portrait down under a
+  headline all came back with a redrawn face; two that left him exactly where he sits in the photograph and put
+  the headline beside him came back as the photograph. Lay the words out round him.
+- **Attaching the old thumbnail "for its layout only"** (2026-11-24) brought its wrong face back with it: lighter
+  eyes, a narrower jaw. Nothing with a drawn version of him is ever attached; the layout is described in words.
+- **Bright grounds by default, and no dark version of three concepts** (2026-11-24). The strategy told designers
+  to get away from the dark look of the field; he had to ask for dark versions and said he is "not a fan of bright
+  backgrounds". The brief now makes dark the main ground. That day's bright alternates also cost likeness: two of
+  three failed their own designer's check with a wider, pinker face.
+- **Asking for him bigger than the portrait** (2026-11-24): at 52% of the frame height against the smile portrait's
+  47%, the model widened and flattened his head. He stays at the photograph's size.
+- **Calling the second attempt fixed before the gate had run** (2026-11-24). After the re-render the orchestrator's
+  own read was again that the faces were his, and progress notes said the method "works". Three calibrated
+  inspectors then graded the smiling faces "a similar man" or "visibly changed" and none passed. The page went out
+  with a banner saying likeness was not signed off, each face beside his portrait, and no upload files. Say
+  "closer", never "fixed", until the gate has run; and when it fails, show him the evidence in plain words rather
+  than another confident sentence. The remedies are the skill's to apply (`references/likeness.md`), not choices to
+  hand him.
+- **Asking him how his face should get into the thumbnails** (2026-11-26). The run above had left "three ways
+  forward" in this skill and in the ledger as a choice waiting on him, one of them placing his photograph by code.
+  The next session read that at the start, stopped, and asked him to choose, recommending the code route "with
+  his OK". He said the question itself showed something was wrong: his reference goes to Codex and Codex puts him
+  in the thumbnail. Never park an open question about method where the next run will read it, and never present a
+  forbidden route as an option.
+- **A logo rasterised wrong** (2026-11-24). A product's app tile, rasterised from the official SVG with PyMuPDF, came out
+  with its corner arcs flattened into near-chamfers, and that file was pasted on twenty images across two rounds
+  before an inspector noticed it against the official PNG. After rasterising a mark, compare it with the source's
+  own geometry (corner radius, ring and dot bounds) or with an official raster of the same mark, at 3x. Fixing it
+  was a re-paste from each kept pre-paste take, with a pixel comparison proving nothing else moved.
+- **A ghost under a pasted logo** (2026-11-24). `--clear` removed the model's drawing of a lattice mark from a
+  white chip but left its soft edge 5 to 10 grey levels under the white, which two inspectors saw. Ask the model
+  for the chip EMPTY and paste the official mark onto plain ground.
+- **Type and cards landing exactly on his shoulder line** (2026-11-24): three of ten had a bar, a card corner or a
+  letter touching his shoulder with a 0 to 3 px gap. Say in the prompt whether an element stops short of him (by
+  how much) or laps clearly over him; a tangent is neither.
+- **Inspectors sharing one scratch folder** overwrote each other's helper scripts (2026-11-24). Give each inspector
+  its own folder under `qa/final/`.
+- **No rendered final cut** (2026-11-24). The folder held raw recordings and the edit's item list, so frames were
+  mapped through the list: the talking-head opening could not be checked visually and frame times drifted by up to
+  fifteen seconds late in the video. Ask for the exported file; if there is none, say what could not be seen.
+- **A secret on screen.** A checker reading frames of a recording can come across a credential (an access token, an
+  API key) that is readable on screen. Verify it yourself, copy its value nowhere (not into a file, a brief or the
+  page), delete any crop you made, and put it first in "Still open" and in the hand-over. Never name the video or
+  the credential in this skill.
+- **A transparent logo and a pre-paste render worth keeping.** A mark with a transparent centre cannot use
+  `--clear`: fold "remove the mark, leave that spot plain" into the likeness prompt, check the spot, then paste.
+  Keep the chosen take as it was before any logo was pasted: when an inspector found the mark cramped, pasting it
+  smaller onto that take fixed it with no render, and a pixel comparison proved nothing else moved (2026-11-24).
+- **`--clear` refuses a tile on a gradient or over a drop shadow.** Ask designers for a flat ground and no shadow
+  under a mark, or paste the opaque official tile about 4% larger than the drawn one and look at the corners.
 - **Windows:** write scripts and JSON with the file tools rather than shell heredocs (quotes and backslashes break
-  them); quote paths with spaces; pass Python forward-slash Windows paths.
+  them); quote paths with spaces; pass Python forward-slash Windows paths. A `cd` inside a Bash call moves the
+  session's working directory: use absolute paths. Headless Chrome will not lay a page out narrower than about
+  500 px, so a 390 px screenshot is a cropped 500 px page: shoot phone width at 500.
 
 ## Files
 - `scripts/`: `setup.py` (work folder and ledger); `gen.py` (Codex image generation with a shared queue, starts
@@ -270,5 +374,9 @@ cut dropped before the likeness pass, not after. Tell him the new estimate when 
   are kept out of the skill because the skill is published and they hold his analytics and unreleased videos. Keep
   it that way: nothing about an unpublished video, a sponsor's terms or his channel's numbers goes in this folder.
 - `assets/`: `leon/` (his two reference portraits; see `leon.md` for what they are), `logos/` (the official Claude
-  mark and tile), `prompts/` (the two likeness prompts and an example of art direction that worked), `models/` (the
-  face detector `tools.py face` uses).
+  mark and tile), `prompts/` (`photo_base_smile.txt` and `photo_base_serious.txt`, the paragraph about him that
+  goes into every prompt; `example_photo_base.txt` and `example_photo_base_serious.txt`, two prompts that worked;
+  the older `example_art_direction.txt` and the two `likeness_*.txt` prompts of the retired correction pass),
+  `models/` (the face detector `tools.py face` uses).
+- Also outside this folder: `~/.yt-packaging/likeness_rejects/` holds face sheets of faces he has rejected, for
+  calibrating the inspectors (`references/checks.md`, section 3). Private: every file carries his likeness.
